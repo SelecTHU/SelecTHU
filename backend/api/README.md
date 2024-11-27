@@ -69,7 +69,7 @@
 - 返回值：
   ```json
   {
-    "status": <int>
+    "status": <int>,
   }
   ```
 - 说明：登出指定账号
