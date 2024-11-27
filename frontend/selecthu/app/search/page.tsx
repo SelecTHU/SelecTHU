@@ -10,7 +10,7 @@ import {
   useColorModeValue,
   Heading,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Navbar from "../components/layout/Navbar";
 import FilterSection, { Filter } from "../components/search/FilterSection";
 import SelectedFilters from "../components/search/SelectedFilters";
@@ -158,6 +158,24 @@ export default function SearchPage() {
     // 例如，您可以维护一个选课列表状态，并在这里更新
   };
 
+  // 添加筛选逻辑：根据 selectedFilters 过滤 courses
+  const filteredCourses = useMemo(() => {
+    let filtered = [...courses];
+
+    // 仅实现课程名称的筛选
+    const courseNameFilter = selectedFilters.find(
+      (filter) => filter.type === "courseName"
+    );
+    if (courseNameFilter) {
+      const searchTerm = courseNameFilter.value.toLowerCase();
+      filtered = filtered.filter((course) =>
+        course.name.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    return filtered;
+  }, [courses, selectedFilters]);
+
   return (
     <Box minH="100vh" bg={useColorModeValue("gray.50", "gray.900")}>
       {/* 导航栏 */}
@@ -191,7 +209,7 @@ export default function SearchPage() {
 
             {/* 课程表展示部分 */}
             <CoursesTable
-              courses={courses}
+              courses={filteredCourses} // 传递经过筛选的课程列表
               onSelectCourse={setSelectedCourseId}
               selectedCourseId={selectedCourseId}
               onAddCourse={handleAddCourse} // 传递 onAddCourse
