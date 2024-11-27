@@ -35,9 +35,13 @@ def add_user(user_id: str, curriculum: dict = None) -> dict:
         curriculum_id = None
         if curriculum:
             curriculum_id = cal_curriculum_id(curriculum)
-            curriculum_ = models.Curriculum.objects.filter(curriculum_id=curriculum_id).exists()
+            curriculum_ = models.Curriculum.objects.filter(
+                curriculum_id=curriculum_id
+            ).exists()
             if not curriculum_:
-                curriculum_ = models.Curriculum(curriculum_id=curriculum_id, courses=curriculum)
+                curriculum_ = models.Curriculum(
+                    curriculum_id=curriculum_id, courses=curriculum
+                )
                 curriculum_.save()
             else:
                 curriculum_ = models.Curriculum.objects.get(curriculum_id=curriculum_id)
@@ -88,10 +92,10 @@ def add_course(course: dict):
         period = int(course.get("period", 0))
         time = course.get("time", "")
         department = course.get("department", "")
-        type_ = course.get("type", "")
+        course_type = course.get("course_type", "")
         capacity = int(course.get("capacity", 0))
 
-        selection = course.get("selection", const.SELECTION_BLANK)
+        selection = course.get("selection", const.SELECTION_BLANK.copy())
 
         # CoursesDetails：课程详细信息
         info = course.get("info", dict())
@@ -110,7 +114,7 @@ def add_course(course: dict):
             period=period,
             time=time,
             department=department,
-            type=type_,
+            course_type=course_type,
             capacity=capacity,
             selection=selection,
             link=course_details,
@@ -417,11 +421,15 @@ def change_user_curriculum(user_id: str, curriculum: dict):
         # 检查是否存在
         if not models.Curriculum.objects.filter(curriculum_id=curriculum_id).exists():
             # 添加培养方案
-            curriculum_ = models.Curriculum(curriculum_id=curriculum_id, courses=curriculum)
+            curriculum_ = models.Curriculum(
+                curriculum_id=curriculum_id, courses=curriculum
+            )
             curriculum_.save()
 
         # 修改用户培养方案
-        models.User.objects.filter(user_id=user_id).update(user_curriculum=curriculum_id)
+        models.User.objects.filter(user_id=user_id).update(
+            user_curriculum=curriculum_id
+        )
 
         # 返回结果
         return {"status": 200, "msg": "change user curriculum successfully"}
@@ -430,7 +438,7 @@ def change_user_curriculum(user_id: str, curriculum: dict):
             "change_user_curriculum: %s", e, extra=const.LOGGING_TYPE.ERROR
         )
         return const.RESPONSE_500
-    
+
 
 # 修改课程简要信息
 def change_course_main():
