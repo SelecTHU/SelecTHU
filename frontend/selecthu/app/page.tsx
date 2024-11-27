@@ -1,7 +1,7 @@
 "use client";
 
 // 引入必要的React hooks和Chakra UI组件
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -16,7 +16,7 @@ import {
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 
-export default function LoginPage() {
+export default async function LoginPage() {
   // 初始化路由器和状态变量
   const router = useRouter();
   const [account, setAccount] = useState(""); // 账号状态
@@ -27,6 +27,16 @@ export default function LoginPage() {
   const handleLogin = () => {
     router.push("/main"); // 登录后跳转到主页
   };
+
+  useEffect(() => {
+    async function fetchTest() {
+      let res = await fetch("http://localhost:8080/api/v1/backend-db-status/")
+      let data = await res.json()
+      return data
+    }
+
+    fetchTest().then(data => console.log(data));
+  }, []);
 
   return (
     // 整体页面容器：居中布局，浅蓝色背景
