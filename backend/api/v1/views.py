@@ -149,10 +149,13 @@ def get_curriculum(request, user_id):
     """
     查询培养方案
     """
-    #TODO：确定培养方案的用法
+    user = db_utils.get_user(user_id)
+    if not user:
+        return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+    
     return Response({
-        
         "status": 200,
+        "curriculum": user.curriculum,
     }, status=status.HTTP_200_OK)
 
 @api_view(["GET"])
