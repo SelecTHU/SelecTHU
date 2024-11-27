@@ -33,7 +33,7 @@ db
     - `curriculum_id <CharField>` : 培养方案ID
     - `curriculum <JSONField>` : 培养方案内容
 3. `MainCourses` 课程表
-    - `id_ <CharField>` : 课程识别码
+    - `course_id <CharField>` : 课程识别码
     - `code <CharField>` : 课程号
     - `number <CharField>` : 课序号
     - `name <CharField>` : 课程名
@@ -41,13 +41,13 @@ db
     - `credit <IntegerField>` : 学分
     - `period <IntegerField>` : 学时
     - `time <JSONField>` : 开课时间
-    - `type_ <CharField>` : 课程类型（通识课组）
+    - `course_type <CharField>` : 课程类型（通识课组）
     - `department <CharField>` : 开课院系
     - `capacity <IntegerField>` : 课程容量
     - `selection <JSONField>` : 已选人数
     - `link <CharField>` : 课程链接（指向 `CourseDetails` 表项）
 4. `CourseDetails` 课程详细信息表
-    - `id_ <CharField>` : 课程识别码
+    - `course_id <CharField>` : 课程识别码
     - `info <JSONField>` : 课程详细信息
     - `score <JSONField>` : 课程评分
     - `comment <JSONField>` : 课程评价
@@ -65,7 +65,7 @@ db
 2. **查询培养方案**<span id="get_curriculum"></span>
     - 对应函数: `db_utils.get_curriculum`
     - 请求参数:
-        - `id_<str>` : 用户ID（学号）
+        - `user_id<str>` : 用户ID（学号）
     - 返回值: `{ "status": <int>, "curriculum": <list> }`
     - 错误码：
         - `400` : 参数错误
@@ -86,7 +86,7 @@ db
 4. **查询用户信息**<span id="get_user"></span>**
     - 对应函数: `db_utils.get_user`
     - 请求参数:
-        - `id_<str>` : 用户ID（学号）
+        - `user_id<str>` : 用户ID（学号）
     - 返回值: `{ "status": <int>, "nickname": <str>, "avatar": <str>, "favorite": <list>, "decided": <list>, "curriculum": <list> }`
     - 错误码：
         - `400` : 参数错误
@@ -108,7 +108,7 @@ db
 6. **按条件搜索课程简要信息**<span id="get_course"></span>
     - 对应函数: `db_utils.get_course`
     - 请求参数:
-        - `id_<str>` (可选): 课程识别码
+        - `course_id<str>` (可选): 课程识别码
         - `code<str>` (可选): 课程代码
         - `number<str>` (可选): 课序号
         - `name<str>` (可选): 课程名称
@@ -117,7 +117,7 @@ db
         - `period<str>` (可选): 学时
         - `time<dict>` (可选): 开课时间，详细说明见 [时间字段说明](#time-explain)
         - `department<str>` (可选): 开课院系
-        - `type_<str>` (可选): 课程类型（通识课组）
+        - `course_type<str>` (可选): 课程类型（通识课组）
         - `capacity<int>` (可选): 课程容量
         - `search_mode<str>` (可选): 搜索模式，可选值为 `exact` （精确匹配）、`fuzzy` （模糊匹配）和  `exclude` （排除匹配），默认为 `exact`
     - 返回值: `{ "status": <int>, "course": <list[dict]> }`
@@ -143,7 +143,7 @@ db
     2. 通过课程ID查询
         - 对应函数: `db_utils.get_course_detail_by_id`
         - 请求参数:
-            - `id_<str>` : 课程ID
+            - `course_id<str>` : 课程ID
         - 返回值: `{ "status": <int>, "details": <dict> }`
         - 错误码：
             - `400` : 参数错误
@@ -154,7 +154,7 @@ db
 1. **添加用户**<span id="add_user"></span>
     - 对应函数: `db_utils.add_user`
     - 请求参数:
-        - `id_<str>` : 用户ID（学号）
+        - `user_id<str>` : 用户ID（学号）
         - `curriculum<dict>` (可选): 用户对应的培养方案
     - 返回值: `{ "status": <int>, "msg": <str> }`
     - 错误码：
@@ -216,7 +216,7 @@ db
 6. **删除培养方案（根据ID）**<span id="remove_curriculum_by_id"></span>
     - 对应函数: `db_utils.remove_curriculum_by_id`
     - 请求参数:
-        - `id_<str>` : 培养方案ID
+        - `curriculum_id<str>` : 培养方案ID
     - 返回值: `{ "status": <int>, "msg": <str> }`
     - 错误码：
         - `400` : 参数错误
@@ -303,7 +303,7 @@ db
 14. **移除用户**<span id="remove_user"></span>
     - 对应函数: `db_utils.remove_user`
     - 请求参数:
-        - `id_<str>` : 用户ID
+        - `user_id<str>` : 用户ID
     - 返回值: `{ "status": <int>, "msg": <str> }`
     - 错误码：
         - `400` : 参数错误

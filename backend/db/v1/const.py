@@ -14,15 +14,15 @@ import os
 
 dotenv.load_dotenv(BASE_DIR / ".env")
 logger: Final[logging.Logger] = logging.getLogger("db_v1_logger")
+if not os.path.exists(BASE_DIR / "logs"):
+    os.makedirs(BASE_DIR / "logs")
 logging.basicConfig(
     filename=BASE_DIR / "logs" / "db.log",
     level=logging.INFO,
     format="(%(asctime)s) [%(type)s] %(message)s",
 )
-if not os.path.exists(BASE_DIR / "logs"):
-    os.makedirs(BASE_DIR / "logs")
 
-# 培养方案键值（对应必限任）
+# 培养方案键值（对应必限体）
 CURRICULUM_KEYS: Final[tuple] = ("0", "1", "2")
 
 # 哈希盐字符串

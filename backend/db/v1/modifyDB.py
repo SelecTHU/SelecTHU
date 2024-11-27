@@ -3,31 +3,31 @@
 定义并实现了数据库的修改操作的接口
 """
 
-from .database import *
+from db.v1.dbBasic import *
 
 
 """添加类操作"""
 
 
 # 新建用户
-def add_user(id_: str, curriculum: dict = None) -> dict:
+def add_user(user_id: str, curriculum: dict = None) -> dict:
     """
     添加用户
     - 注意：该函数添加用户时，若培养方案不存在则会自动添加培养方案
 
-    :param id_: 用户id（学号）
+    :param user_id: 用户id（学号）
     :param curriculum: 培养方案
 
     :return: 执行结果
     """
     const.logger.info("add_user: calling", extra=const.LOGGING_TYPE.INFO)
     # 检查输入合法性
-    if isinstance(id_, str) is False:
+    if isinstance(user_id, str) is False:
         return const.RESPONSE_400
 
     try:
         # 检查是否已存在
-        if models.User.objects.filter(user_id=id_).exists():
+        if models.User.objects.filter(user_id=user_id).exists():
             # 返回结果：资源冲突（用户已存在）
             return const.RESPONSE_409
 
@@ -35,20 +35,20 @@ def add_user(id_: str, curriculum: dict = None) -> dict:
         curriculum_id = None
         if curriculum:
             curriculum_id = cal_curriculum_id(curriculum)
-            curriculum_ = models.Curriculum.objects.filter(id_=curriculum_id).exists()
+            curriculum_ = models.Curriculum.objects.filter(curriculum_id=curriculum_id).exists()
             if not curriculum_:
-                curriculum_ = models.Curriculum(id_=curriculum_id, courses=curriculum)
+                curriculum_ = models.Curriculum(curriculum_id=curriculum_id, courses=curriculum)
                 curriculum_.save()
             else:
-                curriculum_ = models.Curriculum.objects.get(id_=curriculum_id)
+                curriculum_ = models.Curriculum.objects.get(curriculum_id=curriculum_id)
 
             # 添加到数据库
             user = models.User(
-                user_id=id_, user_nickname=id_, user_curriculum=curriculum_id
+                user_id=user_id, user_nickname=user_id, user_curriculum=curriculum_id
             )
             user.save()
         else:
-            user = models.User(user_id=id_)
+            user = models.User(user_id=user_id, user_nickname=user_id)
             user.save()
 
         # 返回结果
@@ -76,10 +76,10 @@ def add_course(course: dict):
         number = course.get("number", "")
         name = course.get("name", "")
         teacher = course.get("teacher", "")
-        id_ = cal_course_id(code, number, name, teacher)
+        course_id = cal_course_id(code, number, name, teacher)
 
         # 检查是否已存在
-        if models.MainCourses.objects.filter(id_=id_).exists():
+        if models.MainCourses.objects.filter(course_id=course_id).exists():
             return const.RESPONSE_409
 
         # 添加到数据库
@@ -89,19 +89,19 @@ def add_course(course: dict):
         time = course.get("time", "")
         department = course.get("department", "")
         type_ = course.get("type", "")
-        capacity = course.get("capacity", 0)
+        capacity = int(course.get("capacity", 0))
 
         selection = course.get("selection", const.SELECTION_BLANK)
 
         # CoursesDetails：课程详细信息
-        info = course.get("info", {})
+        info = course.get("info", dict())
 
         # 添加至数据库
-        course_details = models.CoursesDetails(id_=id_, info=info)
+        course_details = models.CoursesDetails(course_id=course_id, info=info)
         course_details.save()
 
         course_main = models.MainCourses(
-            id_=id_,
+            course_id=course_id,
             code=code,
             number=number,
             name=name,
@@ -139,14 +139,14 @@ def add_curriculum(curriculum: dict) -> dict:
 
     try:
         # 计算id
-        id_ = cal_curriculum_id(curriculum)
+        course_id = cal_curriculum_id(curriculum)
         # 检查是否已存在
-        if models.Curriculum.objects.filter(id_=id_).exists():
+        if models.Curriculum.objects.filter(course_id=course_id).exists():
             # 返回结果：资源冲突（培养方案已存在）
             return const.RESPONSE_409
 
         # 添加到数据库
-        curriculum = models.Curriculum(id_=id_, courses=curriculum)
+        curriculum = models.Curriculum(course_id=course_id, courses=curriculum)
         curriculum.save()
 
         # 返回结果：添加成功
@@ -261,7 +261,7 @@ def add_course_comment(course_id: str, comment: dict):
 
     try:
         # 检查传入的课程是否存在
-        if not models.CoursesDetails.objects.filter(id_=course_id).exists():
+        if not models.CoursesDetails.objects.filter(course_id=course_id).exists():
             return const.RESPONSE_404
 
         # 检查传入的评论格式是否正确
@@ -285,7 +285,7 @@ def add_course_comment(course_id: str, comment: dict):
         ):
             return const.RESPONSE_400
 
-        details = models.CoursesDetails.objects.get(id_=course_id)
+        details = models.CoursesDetails.objects.get(course_id=course_id)
 
         comment_score = comment["comment_score"]
         cnt = 1
@@ -393,6 +393,45 @@ def change_user_info(user_id: str, nickname: str = None, avatar=None):
         return const.RESPONSE_500
 
 
+# 修改用户培养方案
+def change_user_curriculum(user_id: str, curriculum: dict):
+    """
+    修改用户培养方案
+
+    :param user_id: 用户id
+    :param curriculum: 培养方案
+    :return: 执行结果
+    """
+    const.logger.info("change_user_curriculum: calling", extra=const.LOGGING_TYPE.INFO)
+    # 检查输入合法性
+    if isinstance(user_id, str) is False or isinstance(curriculum, dict) is False:
+        return const.RESPONSE_400
+
+    try:
+        # 检查用户是否存在
+        if not models.User.objects.filter(user_id=user_id).exists():
+            return const.RESPONSE_404
+
+        # 计算id
+        curriculum_id = cal_curriculum_id(curriculum)
+        # 检查是否存在
+        if not models.Curriculum.objects.filter(curriculum_id=curriculum_id).exists():
+            # 添加培养方案
+            curriculum_ = models.Curriculum(curriculum_id=curriculum_id, courses=curriculum)
+            curriculum_.save()
+
+        # 修改用户培养方案
+        models.User.objects.filter(user_id=user_id).update(user_curriculum=curriculum_id)
+
+        # 返回结果
+        return {"status": 200, "msg": "change user curriculum successfully"}
+    except Exception as e:
+        const.logger.info(
+            "change_user_curriculum: %s", e, extra=const.LOGGING_TYPE.ERROR
+        )
+        return const.RESPONSE_500
+    
+
 # 修改课程简要信息
 def change_course_main():
     """
@@ -417,24 +456,24 @@ def change_course_detail():
 
 
 # 移除用户
-def remove_user(id_: str):
+def remove_user(user_id: str):
     """
     移除用户
 
-    :param id_: 用户id
+    :param user_id: 用户id
     :return: 执行结果
     """
     const.logger.info("remove_user: calling", extra=const.LOGGING_TYPE.INFO)
-    if isinstance(id_, str) is False:
+    if isinstance(user_id, str) is False:
         return const.RESPONSE_400
 
     try:
         # 检查是否存在
-        if not models.User.objects.filter(user_id=id_).exists():
+        if not models.User.objects.filter(user_id=user_id).exists():
             return const.RESPONSE_404
 
         # 删除
-        models.User.objects.filter(user_id=id_).delete()
+        models.User.objects.filter(user_id=user_id).delete()
 
         # 返回结果
         return {"status": 200, "msg": "remove user successfully"}
@@ -535,11 +574,11 @@ def remove_course(course_id: str):
 
     try:
         # 检查是否存在
-        if not models.MainCourses.objects.filter(id_=course_id).exists():
+        if not models.MainCourses.objects.filter(course_id=course_id).exists():
             return const.RESPONSE_404
 
         # 删除
-        models.MainCourses.objects.filter(id_=course_id).delete()
+        models.MainCourses.objects.filter(course_id=course_id).delete()
 
         # 返回结果
         return {"status": 200, "msg": "remove course successfully"}
@@ -549,25 +588,25 @@ def remove_course(course_id: str):
 
 
 # 删除培养方案（根据id）
-def remove_curriculum_by_id(id_: str):
+def remove_curriculum_by_id(curriculum_id: str):
     """
     删除培养方案（根据id）
 
-    :param id_: 培养方案id
+    :param curriculum_id: 培养方案id
     :return: 执行结果
     """
     const.logger.info("remove_curriculum_by_id: calling", extra=const.LOGGING_TYPE.INFO)
     # 检查输入合法性
-    if isinstance(id_, str) is False:
+    if isinstance(curriculum_id, str) is False:
         return const.RESPONSE_400
 
     try:
         # 检查是否存在
-        if not models.Curriculum.objects.filter(id_=id_).exists():
+        if not models.Curriculum.objects.filter(curriculum_id=curriculum_id).exists():
             return const.RESPONSE_404
 
         # 删除
-        models.Curriculum.objects.filter(id_=id_).delete()
+        models.Curriculum.objects.filter(curriculum_id=curriculum_id).delete()
 
         # 返回结果
         return {"status": 200, "msg": "remove curriculum successfully"}
@@ -595,13 +634,13 @@ def remove_curriculum_by_curriculum(curriculum: dict):
 
     try:
         # 计算id
-        id_ = cal_curriculum_id(curriculum)
+        curriculum_id = cal_curriculum_id(curriculum)
         # 检查是否存在
-        if not models.Curriculum.objects.filter(id_=id_).exists():
+        if not models.Curriculum.objects.filter(curriculum_id=curriculum_id).exists():
             return const.RESPONSE_404
 
         # 删除
-        models.Curriculum.objects.filter(id_=id_).delete()
+        models.Curriculum.objects.filter(curriculum_id=curriculum_id).delete()
 
         # 返回结果
         return {"status": 200, "msg": "remove curriculum successfully"}
@@ -646,11 +685,11 @@ def remove_all_course_comment(course_id: str):
 
     try:
         # 检查是否存在
-        if not models.CoursesDetails.objects.filter(id_=course_id).exists():
+        if not models.CoursesDetails.objects.filter(course_id=course_id).exists():
             return const.RESPONSE_404
 
         # 删除
-        details = models.CoursesDetails.objects.get(id_=course_id)
+        details = models.CoursesDetails.objects.get(course_id=course_id)
         details.score = -1
         details.comments = []
         details.save()

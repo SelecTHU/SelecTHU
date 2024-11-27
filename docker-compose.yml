@@ -1,0 +1,77 @@
+services:
+  # 数据库(postgres)
+  db:
+    image: postgres:17
+    volumes:
+      - ~/SelecTHU/postgres:/var/lib/postgresql/data
+    expose:
+      - ${DB_PORT}
+    restart: always
+    environment:
+      - PGUSER=${DB_USER}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - TZ=Asia/Shanghai
+    networks:
+      - db_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-U", "${DB_USER}", "-d", "${DB_NAME}"]
+      timeout: 5s
+      interval: 30s
+      retries: 5
+
+  # 后端服务(Django)
+  backend:
+    restart: always
+    build: ./backend
+    volumes:
+      - ./backend:/backend
+    expose:
+      - "8001"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      bash -c
+      "python manage.py makemigrations &&
+      python manage.py migrate &&
+      gunicorn -w 4 -b 0.0.0.0:8001 -k eventlet app.wsgi:application"
+    networks:
+      - db_network
+      - app_network
+
+  # 前端服务(next.js)
+  frontend:
+    restart: always
+    build: ./frontend/selecthu
+    expose:
+      - "8000"
+    command: "node /app/server.js"
+    depends_on:
+      - backend
+    networks:
+      - web_network
+
+  # nginx代理
+  nginx:
+    restart: always
+    image: nginx:latest
+    ports:
+      - "8000:8080"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - app_network
+      - web_network
+
+networks:
+  db_network:  # 数据库网络
+    driver: bridge
+  app_network:  # 后端服务网络
+    driver: bridge
+  web_network:  # 前端服务网络
+    driver: bridge

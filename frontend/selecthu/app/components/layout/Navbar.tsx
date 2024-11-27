@@ -16,8 +16,10 @@ import ColorModeToggle from "./ColorModeToggle"; // 暗色模式切换按钮
 import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation"; // 引入 usePathname
 
 const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => {
+  const hoverBg = useColorModeValue("brand.50", "brand.700");
   return (
     <Link
       as={NextLink}
@@ -27,7 +29,7 @@ const NavLink = ({ href, children }: { href: string; children: React.ReactNode }
       rounded="md"
       _hover={{
         textDecoration: "none",
-        bg: useColorModeValue("brand.50", "brand.700"),
+        bg: hoverBg,
       }}
     >
       {children}
@@ -46,6 +48,7 @@ interface User {
 export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
+  const pathname = usePathname(); // 获取当前路径
 
   useEffect(() => {
     // 从localStorage中获取用户信息
@@ -66,6 +69,18 @@ export default function Navbar() {
   const nickname = user?.nickname || "User";
   const avatarSrc = user?.avatar || "/default-avatar.png"; // 设置默认头像路径
 
+  // 定义路由路径与页面名称的映射关系
+  const pageTitles: { [key: string]: string } = {
+    "/main": "模拟选课",
+    "/search": "搜索课程",
+    "/profile": "个人信息",
+    "/": "主页",
+    // 根据需要添加更多路由路径和对应的页面名称
+  };
+
+  // 获取当前路径对应的页面名称，若未匹配则使用默认值
+  const pageTitle = pageTitles[pathname] || "主页";
+
   return (
     <Box bg={useColorModeValue("white", "gray.900")} px={4} shadow="sm">
       <Flex h={16} alignItems="center" justifyContent="space-between">
@@ -74,7 +89,7 @@ export default function Navbar() {
           <HStack spacing={3}>
             <FaGraduationCap size="24px" />
             <Text fontSize="xl" fontWeight="bold">
-              选课助手/模拟选课
+              SelecTHU选课助手/{pageTitle}
             </Text>
           </HStack>
         </HStack>

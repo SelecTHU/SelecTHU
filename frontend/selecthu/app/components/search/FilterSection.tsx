@@ -3,65 +3,177 @@
 
 import {
   Box,
+  Button,
+  Divider,
   FormControl,
   FormLabel,
-  Select,
   Input,
+  Select,
   Stack,
-  Button,
+  HStack,
+  useColorModeValue,
+  Text,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import { useColorModeValue } from '@chakra-ui/react';
 
-const FilterSection = () => {
-  // 设置筛选条件状态
-  const [filterType, setFilterType] = useState("");
+export interface Filter {
+  type: string;
+  value: string;
+}
 
-  // 根据选择的筛选条件显示相应的输入框
+interface FilterSectionProps {
+  selectedFilters: Filter[];
+  addFilter: (filter: Filter) => void;
+}
+
+const filterOptions = [
+  { label: "课程名称", value: "courseName" },
+  { label: "开课院系", value: "department" },
+  { label: "课程属性", value: "courseAttribute" },
+  { label: "开课时间", value: "classTime" },
+  { label: "授课教师", value: "instructor" },
+];
+
+const FilterSection: React.FC<FilterSectionProps> = ({ selectedFilters, addFilter }) => {
+  // 当前选中的筛选类型
+  const [activeFilter, setActiveFilter] = useState<string>("");
+
+  // 当前输入的筛选值
+  const [inputValue, setInputValue] = useState<string>("");
+
+  const boxBg = useColorModeValue("white", "gray.800");
+  const filterBg = useColorModeValue("gray.100", "gray.700");
+
+  // 处理筛选类型选择
+  const handleFilterSelect = (type: string) => {
+    setActiveFilter(type);
+    setInputValue(""); // 切换类型时重置输入值
+  };
+
+  // 处理添加筛选条件
+  const handleAddFilter = () => {
+    if (activeFilter && inputValue.trim() !== "") {
+      addFilter({ type: activeFilter, value: inputValue.trim() });
+      setActiveFilter(""); // 添加后重置筛选类型
+      setInputValue("");
+    }
+  };
+
+  // 根据选择的筛选类型渲染对应的输入控件
   const renderFilterInput = () => {
-    switch (filterType) {
+    switch (activeFilter) {
       case "courseName":
         return (
-          <FormControl>
+          <FormControl mt={4}>
             <FormLabel>课程名称</FormLabel>
-            <Input placeholder="请输入课程名称" />
+            <HStack>
+              <Input
+                placeholder="请输入课程名称"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                flex="1"
+              />
+              <Button
+                colorScheme="blue"
+                onClick={handleAddFilter}
+                isDisabled={inputValue.trim() === ""}
+              >
+                添加
+              </Button>
+            </HStack>
           </FormControl>
         );
       case "department":
         return (
-          <FormControl>
+          <FormControl mt={4}>
             <FormLabel>开课院系</FormLabel>
-            <Select placeholder="选择院系">
-              <option value="computer">计算机学院</option>
-              <option value="electrical">电气学院</option>
-              <option value="mechanical">机械学院</option>
-              {/* 其他院系选项 */}
-            </Select>
+            <HStack>
+              <Select
+                placeholder="选择院系"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                flex="1"
+              >
+                <option value="computer">计算机学院</option>
+                <option value="electrical">电气学院</option>
+                <option value="mechanical">机械学院</option>
+                {/* 其他院系选项 */}
+              </Select>
+              <Button
+                colorScheme="blue"
+                onClick={handleAddFilter}
+                isDisabled={inputValue.trim() === ""}
+              >
+                添加
+              </Button>
+            </HStack>
           </FormControl>
         );
       case "courseAttribute":
         return (
-          <FormControl>
+          <FormControl mt={4}>
             <FormLabel>课程属性</FormLabel>
-            <Select placeholder="选择课程属性">
-              <option value="mandatory">必修</option>
-              <option value="elective">选修</option>
-              {/* 其他属性选项 */}
-            </Select>
+            <HStack>
+              <Select
+                placeholder="选择课程属性"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                flex="1"
+              >
+                <option value="mandatory">必修</option>
+                <option value="elective">选修</option>
+                {/* 其他属性选项 */}
+              </Select>
+              <Button
+                colorScheme="blue"
+                onClick={handleAddFilter}
+                isDisabled={inputValue.trim() === ""}
+              >
+                添加
+              </Button>
+            </HStack>
           </FormControl>
         );
       case "classTime":
         return (
-          <FormControl>
+          <FormControl mt={4}>
             <FormLabel>开课时间</FormLabel>
-            <Input type="datetime-local" />
+            <HStack>
+              <Input
+                type="datetime-local"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                flex="1"
+              />
+              <Button
+                colorScheme="blue"
+                onClick={handleAddFilter}
+                isDisabled={inputValue.trim() === ""}
+              >
+                添加
+              </Button>
+            </HStack>
           </FormControl>
         );
       case "instructor":
         return (
-          <FormControl>
+          <FormControl mt={4}>
             <FormLabel>授课教师</FormLabel>
-            <Input placeholder="请输入教师姓名" />
+            <HStack>
+              <Input
+                placeholder="请输入教师姓名"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                flex="1"
+              />
+              <Button
+                colorScheme="blue"
+                onClick={handleAddFilter}
+                isDisabled={inputValue.trim() === ""}
+              >
+                添加
+              </Button>
+            </HStack>
           </FormControl>
         );
       default:
@@ -69,39 +181,46 @@ const FilterSection = () => {
     }
   };
 
-  // 处理添加筛选条件
-  const handleAddFilter = () => {
-    // 实现添加筛选条件的逻辑，如更新已选择的筛选条件列表
-    console.log("添加筛选条件:", filterType);
-  };
-
   return (
-    <Box bg={useColorModeValue("white", "gray.800")} p={4} borderRadius="md" boxShadow="md" mb={4}>
-      <Stack direction="row" spacing={4} align="center">
-        {/* 筛选条件选择 */}
-        <FormControl maxW="200px">
-          <FormLabel>筛选标准</FormLabel>
-          <Select
-            placeholder="选择筛选标准"
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-          >
-            <option value="courseName">课程名称</option>
-            <option value="department">开课院系</option>
-            <option value="courseAttribute">课程属性</option>
-            <option value="classTime">开课时间</option>
-            <option value="instructor">授课教师</option>
-          </Select>
-        </FormControl>
+    <Box
+      bg={boxBg}
+      p={4}
+      borderRadius="md"
+      boxShadow="md"
+      mb={4}
+    >
+      {/* 筛选类型选择部分 */}
+      <HStack spacing={0} justify="flex-start" width="100%">
+        {filterOptions.map((filter, index) => (
+          <Box key={filter.value} textAlign="center">
+            <Button
+              variant={activeFilter === filter.value ? "solid" : "ghost"}
+              colorScheme="blue"
+              onClick={() => handleFilterSelect(filter.value)}
+              size="sm"
+            >
+              {filter.label}
+            </Button>
+            {/* 除了最后一个选项，添加竖线分隔 */}
+            {index < filterOptions.length - 1 && (
+              <Divider
+                orientation="vertical"
+                height="24px"
+                mx={2}
+                borderColor={filterBg}
+                display="inline-block"
+                verticalAlign="middle"
+              />
+            )}
+          </Box>
+        ))}
+      </HStack>
 
-        {/* 根据选择的筛选标准显示输入框 */}
-        {renderFilterInput()}
+      {/* 横线分隔 */}
+      <Divider my={4} />
 
-        {/* 添加筛选条件按钮 */}
-        <Button colorScheme="blue" onClick={handleAddFilter}>
-          添加
-        </Button>
-      </Stack>
+      {/* 动态显示的输入控件 */}
+      {renderFilterInput()}
     </Box>
   );
 };

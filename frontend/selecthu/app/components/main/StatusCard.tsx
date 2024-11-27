@@ -4,6 +4,7 @@ import { Box, Text, useColorModeValue } from "@chakra-ui/react";
 interface StatusCardProps {
   title: string;
   content: string;
+  height?: string; // 添加 height 属性，可选
 }
 
 export default function StatusCard({ title, content }: StatusCardProps) {

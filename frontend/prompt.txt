@@ -1,0 +1,267 @@
+我正在使用next.js框架，并且已经装好了chakra的组件库并打算在代码中使用。对于以下的需求，请你用中文告诉我我该如何组织文件结构，创建或删除文件夹和文件，给我完整的需要写的代码（包含import等所有代码），对于需要修改的代码也给我完整代码。代码风格良好，需要添加一些中文注释。
+——————
+我正在使用next.js框架，并且已经装好了chakra的组件库并打算在代码中使用。对于以下的需求，请你用中文告诉我我该如何组织文件结构，创建或删除文件夹和文件，给我完整的需要写的代码（包含import等所有代码），对于需要修改的代码也给我完整代码。代码风格良好，需要添加一些中文注释。
+我现在需要一个首页，首页内容为登录界面，包含中间的登录区域。登录区域只支持账号登录，可以输入账号和密码，还有登录按钮，以及记住密码的选项。不支持注册。下方有一横行小字，分别是“关于我们”，“联系我们”，“帮助中心”，“隐私条款”，“用户协议”，“其他”。这几个小字是可以点击的。再下方还有一横行小字，是“@清华大学软件学院”。
+请你帮我写以下界面的代码：登录界面（要详细），登录点开后的界面（可以仅显示欢迎二字），几个点开小字的界面。并告诉我如何组织文件。
+其中，登录界面是主界面，其路径为app/page.tsx. 你可以把登录点开后的界面放在一个文件夹里，几个点开小字的界面放在一个文件夹里。
+——————
+我正在使用next.js框架，并且已经装好了chakra的组件库并打算在代码中使用。对于以下的需求，请你用中文告诉我我该如何组织文件结构，创建或删除文件夹和文件，给我完整的需要写的代码（包含import等所有代码），对于需要修改的代码也给我完整代码。代码风格良好，需要添加一些中文注释。
+我的layout.tsx如下：
+// app/layout.tsx
+"use client";
+
+import { ChakraProvider } from "@chakra-ui/react";
+import { ReactNode } from "react";
+import theme from "../theme";  // 引入自定义主题
+
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return (
+    <html lang="zh">
+      <body>
+        <ChakraProvider theme={theme}>
+          {children}
+        </ChakraProvider>
+      </body>
+    </html>
+  );
+}
+我的theme/index.ts如下：
+// theme/index.ts
+
+import { extendTheme } from "@chakra-ui/react";
+
+// 定义自定义颜色
+const colors = {
+  brand: {
+    50: "#e3f2fd",
+    100: "#bbdefb",
+    200: "#90caf9",
+    300: "#64b5f6",
+    400: "#42a5f5",
+    500: "#2196f3", // 主色：浅蓝色
+    600: "#1e88e5",
+    700: "#1976d2",
+    800: "#1565c0",
+    900: "#0d47a1",
+  },
+  purpleAccent: {
+    50: "#f3e5f5",
+    100: "#e1bee7",
+    200: "#ce93d8",
+    300: "#ba68c8",
+    400: "#ab47bc",
+    500: "#9c27b0", // 辅助色：紫色
+    600: "#8e24aa",
+    700: "#7b1fa2",
+    800: "#6a1b9a",
+    900: "#4a148c",
+  },
+};
+
+// 扩展主题
+const theme = extendTheme({
+  colors,
+  components: {
+    Button: {
+      // 为 Button 组件自定义主题
+      variants: {
+        solid: (props: any) => ({
+          bg: props.colorMode === "dark" ? "brand.300" : "brand.500",
+          color: "white",
+          _hover: {
+            bg: "brand.600",
+          },
+        }),
+      },
+    },
+    Link: {
+      baseStyle: {
+        color: "purpleAccent.500",
+        _hover: {
+          textDecoration: "underline",
+        },
+      },
+    },
+  },
+  styles: {
+    global: {
+      body: {
+        bg: "gray.100",
+        color: "gray.800",
+      },
+    },
+  },
+});
+
+export default theme;
+
+现在我需要写/app/main/page.tsx，对这个界面的要求如下：
+包含上边栏。上边栏左上角是一个图标，紧接图标右边是“选课助手/模拟选课”字样。上边栏的右边依次是“模拟选课”（本页面），“搜索课程”（一个新界面），“个人信息”（一个新界面）的栏目（用于切换界面），再右侧是切换正常和夜间模式的一个按钮，再右侧是用户头像。用户头像点开可以跳转到个人信息界面。
+中间的布局如下：左上角和中上方分别有两个方框（分别负责志愿分配和选课阶段信息提示），从左下角到中间，有一个面积较大的课表（周一到周日，15个横排，课程可以占据多个时间段）。右侧是两个方框纵向排列：上方的是教学计划（上面显示“教学计划”字样，以及右上角有“查看”的小字可以点开，下一行显示院系名称和年级学期，其余以表格的形式罗列课程，包含“课程名”“课程属性”“学分数”），下方的是课程备选清单（上面显示“备选清单”字样，以及右上角有“查看”的小字可以点开，下面以表格的形式罗列备选课程，包含“课程名”“授课教师”“课程属性”“学分数”“上课时间”）。其中，教学计划中的课程和备选清单中的课程都可以增加或者删除。
+——————
+我正在使用next.js框架，并且已经装好了chakra的组件库并打算在代码中使用。对于以下的需求，请你用中文告诉我我该如何组织文件结构，创建或删除文件夹和文件，给我完整的需要写的代码（包含import等所有代码），对于需要修改的代码也给我完整代码。代码风格良好，需要添加一些中文注释。
+我的layout.tsx如下：
+// app/layout.tsx
+"use client";
+
+import { ChakraProvider } from "@chakra-ui/react";
+import { ReactNode } from "react";
+import theme from "../theme";  // 引入自定义主题
+
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return (
+    <html lang="zh">
+      <body>
+        <ChakraProvider theme={theme}>
+          {children}
+        </ChakraProvider>
+      </body>
+    </html>
+  );
+}
+我的theme/index.ts如下：
+// theme/index.ts
+
+import { extendTheme } from "@chakra-ui/react";
+
+// 定义自定义颜色
+const colors = {
+  brand: {
+    50: "#e3f2fd",
+    100: "#bbdefb",
+    200: "#90caf9",
+    300: "#64b5f6",
+    400: "#42a5f5",
+    500: "#2196f3", // 主色：浅蓝色
+    600: "#1e88e5",
+    700: "#1976d2",
+    800: "#1565c0",
+    900: "#0d47a1",
+  },
+  purpleAccent: {
+    50: "#f3e5f5",
+    100: "#e1bee7",
+    200: "#ce93d8",
+    300: "#ba68c8",
+    400: "#ab47bc",
+    500: "#9c27b0", // 辅助色：紫色
+    600: "#8e24aa",
+    700: "#7b1fa2",
+    800: "#6a1b9a",
+    900: "#4a148c",
+  },
+};
+
+// 扩展主题
+const theme = extendTheme({
+  colors,
+  components: {
+    Button: {
+      // 为 Button 组件自定义主题
+      variants: {
+        solid: (props: any) => ({
+          bg: props.colorMode === "dark" ? "brand.300" : "brand.500",
+          color: "white",
+          _hover: {
+            bg: "brand.600",
+          },
+        }),
+      },
+    },
+    Link: {
+      baseStyle: {
+        color: "purpleAccent.500",
+        _hover: {
+          textDecoration: "underline",
+        },
+      },
+    },
+  },
+  styles: {
+    global: {
+      body: {
+        bg: "gray.100",
+        color: "gray.800",
+      },
+    },
+  },
+});
+
+export default theme;
+我的Navbar.tsx定义如下：
+// components/layout/Navbar.tsx
+"use client";
+
+import {
+  Box,
+  Flex,
+  HStack,
+  Link,
+  IconButton,
+  Avatar,
+  Text,
+  useColorModeValue,
+} from "@chakra-ui/react";
+import { FaGraduationCap } from "react-icons/fa";
+import ColorModeToggle from "./ColorModeToggle";
+import NextLink from "next/link";
+import { usePathname } from "next/navigation";
+
+const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => {
+  const pathname = usePathname();
+  const isActive = pathname === href;
+  
+  return (
+    <Link
+      as={NextLink}
+      href={href}
+      px={2}
+      py={1}
+      rounded="md"
+      bg={isActive ? "brand.100" : "transparent"}
+      _hover={{
+        textDecoration: "none",
+        bg: useColorModeValue("brand.50", "brand.700"),
+      }}
+    >
+      {children}
+    </Link>
+  );
+};
+
+export default function Navbar() {
+  return (
+    <Box
+      bg={useColorModeValue("white", "gray.900")}
+      px={4}
+      shadow="sm"
+    >
+      <Flex h={16} alignItems="center" justifyContent="space-between">
+        <HStack spacing={8} alignItems="center">
+          <HStack spacing={3}>
+            <FaGraduationCap size="24px" />
+            <Text fontSize="xl" fontWeight="bold">
+              选课助手/模拟选课
+            </Text>
+          </HStack>
+        </HStack>
+
+        <HStack spacing={8} alignItems="center">
+          <NavLink href="/main">模拟选课</NavLink>
+          <NavLink href="/search">搜索课程</NavLink>
+          <NavLink href="/profile">个人信息</NavLink>
+          <ColorModeToggle />
+          <Link href="/profile">
+            <Avatar size="sm" />
+          </Link>
+        </HStack>
+      </Flex>
+    </Box>
+  );
+}
+
+我现在已经有模拟选课界面main/page.tsx，我需要写一个点击“搜索课程”后跳转到的界面。界面介绍如下：
+界面上方仍用原来的导航栏。
+界面左上角到中上，是一个选择筛选标准的部位。此部位的上方可以选择“课程名称”“开课院系”“课程属性”“开课时间”“授课教师”，选择后，此界面中显示相应的输入框或者选择框。此界面的右侧，显示所有已选择的筛选标准。已选择的筛选标准可以删除。
+在刚刚界面的下部，是一片很大的空间，用于显示按标准筛选后的所有符合标准的课程。以一个表格形式显示。最左边一列，在每个课程前都会显示一个“+”按钮。表格的列信息有：“课程名称”“开课院系”“开课时间”“授课教师”“选课人数情况”（这个以一个扁平矩形色带表示）。此表格一次默认显示20个课程。表格下方是一些信息，一次是“共xx页”，页码选择，一页显示多少个课程的调整（20 30 50）。
+在完整页面的右侧，是一大片方框，其中显示选中的课程的信息。方框上半部分显示“课程信息”，包括授课信息，教师信息等。方框下半部分显示课程评价，一条条展示。课程评价的下部有输入框和发送，可以发送对这个课程的评论。
