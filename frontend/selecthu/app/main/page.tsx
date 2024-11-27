@@ -1,7 +1,6 @@
 // app/main/page.tsx
-
+// no change
 "use client";
-
 import { useState } from "react";
 import {
   Box,
