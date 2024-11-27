@@ -19,7 +19,7 @@
 
 #### 测试接口
 1. **测试连接后端**
-- 接口：`api/v1/status-backend/`
+- 接口：`api/v1/backend-db-status/`
 - 请求类型：`POST`
 - 请求参数：无
 - 返回值

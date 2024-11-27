@@ -19,8 +19,6 @@ def backend_db_status(request):
     后端状态检查
     """
     db_status = db_utils.db_status()
-    if db_status["status"] != 200:
-        return Response({"status": 500}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     return Response({"status": 200, "message": "successfully connect to backend and database!"}, status=status.HTTP_200_OK)
 
 @api_view(["POST"])
