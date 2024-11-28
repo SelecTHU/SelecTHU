@@ -146,7 +146,7 @@ class MainCourses(models.Model):
     :param `period`: 学时
     :param `time`: 开课时间
     :param `department`: 开课院系
-    :param `type`: 课程类型（通识课组）
+    :param `course_type`: 课程类型（通识课组）
     :param `capacity`: 本科生课容量
     :param `selection`: 选课情况
     :param `link`: 详细信息指向的表
@@ -188,7 +188,7 @@ class MainCourses(models.Model):
 
     # 详细信息指向表
     link = models.OneToOneField(
-        to=CoursesDetails, on_delete=models.CASCADE, db_column="link"
+        to=CoursesDetails, on_delete=models.CASCADE
     )  # 详细信息指向表
 
     class Meta:

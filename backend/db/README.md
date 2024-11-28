@@ -6,10 +6,12 @@
 ```
 db
 ├── v1
+|    ├── migrations
+|    |    └── __init__.py
 │    ├── __init__.py
 │    ├── apps.py
 │    ├── const.py
-│    ├── database.py
+│    ├── dbBasic.py
 │    ├── models.py
 │    ├── modifyDB.py
 │    ├── queryDB.py
@@ -83,7 +85,7 @@ db
         - `500` : 内部错误
     - 说明: 查询培养方案是否存在。
 
-4. **查询用户信息**<span id="get_user"></span>**
+4. **查询用户信息**<span id="get_user"></span>
     - 对应函数: `db_utils.get_user`
     - 请求参数:
         - `user_id<str>` : 用户ID（学号）
@@ -96,7 +98,7 @@ db
 
 5. **查询课程列表**<span id="get_courses"></span>
     - 对应函数: `db_utils.get_courses`
-    - 请求参数: 
+    - 请求参数:
         -  `count<int>` (可选): 返回课程数量，默认为 `-1` ，即返回所有课程
     - 返回值: `{ "status": <int>, "courses": <list[dict]> }`
     - 错误码：
@@ -118,7 +120,6 @@ db
         - `time<dict>` (可选): 开课时间，详细说明见 [时间字段说明](#time-explain)
         - `department<str>` (可选): 开课院系
         - `course_type<str>` (可选): 课程类型（通识课组）
-        - `capacity<int>` (可选): 课程容量
         - `search_mode<str>` (可选): 搜索模式，可选值为 `exact` （精确匹配）、`fuzzy` （模糊匹配）和  `exclude` （排除匹配），默认为 `exact`
     - 返回值: `{ "status": <int>, "course": <list[dict]> }`
     - 错误码：
@@ -344,6 +345,18 @@ db
         - `404` : 课程不存在
         - `500` : 内部错误
     - 说明: 删除指定课程的所有评论和评分。
+
+18. **修改用户培养方案**<span id="change_user_curriculum"></span>
+    - 对应函数: `db_utils.change_user_curriculum`
+    - 请求参数:
+        - `user_id<str>` : 用户ID
+        - `curriculum<dict>` : 新的培养方案
+    - 返回值: `{ "status": <int>, "msg": <str> }`
+    - 错误码：
+        - `400` : 参数错误
+        - `404` : 用户或培养方案不存在
+        - `500` : 内部错误
+    - 说明: 修改用户的培养方案。如果指定的培养方案不存在，将自动添加该培养方案。
 
 #### 其他信息
 1. 更多常量定义见 [`const.py`](./v1/const.py)
