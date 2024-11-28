@@ -1,4 +1,5 @@
 // app/components/main/TeachingPlan.tsx
+
 import {
   Box,
   Table,
@@ -13,7 +14,7 @@ import {
   useColorModeValue,
   Badge,
 } from "@chakra-ui/react";
-import { Course, TimeSlot } from "@/app/types/course";
+import { Course } from "@/app/types/course";
 import { useMemo } from "react";
 
 // 颜色数组
@@ -30,53 +31,101 @@ const colors = [
   "gray.500",
 ];
 
-// 教学计划示例数据
-const samplePlanCourses: Course[] = [
+// 实际教学计划数据
+const realPlanCourses: Course[] = [
   {
-    id: "1",
-    name: "高等数学",
-    teacher: "张教授",
-    classroom: "教学楼A101",
+    id: "10720110",
+    name: "体育专项(1)",
+    teacher: "未提供",
+    classroom: "体育必修",
     type: "必修",
-    credits: 4,
-    timeSlots: [
-      { day: 1, start: 1, duration: 2 }, // 周一1-2节
-      { day: 3, start: 3, duration: 3 }, // 周三3-5节
-    ],
-    department: "数学与统计学院",
-    time: "周一 08:00-10:00",
-    teachingInfo: "教室：教学楼A101",
-    teacherInfo: "电子邮箱：zhang@example.com",
-    comments: [
-      "课程内容深入，适合打好数学基础。",
-      "老师讲解详细，有助于理解复杂概念。",
-    ],
-    courseNumber: "MATH101",
-    sequenceNumber: "001",
+    credits: 0,
+    timeSlots: [], // 根据需要填写
+    department: "体育学院", // 根据实际情况填写
+    courseGroup: "体育必修",
+    time: "", // 根据需要填写
+    teachingInfo: "", // 根据需要填写
+    teacherInfo: "", // 根据需要填写
+    comments: [],
+    courseNumber: "10720110",
+    sequenceNumber: "0",
   },
   {
-    id: "2",
-    name: "线性代数",
-    teacher: "李教授",
-    classroom: "教学楼B202",
+    id: "44100113",
+    name: "计算机网络",
+    teacher: "杨铮",
+    classroom: "六教6A118",
     type: "必修",
     credits: 3,
     timeSlots: [
-      { day: 2, start: 4, duration: 2 }, // 周二4-5节
-      { day: 4, start: 1, duration: 1 }, // 周四1节
+      { day: 3, start: 2, duration: 1, weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] },
     ],
-    department: "数学与统计学院",
-    time: "周二 14:00-15:00",
-    teachingInfo: "教室：教学楼B202",
-    teacherInfo: "电子邮箱：li@example.com",
-    comments: [
-      "逻辑严谨，理论与实践结合紧密。",
-      "适合希望深入理解数学原理的学生。",
-    ],
-    courseNumber: "MATH102",
-    sequenceNumber: "002",
+    department: "计算机科学与技术学院",
+    courseGroup: "专业主修",
+    time: "周三 第2节 (1-16周)",
+    teachingInfo: "教室：六教6A118",
+    teacherInfo: "联系方式：yang@example.com", // 根据实际情况填写
+    comments: [],
+    courseNumber: "44100113",
+    sequenceNumber: "0",
   },
-  // 可以添加更多课程
+  {
+    id: "44100203",
+    name: "软件工程",
+    teacher: "刘璘",
+    classroom: "六教6A118",
+    type: "必修",
+    credits: 3,
+    timeSlots: [
+      { day: 4, start: 2, duration: 1, weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] },
+    ],
+    department: "计算机科学与技术学院",
+    courseGroup: "专业主修",
+    time: "周四 第2节 (1-16周)",
+    teachingInfo: "教室：六教6A118",
+    teacherInfo: "联系方式：liu@example.com", // 根据实际情况填写
+    comments: [],
+    courseNumber: "44100203",
+    sequenceNumber: "0",
+  },
+  {
+    id: "44100573",
+    name: "计算机组成原理",
+    teacher: "杨铮",
+    classroom: "六教6A118",
+    type: "必修",
+    credits: 3,
+    timeSlots: [
+      { day: 1, start: 2, duration: 1, weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] },
+    ],
+    department: "计算机科学与技术学院",
+    courseGroup: "专业主修",
+    time: "周一 第2节 (1-16周)",
+    teachingInfo: "教室：六教6A118",
+    teacherInfo: "联系方式：yang@example.com", // 根据实际情况填写
+    comments: [],
+    courseNumber: "44100573",
+    sequenceNumber: "0",
+  },
+  {
+    id: "44100593",
+    name: "汇编与编译原理",
+    teacher: "王朝坤",
+    classroom: "六教6A216",
+    type: "必修",
+    credits: 3,
+    timeSlots: [
+      { day: 2, start: 2, duration: 1, weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] },
+    ],
+    department: "计算机科学与技术学院",
+    courseGroup: "专业主修",
+    time: "周二 第2节 (1-16周)",
+    teachingInfo: "教室：六教6A216",
+    teacherInfo: "联系方式：wang@example.com", // 根据实际情况填写
+    comments: [],
+    courseNumber: "44100593",
+    sequenceNumber: "0",
+  },
 ];
 
 export default function TeachingPlan() {
@@ -86,23 +135,11 @@ export default function TeachingPlan() {
   // 创建颜色映射
   const courseColorMap = useMemo(() => {
     const map: { [courseId: string]: string } = {};
-    samplePlanCourses.forEach((course, index) => {
+    realPlanCourses.forEach((course, index) => {
       map[course.id] = colors[index % colors.length];
     });
     return map;
   }, []);
-
-  // 格式化时间段为可读字符串
-  const formatTimeSlots = (timeSlots: TimeSlot[]): string => {
-    const weekDays = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
-    return timeSlots
-      .map((ts) => {
-        const startHour = ts.start.toString().padStart(2, '0') + ":00";
-        const endHour = (ts.start + ts.duration - 1).toString().padStart(2, '0') + ":00";
-        return `${weekDays[ts.day - 1]} ${startHour}-${endHour}`;
-      })
-      .join(", ");
-  };
 
   return (
     <Box
@@ -115,30 +152,31 @@ export default function TeachingPlan() {
     >
       <Flex justifyContent="space-between" alignItems="center" mb={4}>
         <Text fontSize="lg" fontWeight="bold">
-          教学计划
+          本学期教学计划
         </Text>
-        <Link fontSize="sm" color="brand.500">
+        <Link fontSize="sm" color="blue.500">
           查看
         </Link>
       </Flex>
 
       <Text fontSize="sm" mb={4}>
-        计算机科学与技术 2023级 第二学期
+        软件工程 2024-2025学年 秋学期
       </Text>
 
       <Table size="sm" variant="simple">
         <Thead>
           <Tr>
+            <Th>课程号</Th>
             <Th>课程名</Th>
-            <Th>授课教师</Th>
             <Th>课程属性</Th>
-            <Th isNumeric>学分数</Th>
-            <Th>上课时间</Th>
+            <Th isNumeric>学分</Th>
+            <Th>所属课组</Th>
           </Tr>
         </Thead>
         <Tbody>
-          {samplePlanCourses.map((course) => (
+          {realPlanCourses.map((course) => (
             <Tr key={course.id}>
+              <Td>{course.courseNumber}</Td>
               <Td>
                 <Badge
                   colorScheme="teal"
@@ -151,10 +189,9 @@ export default function TeachingPlan() {
                   {course.name}
                 </Badge>
               </Td>
-              <Td>{course.teacher}</Td>
               <Td>{course.type}</Td>
               <Td isNumeric>{course.credits}</Td>
-              <Td>{formatTimeSlots(course.timeSlots)}</Td>
+              <Td>{course.courseGroup}</Td>
             </Tr>
           ))}
         </Tbody>
