@@ -48,8 +48,7 @@ def login(request):
 
     user = db_utils.get_user(user_id)
     if not user:
-        #TODO
-        pass
+        db_utils.add_user(user_id)
 
     payload = {"user_id": user_id}
     token = generate_jwt(payload)
@@ -135,6 +134,20 @@ def modify_user_info_basic(request, user_id):
         user.user_avatar = avatar
 
     user.save()
+    return Response({"status": 200}, status=status.HTTP_200_OK)
+
+@api_view(["POST"])
+@login_required
+def modify_user_curriculum(request, user_id):
+    """
+    修改用户培养方案
+    """
+    user = db_utils.get_user(user_id)
+    if not user:
+        return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    curriculum = request.data.get("curriculum", None)
+    db_utils.modify_user_curriculum(user_id, curriculum)
     return Response({"status": 200}, status=status.HTTP_200_OK)
 
 @api_view(["GET"])

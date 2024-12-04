@@ -94,7 +94,7 @@ def login_required(func):
 
 def verify_password(user_id, password):
     """
-    校验密码
+    网络学堂校验密码
     :param user_id: 用户id
     :param password: 密码
     :return: bool

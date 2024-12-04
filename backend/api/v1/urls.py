@@ -12,6 +12,7 @@ urlpatterns = [
     path('user/<str:user_id>/', views.get_user_info, name='get_user_info'),  # 获取个人完整信息
     path('user-basic/<str:user_id>/', views.get_user_info_basic, name='get_user_info_basic'),  # 获取个人基本信息
     path('user-basic/<str:user_id>/update/', views.modify_user_info_basic, name='modify_user_info_basic'),  # 修改个人基本信息
+    path('modify-user-curriculum/<str:user_id>/', views.modify_user_curriculum, name='modify_user_curriculum'),  # 修改个人培养方案
 
     # 选课管理
     path('selection-stage/', views.get_selection_stage, name='get_selection_phase'),  # 获取选课阶段

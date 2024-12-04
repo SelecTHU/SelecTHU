@@ -164,6 +164,21 @@
   - **404 Not Found**：用户未找到。
   - **400 Bad Request**：请求的昵称或头像格式不正确。
 
+4. **修改用户培养方案**<span id="modify_user_curriculum"></span>
+- 接口：`/api/v1/modify-user-curriculum/<user_id>/`
+- 请求类型：`POST`
+- 请求参数：
+  - `curriculum<dict>`：新培养方案
+- 返回值：
+  ```json
+  {
+    "status": <int>
+  }
+  ```
+- 说明：修改用户培养方案，可能需要前端登陆网络学堂获取
+- 错误码：
+  - **404 Not Found**：用户未找到。
+
 #### 选课管理
 
 1. **获取选课阶段**<span id="get_selection_stage"></span>
