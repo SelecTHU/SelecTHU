@@ -107,6 +107,22 @@ class QueryDBTestCase(TestCase):
         )
         self.assertEqual(response["status"], 200)
 
+    def test_get_course_detail_by_info_err_info(self):
+        # 测试get_course_detail_by_info在错误信息（无匹配）时的返回
+        code = "1000016"
+        number = "02"
+        name = "计算机网络"
+        teacher = "无敌喵喵拳"
+        response = get_course_detail_by_info(
+            code=code, number=number, name=name, teacher=teacher
+        )
+        self.assertEqual(response["status"], 404)
+    
+    def test_get_course_detail_by_info_no_info(self):
+        # 测试get_course_detail_by_info在无信息时的返回
+        response = get_course_detail_by_info(None, None, None, None)
+        self.assertEqual(response["status"], 400)
+
     def test_get_course_detail_by_id(self):
         # 测试get_course_detail_by_id正确返回
         resp = get_course(name="计算机组成原理", teacher="无敌喵喵拳")
@@ -114,6 +130,16 @@ class QueryDBTestCase(TestCase):
         course_id = resp["course"][0]["course_id"]
         response = get_course_detail_by_id(course_id=course_id)
         self.assertEqual(response["status"], 200)
+
+    def test_get_course_detail_by_id_err_id(self):
+        # 测试get_course_detail_by_id在错误id时的返回
+        response = get_course_detail_by_id(course_id="999999")
+        self.assertEqual(response["status"], 404)
+
+    def test_get_course_detail_by_id_no_id(self):
+        # 测试get_course_detail_by_id在无id时的返回
+        response = get_course_detail_by_id(None)
+        self.assertEqual(response["status"], 400)
 
 
 class ModifyDBTestCase(TestCase):
