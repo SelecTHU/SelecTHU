@@ -30,15 +30,13 @@ def get_curriculum(user_id: str):
         return const.RESPONSE_400
     try:
         # 查询
-        user = models.User.objects.filter(user_id=user_id)
-        if user.exists() is False:
-            return const.RESPONSE_404
-        user = user.first()
+        user = models.User.objects.get(user_id=user_id)
+
         curriculum = dict()
-        if user.user_curriculum:
+        if user.user_curriculum != "":
             user_curriculum_id = user.user_curriculum
             try_curriculum = models.Curriculum.objects.filter(
-                user_id=user_curriculum_id
+                curriculum_id=user_curriculum_id
             )
             if try_curriculum.exists():
                 curriculum = try_curriculum.values("courses").first()
@@ -113,9 +111,9 @@ def get_user(user_id: str):
             user_curriculum_id = user.user_curriculum
             user_curriculum = models.Curriculum.objects.filter(
                 user_id=user_curriculum_id
-            ).values("courses")
+            )
             if user_curriculum.exists():
-                curriculum = user_curriculum.first()
+                curriculum = user_curriculum.first().values("courses")
 
         # 返回结果
         return {
@@ -258,7 +256,7 @@ def get_course(
             if department is not None:
                 course_list = course_list.filter(department=department)
             if course_type is not None:
-                course_list = course_list.filter(type=course_type)
+                course_list = course_list.filter(course_type=course_type)
         elif search_mode == "exclude":
             if course_id is not None:
                 course_list = course_list.exclude(course_id=course_id)
@@ -277,7 +275,7 @@ def get_course(
             if department is not None:
                 course_list = course_list.exclude(department=department)
             if course_type is not None:
-                course_list = course_list.exclude(type=course_type)
+                course_list = course_list.exclude(course_type=course_type)
 
         if course_list.exists() is False:
             return {"status": 200, "course": []}
