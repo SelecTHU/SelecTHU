@@ -297,7 +297,7 @@ def get_courses_favorite(request, user_id):
     user = db_utils.get_user(user_id)
     if not user:
         return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-    course_ids = user_favorite
+    course_ids = user.user_favorite
     courses = []
     for course_id in course_ids:
         course = db_utils.get_course(id_= course_id)
