@@ -7,27 +7,27 @@ import db.v1.const as const
 
 class QueryDBTestCase(TestCase):
     def setUp(self):
-        res1 = add_course({
-            "code": "1000016",
-            "number": "01",
-            "name": "计算机网络",
-            "teacher": "罗伯特"
-        })
-        res2 = add_course({
-            "code": "1000017",
-            "number": "02",
-            "name": "计算机组成原理",
-            "teacher": "无敌喵喵拳",
-        })
+        res1 = add_course(
+            {
+                "code": "1000016",
+                "number": "01",
+                "name": "计算机网络",
+                "teacher": "罗伯特",
+            }
+        )
+        res2 = add_course(
+            {
+                "code": "1000017",
+                "number": "02",
+                "name": "计算机组成原理",
+                "teacher": "无敌喵喵拳",
+                "info": {"课程介绍": "无敌喵喵拳喵喵拳无敌"},
+            }
+        )
         curriculum1 = {
-            const.CURRICULUM_KEYS[0]: [
-                "1000016"
-            ],
-            const.CURRICULUM_KEYS[1]: [
-                "1000017"
-            ],
-            const.CURRICULUM_KEYS[2]: [
-            ]
+            const.CURRICULUM_KEYS[0]: ["1000016"],
+            const.CURRICULUM_KEYS[1]: ["1000017"],
+            const.CURRICULUM_KEYS[2]: [],
         }
         user = add_user("valid_user", curriculum1)
         if user["status"] != 200:
@@ -37,7 +37,7 @@ class QueryDBTestCase(TestCase):
             print("[ERROR] Failed to add courses")
             raise Exception("Failed to add courses")
         return super().setUp()
-    
+
     def test_db_status(self):
         # 测试db_status函数是否正确返回连接状态
         response = db_status()
@@ -93,6 +93,28 @@ class QueryDBTestCase(TestCase):
         self.assertIn("course", response)
         self.assertIsInstance(response["course"], list)
 
+    def test_get_course_detail_by_info(self):
+        # 测试get_course_detail_by_info正确返回
+        resp = get_course(name="计算机组成原理", teacher="无敌喵喵拳")
+        self.assertEqual(resp["status"], 200)
+        course = resp["course"][0]
+        code = course["code"]
+        number = course["number"]
+        name = course["name"]
+        teacher = course["teacher"]
+        response = get_course_detail_by_info(
+            code=code, number=number, name=name, teacher=teacher
+        )
+        self.assertEqual(response["status"], 200)
+
+    def test_get_course_detail_by_id(self):
+        # 测试get_course_detail_by_id正确返回
+        resp = get_course(name="计算机组成原理", teacher="无敌喵喵拳")
+        self.assertEqual(resp["status"], 200)
+        course_id = resp["course"][0]["course_id"]
+        response = get_course_detail_by_id(course_id=course_id)
+        self.assertEqual(response["status"], 200)
+
 
 class ModifyDBTestCase(TestCase):
     def test_add_user_success(self):
@@ -110,14 +132,9 @@ class ModifyDBTestCase(TestCase):
     def test_add_user_with_curriculum(self):
         # 测试add_user函数添加带培养方案的用户
         curriculum = {
-            const.CURRICULUM_KEYS[0]: [
-                "1000016"
-            ],
-            const.CURRICULUM_KEYS[1]: [
-                "1000017"
-            ],
-            const.CURRICULUM_KEYS[2]: [
-            ]
+            const.CURRICULUM_KEYS[0]: ["1000016"],
+            const.CURRICULUM_KEYS[1]: ["1000017"],
+            const.CURRICULUM_KEYS[2]: [],
         }
         response = add_user(user_id="testuser2", curriculum=curriculum)
         self.assertEqual(response["status"], 200)

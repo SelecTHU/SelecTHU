@@ -162,7 +162,7 @@ def get_courses(count: int = -1):
             )
             if not courses:
                 return const.RESPONSE_404
-            
+
         else:
             # 判断count是否合法（是否超过数据库中的数据数量）
             if count <= 0 or count > models.MainCourses.objects.count():
@@ -284,6 +284,7 @@ def get_course(
         course_list = course_list.values(
             "course_id",
             "code",
+            "number",
             "name",
             "teacher",
             "credit",
@@ -386,7 +387,7 @@ def get_course_detail_by_id(course_id: str):
     try:
         # 查询数据库
         course = models.CoursesDetails.objects.filter(course_id=course_id).values(
-            "_id", "info", "score", "comments"
+            "course_id", "info", "score", "comments"
         )
 
         # 课程不存在
