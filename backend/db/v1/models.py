@@ -116,7 +116,7 @@ class CoursesDetails(models.Model):
     # {
     #     TODO: 完善表结构
     # }
-    score = models.FloatField(db_column="score", blank=True, default=-1)  # 课程评分
+    score = models.FloatField(db_column="score", blank=True, default=0)  # 课程评分
     comments = models.JSONField(db_column="comments", blank=True, default=list())  # 课程评价
     # 内部结构：
     # [
