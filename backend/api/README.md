@@ -96,13 +96,16 @@
         {
           "course_id": <str>,
           "code": <str>,
+          "number": <str>,
           "name": <str>,
           "teacher": <str>,
           "credit": <int>,
           "period": <int>,
           "time": <dict>,
           "department": <str>,
-          "type": <str>,
+          "course-type": <str>,
+          "capacity": <int>,
+          "selection": <dicr>,
         },
         ...
       ],
@@ -110,12 +113,16 @@
         {
           "course_id": <str>,
           "code": <str>,
+          "number": <str>,
           "name": <str>,
           "teacher": <str>,
           "credit": <int>,
           "period": <int>,
           "time": <dict>,
           "department": <str>,
+          "course-type": <str>,
+          "capacity": <int>,
+          "selection": <dicr>,
           "selection-type": <str>,
         },
         ...
@@ -228,7 +235,23 @@
   ```json
   {
     "status": <int>, 
-    "courses-main": <list>
+    "courses-main": [
+      {
+        "course_id": <str>,
+        "code": <str>,
+        "number": <str>,
+        "name": <str>,
+        "teacher": <str>,
+        "credit": <int>,
+        "period": <int>,
+        "time": <dict>,
+        "department": <str>,
+        "course-type": <str>,
+        "capacity": <int>,
+        "selection": <dicr>
+      },
+      ...
+    ]
   }
   ```
 - 说明：根据筛选条件返回所有符合条件课程的基本信息
@@ -290,12 +313,16 @@
       {
         "course_id": <str>,
         "code": <str>,
+        "number": <str>,
         "name": <str>,
         "teacher": <str>,
         "credit": <int>,
         "period": <int>,
         "time": <dict>,
         "department": <str>,
+        "course-type": <str>,
+        "capacity": <int>,
+        "selection": <dicr>,
         "selection-type": <str>,
       },
       ...
@@ -318,12 +345,16 @@
       {
         "course_id": <str>,
         "code": <str>,
+        "number": <str>,
         "name": <str>,
         "teacher": <str>,
         "credit": <int>,
         "period": <int>,
         "time": <dict>,
         "department": <str>,
+        "course-type": <str>,
+        "capacity": <int>,
+        "selection": <dicr>
       },
       ...
     ]
