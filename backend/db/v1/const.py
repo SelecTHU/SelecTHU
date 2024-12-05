@@ -16,11 +16,15 @@ dotenv.load_dotenv(BASE_DIR / ".env")
 logger: Final[logging.Logger] = logging.getLogger("db_v1_logger")
 if not os.path.exists(BASE_DIR / "logs"):
     os.makedirs(BASE_DIR / "logs")
-logging.basicConfig(
+_file_handler: Final[logging.FileHandler] = logging.FileHandler(
     filename=BASE_DIR / "logs" / "db.log",
-    level=logging.INFO,
-    format="(%(asctime)s) [%(type)s] %(message)s",
+    encoding="utf-8",
 )
+_file_handler.setLevel(logging.INFO)
+_file_handler.setFormatter(
+    logging.Formatter("(%(asctime)s) [%(log_type)s] %(message)s")
+)
+logger.addHandler(_file_handler)
 
 # 培养方案键值（对应必限体）
 CURRICULUM_KEYS: Final[tuple] = ("0", "1", "2")
@@ -85,6 +89,13 @@ SELECTION_BLANK: Final[dict] = {
     "t3": 0,
 }
 
+# 培养方案（空表）
+CURRICULUM_BLANK: Final[dict] = {
+    CURRICULUM_KEYS[0]: [],
+    CURRICULUM_KEYS[1]: [],
+    CURRICULUM_KEYS[2]: [],
+}
+
 
 # 周次定义
 class TIME_WEEK:
@@ -127,7 +138,7 @@ class SELECTION_TYPE:
 
 # 日志类型定义
 class LOGGING_TYPE:
-    ERROR: Final[dict] = {"type": "Error"}
-    WARNING: Final[dict] = {"type": "Warning"}
-    INFO: Final[dict] = {"type": "Info"}
-    DEBUG: Final[dict] = {"type": "Debug"}
+    ERROR: Final[dict] = {"log_type": "Error"}
+    WARNING: Final[dict] = {"log_type": "Warning"}
+    INFO: Final[dict] = {"log_type": "Info"}
+    DEBUG: Final[dict] = {"log_type": "Debug"}

@@ -31,12 +31,13 @@ def get_curriculum(user_id: str):
     try:
         # 查询
         user = models.User.objects.get(user_id=user_id)
-        if not user:
-            return const.RESPONSE_404
+
         curriculum = dict()
-        if user.user_curriculum:
+        if user.user_curriculum != "":
             user_curriculum_id = user.user_curriculum
-            try_curriculum = models.Curriculum.objects.filter(user_id=user_curriculum_id)
+            try_curriculum = models.Curriculum.objects.filter(
+                curriculum_id=user_curriculum_id
+            )
             if try_curriculum.exists():
                 curriculum = try_curriculum.values("courses").first()
 
@@ -67,7 +68,9 @@ def get_curriculum_existance(curriculum: dict):
         # 计算id
         curriculum_id = cal_curriculum_id(curriculum)
         # 查询数据库
-        curriculum = models.Curriculum.objects.filter(curriculum_id=curriculum_id).exists()
+        curriculum = models.Curriculum.objects.filter(
+            curriculum_id=curriculum_id
+        ).exists()
         return {"status": 200, "value": curriculum}
     except Exception as e:
         const.logger.error(
@@ -98,18 +101,19 @@ def get_user(user_id: str):
         return const.RESPONSE_400
     try:
         # 查询
-        user = models.User.objects.filter(user_id=user_id).first()
-        if not user:
+        user = models.User.objects.filter(user_id=user_id)
+        if user.exists() is False:
             return const.RESPONSE_404
+        user = user.first()
         avatar_url = user.user_avatar.url
         curriculum = dict()
         if user.user_curriculum:
             user_curriculum_id = user.user_curriculum
             user_curriculum = models.Curriculum.objects.filter(
                 user_id=user_curriculum_id
-            ).values("courses")
+            )
             if user_curriculum.exists():
-                curriculum = user_curriculum.first()
+                curriculum = user_curriculum.first().values("courses")
 
         # 返回结果
         return {
@@ -158,6 +162,7 @@ def get_courses(count: int = -1):
             )
             if not courses:
                 return const.RESPONSE_404
+
         else:
             # 判断count是否合法（是否超过数据库中的数据数量）
             if count <= 0 or count > models.MainCourses.objects.count():
@@ -174,7 +179,7 @@ def get_courses(count: int = -1):
                 "period",
                 "time",
                 "department",
-                "type",
+                "course_type",
                 "capacity",
                 "selection",
             )[:count]
@@ -238,10 +243,9 @@ def get_course(
                 if search_mode == "exact":
                     course_list = course_list.filter(name=name)
                 else:
-                    # 模糊搜索，得到的搜索字符串形如"%n%a%m%e%"，得到的正则化结果形如".*n.*a.*m.*e.*"
-                    # 此处name为举例，实际为待搜索的字符串
-                    query_name = "%".join(name)
-                    course_list = course_list.filter(name__icontains=query_name)
+                    # 模糊搜索
+                    query_name = ".*" + ".*".join(name) + ".*"
+                    course_list = course_list.filter(name__iregex=query_name)
             if teacher is not None:
                 course_list = course_list.filter(teacher=teacher)
             if credit is not None:
@@ -251,7 +255,7 @@ def get_course(
             if department is not None:
                 course_list = course_list.filter(department=department)
             if course_type is not None:
-                course_list = course_list.filter(type=course_type)
+                course_list = course_list.filter(course_type=course_type)
         elif search_mode == "exclude":
             if course_id is not None:
                 course_list = course_list.exclude(course_id=course_id)
@@ -270,7 +274,7 @@ def get_course(
             if department is not None:
                 course_list = course_list.exclude(department=department)
             if course_type is not None:
-                course_list = course_list.exclude(type=course_type)
+                course_list = course_list.exclude(course_type=course_type)
 
         if course_list.exists() is False:
             return {"status": 200, "course": []}
@@ -279,6 +283,7 @@ def get_course(
         course_list = course_list.values(
             "course_id",
             "code",
+            "number",
             "name",
             "teacher",
             "credit",
@@ -381,7 +386,7 @@ def get_course_detail_by_id(course_id: str):
     try:
         # 查询数据库
         course = models.CoursesDetails.objects.filter(course_id=course_id).values(
-            "_id", "info", "score", "comments"
+            "course_id", "info", "score", "comments"
         )
 
         # 课程不存在

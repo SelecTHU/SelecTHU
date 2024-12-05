@@ -34,14 +34,14 @@ class User(models.Model):
 
     # 课程信息（列表）
     user_favorite = models.JSONField(
-        db_column="favorite", blank=True, default=list()
+        db_column="favorite", blank=True, default=list
     )  # 收藏课程
     # 内部结构：
     # [
     #     <course_id: str>,
     #     ...
     # ]
-    user_decided = models.JSONField(db_column="decided", blank=True, default=list())  # 已选课程
+    user_decided = models.JSONField(db_column="decided", blank=True, default=list)  # 已选课程
     # 内部结构：
     # [
     #     {
@@ -116,8 +116,8 @@ class CoursesDetails(models.Model):
     # {
     #     TODO: 完善表结构
     # }
-    score = models.FloatField(db_column="score", blank=True, default=-1)  # 课程评分
-    comments = models.JSONField(db_column="comments", blank=True, default=list())  # 课程评价
+    score = models.FloatField(db_column="score", blank=True, default=0)  # 课程评分
+    comments = models.JSONField(db_column="comments", blank=True, default=list)  # 课程评价
     # 内部结构：
     # [
     #     {
@@ -146,7 +146,7 @@ class MainCourses(models.Model):
     :param `period`: 学时
     :param `time`: 开课时间
     :param `department`: 开课院系
-    :param `type`: 课程类型（通识课组）
+    :param `course_type`: 课程类型（通识课组）
     :param `capacity`: 本科生课容量
     :param `selection`: 选课情况
     :param `link`: 详细信息指向的表
@@ -167,7 +167,7 @@ class MainCourses(models.Model):
     department = models.CharField(max_length=64, db_column="department")  # 开课院系
     course_type = models.CharField(max_length=64, db_column="type")  # 课程类型
     capacity = models.IntegerField(db_column="capacity")  # 本科生课容量
-    selection = models.JSONField(db_column="selection", blank=True, default=dict())  # 选课情况
+    selection = models.JSONField(db_column="selection", blank=True, default=dict)  # 选课情况
     # 内部结构：
     # {
     #     "total": <total: int>,  # 总人数
@@ -188,7 +188,7 @@ class MainCourses(models.Model):
 
     # 详细信息指向表
     link = models.OneToOneField(
-        to=CoursesDetails, on_delete=models.CASCADE, db_column="link"
+        to=CoursesDetails, on_delete=models.CASCADE
     )  # 详细信息指向表
 
     class Meta:
