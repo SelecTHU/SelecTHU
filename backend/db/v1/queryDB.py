@@ -243,10 +243,9 @@ def get_course(
                 if search_mode == "exact":
                     course_list = course_list.filter(name=name)
                 else:
-                    # 模糊搜索，得到的搜索字符串形如"%n%a%m%e%"，得到的正则化结果形如".*n.*a.*m.*e.*"
-                    # 此处name为举例，实际为待搜索的字符串
-                    query_name = "%".join(name)
-                    course_list = course_list.filter(name__icontains=query_name)
+                    # 模糊搜索
+                    query_name = ".*" + ".*".join(name) + ".*"
+                    course_list = course_list.filter(name__iregex=query_name)
             if teacher is not None:
                 course_list = course_list.filter(teacher=teacher)
             if credit is not None:
