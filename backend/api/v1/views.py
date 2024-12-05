@@ -22,6 +22,7 @@ def backend_db_status(request):
     return Response({"status": 200, "message": "successfully connect to backend and database!"}, status=status.HTTP_200_OK)
 
 @api_view(["POST"])
+@permission_classes([AllowAny])
 def login_default(request):
     """
     使用默认id登录
@@ -32,6 +33,7 @@ def login_default(request):
     return Response({"status": 200, "jwt": token}, status=status.HTTP_200_OK)
 
 @api_view(["POST"])
+@permission_classes([AllowAny])
 def login(request):
     """
     用户登录

@@ -64,7 +64,7 @@
   - **404 Not Found**：用户未找到。
 
 3. **用户登出**<span id="logout"></span>
-- 接口：`/api/v1/logout/<user_id>/`
+- 接口：`/api/v1/logout/`
 - 请求类型：`POST`
 - 请求参数：无
 - 返回值：
@@ -81,7 +81,7 @@
 #### 用户信息管理
 
 1. **获取用户完整信息**<span id="get_user_info"></span>
-- 接口：`/api/v1/user/<user_id>/`
+- 接口：`/api/v1/user/`
 - 请求类型：`GET`
 - 请求参数：无
 - 返回值：
@@ -136,7 +136,7 @@
   - **404 Not Found**：用户未找到。
 
 2. **获取用户基本信息**<span id="get_user_info_basic"></span>
-- 接口：`/api/v1/user-basic/<user_id>/`
+- 接口：`/api/v1/user-basic/`
 - 请求类型：`GET`
 - 请求参数：无
 - 返回值：
@@ -155,7 +155,7 @@
   - **404 Not Found**：用户未找到。
 
 3. **修改用户基本信息**<span id="modify_user_info_basic"></span>
-- 接口：`/api/v1/user-basic/<user_id>/update/`
+- 接口：`/api/v1/user-basic/update/`
 - 请求类型：`POST`
 - 请求参数：
   - `nickname<str>`（可选）：昵称
@@ -172,7 +172,7 @@
   - **400 Bad Request**：请求的昵称或头像格式不正确。
 
 4. **修改用户培养方案**<span id="modify_user_curriculum"></span>
-- 接口：`/api/v1/modify-user-curriculum/<user_id>/`
+- 接口：`/api/v1/modify-user-curriculum/`
 - 请求类型：`POST`
 - 请求参数：
   - `curriculum<dict>`：新培养方案
@@ -189,7 +189,7 @@
 #### 选课管理
 
 1. **获取选课阶段**<span id="get_selection_stage"></span>
-- 接口：`/api/v1/selection-stage`
+- 接口：`/api/v1/selection-stage/`
 - 请求类型：`GET`
 - 请求参数：无
 - 返回值：
@@ -204,7 +204,7 @@
   - **500 Internal Server Error**：获取选课阶段时发生错误。
 
 2. **获取培养方案**<span id="get_curriculum"></span>
-- 接口：`/api/v1/curriculum/<user_id>/`
+- 接口：`/api/v1/curriculum/`
 - 请求类型：`GET`
 - 请求参数：无
 - 返回值：
@@ -284,7 +284,7 @@
   - **404 Not Found**：课程未找到。
 
 5. **课程状态切换**<span id="modify_course_condition"></span>
-- 接口：`/api/v1/modify-course-condition/<user_id>/`
+- 接口：`/api/v1/modify-course-condition/`
 - 请求类型：`POST`
 - 请求参数：
   - `course_id<str>`：课程id
@@ -302,7 +302,7 @@
   - **404 Not Found**：课程未找到或无法修改状态。
 
 6. **获取已选课程**<span id="get_courses_decided"></span>
-- 接口：`/api/v1/courses-decided/<user_id>/`
+- 接口：`/api/v1/courses-decided/`
 - 请求类型：`GET`
 - 请求参数：无
 - 返回值：
@@ -334,7 +334,7 @@
   - **404 Not Found**：用户未找到。
 
 7. **获取收藏课程**<span id="get_courses_favorite"></span>
-- 接口：`/api/v1/courses-favorite/<user_id>/`
+- 接口：`/api/v1/courses-favorite/`
 - 请求类型：`GET`
 - 请求参数：无
 - 返回值：
@@ -365,7 +365,7 @@
   - **404 Not Found**：用户未找到。
 
 8. **修改课程志愿**<span id="modify_course_selection_type"></span>
-- 接口：`/api/v1/modify-course-wish/<user_id>`
+- 接口：`/api/v1/modify-course-wish/`
 - 请求类型：`POST`
 - 请求参数：无
   - `selection-type<str>`：目标志愿（两位字符，第一位b,x,r,t，第二位0,1,2,3）
