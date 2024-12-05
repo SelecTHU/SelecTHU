@@ -102,6 +102,7 @@ class TIME_WEEK:
     ODD: Final[int] = (1,)  # 单周
     EVEN: Final[int] = (2,)  # 双周
     OTHER: Final[int] = (3,)  # 其他
+    NONE: Final[int] = (0,)  # 无
 
 
 # 志愿类型定义
