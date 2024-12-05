@@ -110,7 +110,7 @@ def get_user(user_id: str):
         if user.user_curriculum:
             user_curriculum_id = user.user_curriculum
             user_curriculum = models.Curriculum.objects.filter(
-                user_id=user_curriculum_id
+                curriculum_id=user_curriculum_id
             )
             if user_curriculum.exists():
                 curriculum = user_curriculum.first().values("courses")
@@ -153,11 +153,15 @@ def get_courses(count: int = -1):
                 "name",
                 "teacher",
                 "credit",
-                "period",
                 "time",
                 "department",
                 "course_type",
+                "features",
+                "text",
                 "capacity",
+                "grade",
+                "experiment",
+                "sec_choice",
                 "selection",
             )
             if not courses:
@@ -176,11 +180,15 @@ def get_courses(count: int = -1):
                 "name",
                 "teacher",
                 "credit",
-                "period",
                 "time",
                 "department",
                 "course_type",
+                "features",
+                "text",
                 "capacity",
+                "grade",
+                "experiment",
+                "sec_choice",
                 "selection",
             )[:count]
             if not courses:
@@ -201,10 +209,13 @@ def get_course(
     name: str = None,
     teacher: str = None,
     credit: int = None,
-    period: int = None,
     time: dict = None,
     department: str = None,
     course_type: str = None,
+    features: str = None,
+    text: str = None,
+    grade: str = None,
+    sec_choice: bool = None,
     search_mode: str = "exact",
 ):
     """
@@ -216,10 +227,13 @@ def get_course(
     :param `name`: 课程名称
     :param `teacher`: 教师名称
     :param `credit`: 学分
-    :param `period`: 学时
     :param `time`: 开课时间
     :param `department`: 开课院系
     :param `course_type`: 课程类型（通识课组）
+    :param `features`: 课程特色
+    :param `text`: 选课文字说明
+    :param `grade`: 年级
+    :param `sec_choice`: 二级选课
     :param `search_mode`: 搜索模式（默认为`exact` - 精确搜索，可选： `fuzzy` - 模糊搜索，`exclude` - 排除搜索）
 
     :return: 返回数据（包含字典 `course<type = list[dict]>` ）
@@ -239,23 +253,37 @@ def get_course(
                 course_list = course_list.filter(code=code)
             if number is not None:
                 course_list = course_list.filter(number=number)
-            if name is not None:
-                if search_mode == "exact":
-                    course_list = course_list.filter(name=name)
-                else:
-                    # 模糊搜索
-                    query_name = ".*" + ".*".join(name) + ".*"
-                    course_list = course_list.filter(name__iregex=query_name)
             if teacher is not None:
                 course_list = course_list.filter(teacher=teacher)
             if credit is not None:
                 course_list = course_list.filter(credit=credit)
-            if period is not None:
-                course_list = course_list.filter(period=period)
             if department is not None:
                 course_list = course_list.filter(department=department)
             if course_type is not None:
                 course_list = course_list.filter(course_type=course_type)
+            if grade is not None:
+                course_list = course_list.filter(grade=grade)
+            if sec_choice is not None:
+                course_list = course_list.filter(sec_choice=sec_choice)
+            if search_mode == "fuzzy":
+                # 模糊搜索
+                if name is not None:
+                    query_name = ".*" + ".*".join(name) + ".*"
+                    course_list = course_list.filter(name__iregex=query_name)
+                if features is not None:
+                    query_features = ".*" + ".*".join(features) + ".*"
+                    course_list = course_list.filter(features__iregex=query_features)
+                if text is not None:
+                    query_text = ".*" + ".*".join(text) + ".*"
+                    course_list = course_list.filter(text__iregex=query_text)
+            elif search_mode == "exact":
+                # 精确搜索
+                if name is not None:
+                    course_list = course_list.filter(name=name)
+                if features is not None:
+                    course_list = course_list.filter(features=features)
+                if text is not None:
+                    course_list = course_list.filter(text=text)
         elif search_mode == "exclude":
             if course_id is not None:
                 course_list = course_list.exclude(course_id=course_id)
@@ -269,12 +297,18 @@ def get_course(
                 course_list = course_list.exclude(teacher=teacher)
             if credit is not None:
                 course_list = course_list.exclude(credit=credit)
-            if period is not None:
-                course_list = course_list.exclude(period=period)
             if department is not None:
                 course_list = course_list.exclude(department=department)
             if course_type is not None:
                 course_list = course_list.exclude(course_type=course_type)
+            if features is not None:
+                course_list = course_list.exclude(features=features)
+            if text is not None:
+                course_list = course_list.exclude(text=text)
+            if grade is not None:
+                course_list = course_list.exclude(grade=grade)
+            if sec_choice is not None:
+                course_list = course_list.exclude(sec_choice=sec_choice)
 
         if course_list.exists() is False:
             return {"status": 200, "course": []}
@@ -287,38 +321,39 @@ def get_course(
             "name",
             "teacher",
             "credit",
-            "period",
             "time",
             "department",
             "course_type",
+            "features",
+            "text",
             "capacity",
+            "grade",
+            "experiment",
+            "sec_choice",
             "selection",
         )
         course_list = list(course_list)
         # 手动筛选time字段
         if time is not None:
-            for i in range(len(course_list)):
-                week_type = course_list[i]["time"]["type"]
-                if week_type == time["type"]:
-                    # 无需筛选
-                    if len(time["data"]) == 0:
-                        continue
-
-                    # 筛选
-                    week = time["data"][0]
-                    for index in range(0, len(course_list[i]["time"]["data"])):
-                        course_time = course_list[i]["time"]["data"][index]
-                        # 该课程时间在筛选时间内，符合条件
+            assert isinstance(time, dict)
+            for index in range(len(course_list)):
+                current_time = course_list[index]["time"]
+                conform = False  # 是否符合筛选条件
+                for period in current_time:
+                    if (not time["type"] == const.TIME_WEEK.NONE) or time[
+                        "type"
+                    ] == period["type"]:
                         if (
-                            week["w0"] <= course_time["w0"]
-                            and week["w1"] >= course_time["w1"]
-                            and week["d"] == course_time["d"]
-                            and week["t0"] <= course_time["t0"]
-                            and week["t1"] >= course_time["t1"]
+                            ((not (time["w0"] == 0)) or time["w0"] == period["w0"])
+                            and ((not (time["w1"] == 0)) or time["w1"] == period["w1"])
+                            and ((not (time["d"] == 0)) or time["d"] == period["d"])
+                            and ((not (time["t0"] == 0)) or time["t0"] == period["t0"])
                         ):
-                            continue
+                            conform = True
+                            break
 
-                course_list.pop(i)
+                if not conform:
+                    course_list.pop(index)
 
         return {"status": 200, "course": course_list}
     except Exception as e:

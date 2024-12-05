@@ -89,12 +89,15 @@ def add_course(course: dict):
         # 添加到数据库
         # MainCourses：课程简要信息
         credit = int(course.get("credit", 0))
-        period = int(course.get("period", 0))
-        time = course.get("time", "")
+        time = course.get("time", list())
         department = course.get("department", "")
         course_type = course.get("course_type", "")
         capacity = int(course.get("capacity", 0))
-
+        features = course.get("features", "")
+        text = course.get("text", "")
+        sec_choice = course.get("sec_choice", False)
+        grade = course.get("grade", "")
+        experiment = course.get("experiment", "")
         selection = course.get("selection", const.SELECTION_BLANK.copy())
 
         # CoursesDetails：课程详细信息
@@ -111,11 +114,15 @@ def add_course(course: dict):
             name=name,
             teacher=teacher,
             credit=credit,
-            period=period,
             time=time,
             department=department,
             course_type=course_type,
+            features=features,
+            text=text,
             capacity=capacity,
+            sec_choice=sec_choice,
+            grade=grade,
+            experiment=experiment,
             selection=selection,
             link=course_details,
         )
