@@ -399,11 +399,13 @@ db
 ### 单元测试报告
 - 最后更新时间：2024-12-5
 - 报告说明：
-    1. 仅统计 `modifyDB.py` 和 `queryDB.py` 两份源代码的测试覆盖率，使用 `coverage` 工具生成。
-    2. 进行单元测试时，使用 `coverage run manage.py test --keepdb` 以保护数据库结构（如不需要可以不使用 `--keepdb` 参数）；使用 `coverage report` 生成测试报告（为整个 `db` 部分的测试覆盖率）。
+    1. 仅统计 `modifyDB.py` 和 `queryDB.py` 两份源代码的测试覆盖率，使用 `coverage` 工具生成（通过 `pip install coverage` 安装）。
+    2. 进行单元测试时，使用 `coverage run manage.py test --keepdb` 以保护数据库结构（如不需要可以不使用 `--keepdb` 参数）；使用 `coverage report` 生成测试报告（为整个 `db` 部分的测试覆盖率，使用  `coverage report --include="db/v1/modifyDB.py,db/v1/queryDB.py"` 以生成两份接口代码的测试报告）。
 ```
-Name                                              Stmts   Miss  Cover
----------------------------------------------------------------------
-db/v1/modifyDB.py                                   299    235    21%
-db/v1/queryDB.py                                    168     76    55%
+Name                Stmts   Miss  Cover
+---------------------------------------
+db/v1/modifyDB.py     299    235    21%
+db/v1/queryDB.py      168     76    55%
+---------------------------------------
+TOTAL                 467    311    33%
 ```
