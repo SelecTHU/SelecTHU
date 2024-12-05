@@ -36,6 +36,7 @@ services:
       bash -c
       "python manage.py makemigrations &&
       python manage.py migrate &&
+      python manage.py < shell parser.py &&
       gunicorn -w 4 -b 0.0.0.0:8001 -k eventlet app.wsgi:application"
     networks:
       - db_network
