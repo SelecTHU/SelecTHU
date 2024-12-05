@@ -131,11 +131,13 @@ class ModifyDBTestCase(TestCase):
 
     def test_add_user_with_curriculum(self):
         # 测试add_user函数添加带培养方案的用户
+
         curriculum = {
             const.CURRICULUM_KEYS[0]: ["1000016"],
             const.CURRICULUM_KEYS[1]: ["1000017"],
             const.CURRICULUM_KEYS[2]: [],
         }
+
         response = add_user(user_id="testuser2", curriculum=curriculum)
         self.assertEqual(response["status"], 200)
         self.assertEqual(response["msg"], "add user successfully")
