@@ -13,6 +13,9 @@ class QueryDBTestCase(TestCase):
                 "number": "01",
                 "name": "计算机网络",
                 "teacher": "罗伯特",
+                "credit": 3,
+                "department": "霜之哀伤",
+                "course_type": "专业必修",
             }
         )
         res2 = add_course(
@@ -21,6 +24,9 @@ class QueryDBTestCase(TestCase):
                 "number": "02",
                 "name": "计算机组成原理",
                 "teacher": "无敌喵喵拳",
+                "credit": 4,
+                "department": "火之高兴",
+                "course_type": "专业必修",
                 "info": {"课程介绍": "无敌喵喵拳喵喵拳无敌"},
             }
         )
@@ -78,6 +84,31 @@ class QueryDBTestCase(TestCase):
         self.assertEqual(response["status"], 200)
         self.assertIn("course", response)
         self.assertIsInstance(response["course"], list)
+        self.assertEqual(len(response["course"]), 1)
+
+    def test_get_course_by_name(self):
+        # 测试get_course函数根据课程名检索
+        response = get_course(name="计算机网络")
+        self.assertEqual(response["status"], 200)
+        self.assertIn("course", response)
+        self.assertIsInstance(response["course"], list)
+        self.assertEqual(len(response["course"]), 1)
+
+    def test_get_course_by_number(self):
+        # 测试get_course函数根据课程号检索
+        response = get_course(number="02")
+        self.assertEqual(response["status"], 200)
+        self.assertIn("course", response)
+        self.assertIsInstance(response["course"], list)
+        self.assertEqual(len(response["course"]), 1)
+
+    def test_get_course_by_code(self):
+        # 测试get_course函数根据课程代码检索
+        response = get_course(code="1000017")
+        self.assertEqual(response["status"], 200)
+        self.assertIn("course", response)
+        self.assertIsInstance(response["course"], list)
+        self.assertEqual(len(response["course"]), 1)
 
     def test_get_course_by_teacher(self):
         # 测试get_course函数根据教师名检索
@@ -85,13 +116,65 @@ class QueryDBTestCase(TestCase):
         self.assertEqual(response["status"], 200)
         self.assertIn("course", response)
         self.assertIsInstance(response["course"], list)
+        self.assertEqual(len(response["course"]), 1)
 
-    def test_get_course_by_multi_cond(self):
-        # 测试get_course函数根据多种条件
-        response = get_course(name="计算机网络", teacher="无敌喵喵拳")
+    def test_get_course_by_credit(self):
+        # 测试get_course函数根据学分检索
+        response = get_course(credit=4)
         self.assertEqual(response["status"], 200)
         self.assertIn("course", response)
         self.assertIsInstance(response["course"], list)
+        self.assertEqual(len(response["course"]), 1)
+
+    def test_get_course_by_department(self):
+        # 测试get_course函数根据开课院系检索
+        response = get_course(department="火之高兴")
+        self.assertEqual(response["status"], 200)
+        self.assertIn("course", response)
+        self.assertIsInstance(response["course"], list)
+        self.assertEqual(len(response["course"]), 1)
+
+    def test_get_course_fuzzy_search(self):
+        # 测试get_course函数（模糊检索）
+        response = get_course(name="计算机", search_mode="fuzzy")
+        self.assertEqual(response["status"], 200)
+        self.assertIn("course", response)
+        self.assertIsInstance(response["course"], list)
+        self.assertEqual(len(response["course"]), 2)
+
+    def test_get_course_by_multi_cond_1(self):
+        # 测试get_course函数根据多种条件：课程名、教师名
+        response = get_course(name="计算机网络", teacher="罗伯特")
+        self.assertEqual(response["status"], 200)
+        self.assertIn("course", response)
+        self.assertIsInstance(response["course"], list)
+        self.assertEqual(len(response["course"]), 1)
+
+    def test_get_course_by_multi_cond_2(self):
+        # 测试get_course函数根据多种条件：课程代码、课程号
+        response = get_course(code="1000017", number="02")
+        self.assertEqual(response["status"], 200)
+        self.assertIn("course", response)
+        self.assertIsInstance(response["course"], list)
+        self.assertEqual(len(response["course"]), 1)
+
+    def test_get_course_by_multi_cond_3(self):
+        # 测试get_course函数根据多种条件：课程名、学分、开课院系
+        response = get_course(name="计算机组成原理", credit=4, department="火之高兴")
+        self.assertEqual(response["status"], 200)
+        self.assertIn("course", response)
+        self.assertIsInstance(response["course"], list)
+        self.assertEqual(len(response["course"]), 1)
+
+    def test_get_course_by_multi_cond_4(self):
+        # 测试get_course函数根据多种条件：课程名、课程类型、模糊检索
+        response = get_course(
+            name="算机", course_type="专业必修", search_mode="fuzzy"
+        )
+        self.assertEqual(response["status"], 200)
+        self.assertIn("course", response)
+        self.assertIsInstance(response["course"], list)
+        self.assertEqual(len(response["course"]), 2)
 
     def test_get_course_detail_by_info(self):
         # 测试get_course_detail_by_info正确返回
@@ -117,7 +200,7 @@ class QueryDBTestCase(TestCase):
             code=code, number=number, name=name, teacher=teacher
         )
         self.assertEqual(response["status"], 404)
-    
+
     def test_get_course_detail_by_info_no_info(self):
         # 测试get_course_detail_by_info在无信息时的返回
         response = get_course_detail_by_info(None, None, None, None)
