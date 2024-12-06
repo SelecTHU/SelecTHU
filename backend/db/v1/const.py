@@ -89,6 +89,13 @@ SELECTION_BLANK: Final[dict] = {
     "t3": 0,
 }
 
+# 培养方案（空表）
+CURRICULUM_BLANK: Final[dict] = {
+    CURRICULUM_KEYS[0]: [],
+    CURRICULUM_KEYS[1]: [],
+    CURRICULUM_KEYS[2]: [],
+}
+
 
 # 周次定义
 class TIME_WEEK:
