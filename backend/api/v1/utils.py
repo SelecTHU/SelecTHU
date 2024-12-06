@@ -47,6 +47,12 @@ def verify_jwt(token):
     :return: dict: payload
     """
     secret = settings.JWT_SECRET
+    
+    if token.startswith("Bearer "):
+        token = token.split(" ")[1]
+    #padding
+    token += '=' * (4 - len(token) % 4)
+    
 
     try:
         payload = jwt.decode(token, secret, algorithms=["HS256"])
