@@ -74,26 +74,28 @@ def get_user_info(request, user_id):
     if not user:
         return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    decided_ids = user.user_decided
+    print(user)
+    decided_list = user["decided"]
     courses_decided = []
-    for course_id in decided_ids:
-        course = db_utils.get_course(id_= course_id)
+    for item in decided_list:
+        course = db_utils.get_course(course_id= item["course_id"])
+        course["selection_type"] = item["selection_type"]
         courses_decided.append(course)
 
-    favorite_ids = user.user_favorite
+    favorite_ids = user["favorite"]
     courses_favorite = []
     for course_id in favorite_ids:
-        course = db_utils.get_course(id_= course_id)
+        course = db_utils.get_course(course_id= course_id)
         courses_favorite.append(course)
 
     return Response({
         "status": 200,
         "user": {
-            "nickname": user.user_nickname,
-            "avatar": user.user_avatar,
+            "nickname": user["nickname"],
+            "avatar": user["avatar"],
             "courses-favorite": courses_favorite,
             "courses-decided": courses_decided,
-            "curriculum": user.user_curriculum,
+            "curriculum": user["curriculum"],
         }
     }, status=status.HTTP_200_OK)
 
@@ -110,8 +112,8 @@ def get_user_info_basic(request, user_id):
     return Response({
         "status": 200,
         "user": {
-            "nickname": user.user_nickname,
-            "avatar": user.user_avatar,
+            "nickname": user["nickname"],
+            "avatar": user["avatar"],
         }
     }, status=status.HTTP_200_OK)
 
@@ -129,11 +131,11 @@ def modify_user_info_basic(request, user_id):
     avatar = request.FILES.get("avatar", None)
 
     if nickname:
-        user.user_nickname = nickname
+        user["nickname"] = nickname
     if avatar:
-        if user.avatar:
-            default_storage.delete(user.user_avatar.path)  # 删除旧头像
-        user.user_avatar = avatar
+        if user["avatar"]:
+            default_storage.delete(user["avatar"].path)  # 删除旧头像
+        user["avatar"] = avatar
 
     user.save()
     return Response({"status": 200}, status=status.HTTP_200_OK)
@@ -177,7 +179,7 @@ def get_curriculum(request, user_id):
     
     return Response({
         "status": 200,
-        "curriculum": user.user_curriculum,
+        "curriculum": user["curriculum"],
     }, status=status.HTTP_200_OK)
 
 @api_view(["GET"])
@@ -218,9 +220,9 @@ def get_course_detail(request, course_id):
     return Response({
         "status": 200,
         "course": {
-            "info": course.info,
-            "score": course.score,
-            "comments": course.comments,
+            "info": course["info"],
+            "score": course["score"],
+            "comments": course["comments"],
         }
     }, status=status.HTTP_200_OK)
 
@@ -241,9 +243,9 @@ def modify_course_condition(request, user_id):
     if not user:
         return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
     
-    if course_id in user.user_decided:
+    if course_id in user["decided"]:
         prev_cond = "decided"
-    elif course_id in user.user_favorite:
+    elif course_id in user["favorite"]:
         prev_cond = "favorite"
     else:
         prev_cond = "dismiss"
@@ -280,14 +282,15 @@ def get_courses_decided(request, user_id):
     user = db_utils.get_user(user_id)
     if not user:
         return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-    course_ids = user.user_decided
-    courses = []
-    for course_id in course_ids:
-        course = db_utils.get_course(id_= course_id)
-        courses.append(course)
+    decided_list = user["decided"]
+    courses_decided = []
+    for item in decided_list:
+        course = db_utils.get_course(course_id= item["course_id"])
+        course["selection_type"] = item["selection_type"]
+        courses_decided.append(course)
     return Response({
         "status": 200,
-        "courses-decided": courses,
+        "courses-decided": courses_decided,
     }, status=status.HTTP_200_OK)
 
 @api_view(["GET"])
@@ -299,14 +302,14 @@ def get_courses_favorite(request, user_id):
     user = db_utils.get_user(user_id)
     if not user:
         return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-    course_ids = user.user_favorite
-    courses = []
-    for course_id in course_ids:
-        course = db_utils.get_course(id_= course_id)
-        courses.append(course)
+    favorite_ids = user["favorite"]
+    courses_favorite = []
+    for course_id in favorite_ids:
+        course = db_utils.get_course(course_id= course_id)
+        courses_favorite.append(course)
     return Response({
         "status": 200,
-        "courses-decided": courses,
+        "courses-decided": courses_favorite,
     }, status=status.HTTP_200_OK)
 
 

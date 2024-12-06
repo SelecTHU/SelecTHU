@@ -105,7 +105,7 @@
           "department": <str>,
           "course-type": <str>,
           "capacity": <int>,
-          "selection": <dicr>,
+          "selection": <dict>,
         },
         ...
       ],
@@ -407,18 +407,21 @@
   - curriculum（**尚未最终确定**）
     ```json
     {
-      "0": [
-        <course_code: str>,
-        ...
-      ],
-      "1": [
-        <course_code: str>,
-        ...
-      ],
-      "2": [
-        <course_code: str>,
-        ...
-      ],
+      "curriculum_id" <int>,
+      "courses": {
+        "0": [
+          <course_code: str>,
+          ...
+        ],
+        "1": [
+          <course_code: str>,
+          ...
+        ],
+        "2": [
+          <course_code: str>,
+          ...
+        ],
+      }
     }
     ```
 
