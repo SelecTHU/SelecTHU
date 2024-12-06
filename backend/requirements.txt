@@ -3,14 +3,7 @@ djangorestframework==3.15.0
 eventlet>=0.24.1
 gunicorn
 pillow
-psycopg==3.1.8
-psycopg2-binary==2.9.8
-<<<<<<< HEAD
-PyJWT
-scrypt
-pillow
-=======
+psycopg[binary]
 pyjwt
 python-dotenv==1.0.0
 scrypt
->>>>>>> origin/main
