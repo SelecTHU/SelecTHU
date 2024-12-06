@@ -12,7 +12,7 @@ def getPostData(soup, page):
         if name != None and value != None:
             ret[name] = value
     for sel in form.find_all("select"):
-        name = inp.get("name")
+        name = sel.get("name")
         value = ""
         if name != None:
             ret[name] = value
