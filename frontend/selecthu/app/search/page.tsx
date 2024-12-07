@@ -16,6 +16,7 @@ import FilterSection, { Filter } from "../components/search/FilterSection";
 import SelectedFilters from "../components/search/SelectedFilters";
 import CoursesTable from "../components/search/CoursesTable";
 import SelectedCourseInfo from "../components/search/SelectedCourseInfo";
+import { searchCourses } from "./actions"
 
 // 从统一的类型文件导入 Course 接口
 import { Course, TimeSlot } from "../types/course";
@@ -181,6 +182,7 @@ export default function SearchPage() {
             <FilterSection
               selectedFilters={selectedFilters}
               addFilter={addFilter}
+              searchCoursesAction={searchCourses}
             />
 
             {/* 已选择的筛选标准展示部分 */}
