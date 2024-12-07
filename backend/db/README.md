@@ -41,11 +41,15 @@ db
     - `name <CharField>` : 课程名
     - `teacher <CharField>` : 教师名
     - `credit <IntegerField>` : 学分
-    - `period <IntegerField>` : 学时
     - `time <JSONField>` : 开课时间
     - `course_type <CharField>` : 课程类型（通识课组）
+    - `features <CharField>` : 课程特色
+    - `text <CharField>` : 选课文字说明
     - `department <CharField>` : 开课院系
     - `capacity <IntegerField>` : 课程容量
+    - `grade <CharField>` : 年级
+    - `sec_choice <BooleanField>` : 是否二级选课
+    - `experiment<CharField>` : 实验信息
     - `selection <JSONField>` : 已选人数
     - `link <CharField>` : 课程链接（指向 `CourseDetails` 表项）
 4. `CourseDetails` 课程详细信息表
@@ -116,10 +120,13 @@ db
         - `name<str>` (可选): 课程名称
         - `teacher<str>` (可选): 教师名称
         - `credit<str>` (可选): 学分
-        - `period<str>` (可选): 学时
         - `time<dict>` (可选): 开课时间，详细说明见 [时间字段说明](#time-explain)
         - `department<str>` (可选): 开课院系
         - `course_type<str>` (可选): 课程类型（通识课组）
+        - `features<str>` (可选): 课程特色
+        - `text<str>` (可选): 选课文字说明
+        - `grade<str>` (可选): 年级
+        - `sec_choice<bool>` (可选): 是否二级选课
         - `search_mode<str>` (可选): 搜索模式，可选值为 `exact` （精确匹配）、`fuzzy` （模糊匹配）和  `exclude` （排除匹配），默认为 `exact`
     - 返回值: `{ "status": <int>, "course": <list[dict]> }`
     - 错误码：
@@ -364,36 +371,31 @@ db
 `avatar` 实际上是头像对应的URL，如 `/avatar/ava.jpg` ，在前端需要拼接URL到服务器地址。例如，服务器地址为 `http://ip:port` ，则头像URL为 `http://ip:port/avatar/ava.jpg` 。
 3. `time` 字段详细说明如下：<span id="time-explain"></span>
 ```json
-{
-    "type": <int>,
-    "data": [
-        {
-            "w0": <int>,
-            "w1": <int>,
-            "d": <int>,
-            "t0": <int>,
-            "t1": <int>,
-        },
-        {
-            ...
-        },
+[
+    {
+        "type": <int>,
+        "w0": <int>,
+        "w1": <int>,
+        "d": <int>,
+        "t0": <int>,
+        "t1": <int>,
+    },
+    {
         ...
-    ],
+    },
     ...
-}
+]
 ```
 其中：
-- `type` : 课程周次类型，可选值为 `1` （单周）、`2` （双周）、`3` （其他）
-- `data` : 课程周次数据，每个元素为一周的数据
-    - `w0` : 开课周次起始（特别地，对于单周，`w0` 为 `1` ，对于双周，`w0` 为 `2` ，如无信息， `w0` 为 `1` ）
-    - `w1` : 开课周次结束（特别地，对于单周，`w1` 为 `17` ，对于双周，`w1` 为 `18` ，如无信息，`w1` 为 `18`）
-    - `d` : 星期几，可选值为 `1` （周一）到 `7` （周日）
-    - `t0` : 开课节次起始（特别地，如无信息，`t0` 为 `0`）
-    - `t1` : 开课节次结束（特别地，如无信息，`t1` 为 `20`）
+- `type` : 课程周次类型，可选值为 `1` （单周）、`2` （双周）、`3` （其他），如无信息， `type` 为 `0`
+- `w0` : 开课周次起始（特别地，对于单周，`w0` 为 `1` ，对于双周，`w0` 为 `2` ，如无信息， `w0` 为 `0` ）
+- `w1` : 开课周次结束（特别地，对于单周，`w1` 为 `15` ，对于双周，`w1` 为 `16` ，如无信息，`w1` 为 `0`）
+- `d` : 星期几，可选值为 `1` （周一）到 `7` （周日），如无信息， `d` 为 `0`
+- `t0` : 开课节次起始（特别地，如无信息，`t0` 为 `0`）
 
-对于**数据库存储**的情况和**查询课程**的情况， `time` 字段均应遵循上述格式。但是，对于**查询课程**的情况， `time` 字段的 `data` 中最多只能有一个元素，但不论是否有元素， `data` 字段均应对应一个列表。
+对于**数据库存储**的情况， `time` 字段应遵循上述格式。但是，对于**查询课程**的情况， `time` 字段应为一个 `dict` ，具体格式等同于上述格式的其中一个时间段。
 
-4. `selection_type` 字段（原 `level` 字段）说明：<span id="selection-explain"></span>
+1. `selection_type` 字段（原 `level` 字段）说明：<span id="selection-explain"></span>
 `selection_type` 字段表示课程的选课志愿分配，由两位字符组成，第一位表示志愿类型（包括必选、限选、任选、体育必选），第二位表示志愿等级（从 `0` 到 `3` ，数字越小，志愿等级越高，其中 `0` 志愿表示特殊优先级）。例如： `b2` 表示必选二志愿， `t1` 表示体育一志愿。具体定义见 [`const.py`](./v1/const.py) 。
 
 ### 单元测试报告

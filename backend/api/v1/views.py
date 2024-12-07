@@ -8,7 +8,7 @@ from rest_framework.permissions import AllowAny
 
 from django.core.files.storage import default_storage
 
-from api.v1.utils import generate_jwt, login_required
+from api.v1.utils import generate_jwt, login_required, verify_password
 
 from db.v1 import utils as db_utils
 
@@ -19,11 +19,10 @@ def backend_db_status(request):
     后端状态检查
     """
     db_status = db_utils.db_status()
-    if db_status["status"] != 200:
-        return Response({"status": 500}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     return Response({"status": 200, "message": "successfully connect to backend and database!"}, status=status.HTTP_200_OK)
 
 @api_view(["POST"])
+@permission_classes([AllowAny])
 def login_default(request):
     """
     使用默认id登录
@@ -34,6 +33,7 @@ def login_default(request):
     return Response({"status": 200, "jwt": token}, status=status.HTTP_200_OK)
 
 @api_view(["POST"])
+@permission_classes([AllowAny])
 def login(request):
     """
     用户登录
@@ -41,10 +41,16 @@ def login(request):
     user_id = request.data.get("user_id")
     if not user_id:
         return Response({"status": 400, "message": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+    password = request.data.get("password")
+    if not password:
+        return Response({"status": 400, "message": "password is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not verify_password(user_id, password):
+        return Response({"status": 401, "message": "Invalid user_id or password"}, status=status.HTTP_401_UNAUTHORIZED)
 
     user = db_utils.get_user(user_id)
     if not user:
-        return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        db_utils.add_user(user_id)
 
     payload = {"user_id": user_id}
     token = generate_jwt(payload)
@@ -68,13 +74,13 @@ def get_user_info(request, user_id):
     if not user:
         return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    decided_ids = user.decided
+    decided_ids = user.user_decided
     courses_decided = []
     for course_id in decided_ids:
         course = db_utils.get_course(id_= course_id)
         courses_decided.append(course)
 
-    favorite_ids = user.favorite
+    favorite_ids = user.user_favorite
     courses_favorite = []
     for course_id in favorite_ids:
         course = db_utils.get_course(id_= course_id)
@@ -83,11 +89,11 @@ def get_user_info(request, user_id):
     return Response({
         "status": 200,
         "user": {
-            "nickname": user.nickname,
-            "avatar": user.avatar,
+            "nickname": user.user_nickname,
+            "avatar": user.user_avatar,
             "courses-favorite": courses_favorite,
             "courses-decided": courses_decided,
-            "curriculum": user.curriculum,
+            "curriculum": user.user_curriculum,
         }
     }, status=status.HTTP_200_OK)
 
@@ -104,8 +110,8 @@ def get_user_info_basic(request, user_id):
     return Response({
         "status": 200,
         "user": {
-            "nickname": user.nickname,
-            "avatar": user.avatar,
+            "nickname": user.user_nickname,
+            "avatar": user.user_avatar,
         }
     }, status=status.HTTP_200_OK)
 
@@ -123,13 +129,27 @@ def modify_user_info_basic(request, user_id):
     avatar = request.FILES.get("avatar", None)
 
     if nickname:
-        user.nickname = nickname
+        user.user_nickname = nickname
     if avatar:
         if user.avatar:
-            default_storage.delete(user.avatar.path)  # 删除旧头像
-        user.avatar = avatar
+            default_storage.delete(user.user_avatar.path)  # 删除旧头像
+        user.user_avatar = avatar
 
     user.save()
+    return Response({"status": 200}, status=status.HTTP_200_OK)
+
+@api_view(["POST"])
+@login_required
+def modify_user_curriculum(request, user_id):
+    """
+    修改用户培养方案
+    """
+    user = db_utils.get_user(user_id)
+    if not user:
+        return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    curriculum = request.data.get("curriculum", None)
+    db_utils.modify_user_curriculum(user_id, curriculum)
     return Response({"status": 200}, status=status.HTTP_200_OK)
 
 @api_view(["GET"])
@@ -151,10 +171,13 @@ def get_curriculum(request, user_id):
     """
     查询培养方案
     """
-    #TODO：确定培养方案的用法
+    user = db_utils.get_user(user_id)
+    if not user:
+        return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+    
     return Response({
-        
         "status": 200,
+        "curriculum": user.user_curriculum,
     }, status=status.HTTP_200_OK)
 
 @api_view(["GET"])
@@ -218,9 +241,9 @@ def modify_course_condition(request, user_id):
     if not user:
         return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
     
-    if course_id in user.decided:
+    if course_id in user.user_decided:
         prev_cond = "decided"
-    elif course_id in user.favorite:
+    elif course_id in user.user_favorite:
         prev_cond = "favorite"
     else:
         prev_cond = "dismiss"
@@ -257,7 +280,7 @@ def get_courses_decided(request, user_id):
     user = db_utils.get_user(user_id)
     if not user:
         return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-    course_ids = user.decided
+    course_ids = user.user_decided
     courses = []
     for course_id in course_ids:
         course = db_utils.get_course(id_= course_id)
@@ -276,7 +299,7 @@ def get_courses_favorite(request, user_id):
     user = db_utils.get_user(user_id)
     if not user:
         return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-    course_ids = user.favorite
+    course_ids = user.user_favorite
     courses = []
     for course_id in course_ids:
         course = db_utils.get_course(id_= course_id)

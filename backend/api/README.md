@@ -19,7 +19,7 @@
 
 #### 测试接口
 1. **测试连接后端**
-- 接口：`api/v1/status-backend/`
+- 接口：`api/v1/backend-db-status/`
 - 请求类型：`POST`
 - 请求参数：无
 - 返回值
@@ -50,6 +50,7 @@
 - 请求类型：`POST`
 - 请求参数：
   - `user_id<str>`：用户id
+  - `password<str>`：密码（对应网络学堂）
 - 返回值：
   ```json
   {
@@ -63,13 +64,13 @@
   - **404 Not Found**：用户未找到。
 
 3. **用户登出**<span id="logout"></span>
-- 接口：`/api/v1/logout/<user_id>/`
+- 接口：`/api/v1/logout/`
 - 请求类型：`POST`
 - 请求参数：无
 - 返回值：
   ```json
   {
-    "status": <int>
+    "status": <int>,
   }
   ```
 - 说明：登出指定账号
@@ -80,7 +81,7 @@
 #### 用户信息管理
 
 1. **获取用户完整信息**<span id="get_user_info"></span>
-- 接口：`/api/v1/user/<user_id>/`
+- 接口：`/api/v1/user/`
 - 请求类型：`GET`
 - 请求参数：无
 - 返回值：
@@ -95,13 +96,16 @@
         {
           "course_id": <str>,
           "code": <str>,
+          "number": <str>,
           "name": <str>,
           "teacher": <str>,
           "credit": <int>,
           "period": <int>,
           "time": <dict>,
           "department": <str>,
-          "type": <str>,
+          "course-type": <str>,
+          "capacity": <int>,
+          "selection": <dicr>,
         },
         ...
       ],
@@ -109,12 +113,16 @@
         {
           "course_id": <str>,
           "code": <str>,
+          "number": <str>,
           "name": <str>,
           "teacher": <str>,
           "credit": <int>,
           "period": <int>,
           "time": <dict>,
           "department": <str>,
+          "course-type": <str>,
+          "capacity": <int>,
+          "selection": <dicr>,
           "selection-type": <str>,
         },
         ...
@@ -128,7 +136,7 @@
   - **404 Not Found**：用户未找到。
 
 2. **获取用户基本信息**<span id="get_user_info_basic"></span>
-- 接口：`/api/v1/user-basic/<user_id>/`
+- 接口：`/api/v1/user-basic/`
 - 请求类型：`GET`
 - 请求参数：无
 - 返回值：
@@ -147,7 +155,7 @@
   - **404 Not Found**：用户未找到。
 
 3. **修改用户基本信息**<span id="modify_user_info_basic"></span>
-- 接口：`/api/v1/user-basic/<user_id>/update/`
+- 接口：`/api/v1/user-basic/update/`
 - 请求类型：`POST`
 - 请求参数：
   - `nickname<str>`（可选）：昵称
@@ -163,10 +171,25 @@
   - **404 Not Found**：用户未找到。
   - **400 Bad Request**：请求的昵称或头像格式不正确。
 
+4. **修改用户培养方案**<span id="modify_user_curriculum"></span>
+- 接口：`/api/v1/modify-user-curriculum/`
+- 请求类型：`POST`
+- 请求参数：
+  - `curriculum<dict>`：新培养方案
+- 返回值：
+  ```json
+  {
+    "status": <int>
+  }
+  ```
+- 说明：修改用户培养方案，可能需要前端登陆网络学堂获取
+- 错误码：
+  - **404 Not Found**：用户未找到。
+
 #### 选课管理
 
 1. **获取选课阶段**<span id="get_selection_stage"></span>
-- 接口：`/api/v1/selection-stage`
+- 接口：`/api/v1/selection-stage/`
 - 请求类型：`GET`
 - 请求参数：无
 - 返回值：
@@ -181,7 +204,7 @@
   - **500 Internal Server Error**：获取选课阶段时发生错误。
 
 2. **获取培养方案**<span id="get_curriculum"></span>
-- 接口：`/api/v1/curriculum/<user_id>/`
+- 接口：`/api/v1/curriculum/`
 - 请求类型：`GET`
 - 请求参数：无
 - 返回值：
@@ -212,7 +235,23 @@
   ```json
   {
     "status": <int>, 
-    "courses-main": <list>
+    "courses-main": [
+      {
+        "course_id": <str>,
+        "code": <str>,
+        "number": <str>,
+        "name": <str>,
+        "teacher": <str>,
+        "credit": <int>,
+        "period": <int>,
+        "time": <dict>,
+        "department": <str>,
+        "course-type": <str>,
+        "capacity": <int>,
+        "selection": <dicr>
+      },
+      ...
+    ]
   }
   ```
 - 说明：根据筛选条件返回所有符合条件课程的基本信息
@@ -245,7 +284,7 @@
   - **404 Not Found**：课程未找到。
 
 5. **课程状态切换**<span id="modify_course_condition"></span>
-- 接口：`/api/v1/modify-course-condition/<user_id>/`
+- 接口：`/api/v1/modify-course-condition/`
 - 请求类型：`POST`
 - 请求参数：
   - `course_id<str>`：课程id
@@ -263,7 +302,7 @@
   - **404 Not Found**：课程未找到或无法修改状态。
 
 6. **获取已选课程**<span id="get_courses_decided"></span>
-- 接口：`/api/v1/courses-decided/<user_id>/`
+- 接口：`/api/v1/courses-decided/`
 - 请求类型：`GET`
 - 请求参数：无
 - 返回值：
@@ -274,12 +313,16 @@
       {
         "course_id": <str>,
         "code": <str>,
+        "number": <str>,
         "name": <str>,
         "teacher": <str>,
         "credit": <int>,
         "period": <int>,
         "time": <dict>,
         "department": <str>,
+        "course-type": <str>,
+        "capacity": <int>,
+        "selection": <dicr>,
         "selection-type": <str>,
       },
       ...
@@ -291,7 +334,7 @@
   - **404 Not Found**：用户未找到。
 
 7. **获取收藏课程**<span id="get_courses_favorite"></span>
-- 接口：`/api/v1/courses-favorite/<user_id>/`
+- 接口：`/api/v1/courses-favorite/`
 - 请求类型：`GET`
 - 请求参数：无
 - 返回值：
@@ -302,12 +345,16 @@
       {
         "course_id": <str>,
         "code": <str>,
+        "number": <str>,
         "name": <str>,
         "teacher": <str>,
         "credit": <int>,
         "period": <int>,
         "time": <dict>,
         "department": <str>,
+        "course-type": <str>,
+        "capacity": <int>,
+        "selection": <dicr>
       },
       ...
     ]
@@ -318,7 +365,7 @@
   - **404 Not Found**：用户未找到。
 
 8. **修改课程志愿**<span id="modify_course_selection_type"></span>
-- 接口：`/api/v1/modify-course-wish/<user_id>`
+- 接口：`/api/v1/modify-course-wish/`
 - 请求类型：`POST`
 - 请求参数：无
   - `selection-type<str>`：目标志愿（两位字符，第一位b,x,r,t，第二位0,1,2,3）
@@ -375,10 +422,6 @@
     }
     ```
 
-### 问题与思路
+### 问题
 
-- **选课冲突解决**:
-  - 列表页面提供“选课”按钮，如果冲突则弹出提示，询问是否添加到备选。
-  - 课表页面【待实现】。
-- **列表页面标注已选课程**:
-  - 说明：标注用户已选的课程，方便区分已选和未选课程。
+1. **course相关db接口**：当前是先获取list再逐个id查询，能否优化为直接给db_util传入course_id列表进行查询
