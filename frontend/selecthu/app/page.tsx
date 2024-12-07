@@ -16,7 +16,7 @@ import {
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 
-export default async function LoginPage() {
+export default function LoginPage() {
   // 初始化路由器和状态变量
   const router = useRouter();
   const [account, setAccount] = useState(""); // 账号状态
