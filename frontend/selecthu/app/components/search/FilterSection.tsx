@@ -24,6 +24,7 @@ export interface Filter {
 interface FilterSectionProps {
   selectedFilters: Filter[];
   addFilter: (filter: Filter) => void;
+  searchCoursesAction: () => Promise<object>;
 }
 
 const filterOptions = [
@@ -34,7 +35,7 @@ const filterOptions = [
   { label: "授课教师", value: "instructor" },
 ];
 
-const FilterSection: React.FC<FilterSectionProps> = ({ selectedFilters, addFilter }) => {
+const FilterSection: React.FC<FilterSectionProps> = ({ selectedFilters, addFilter, searchCoursesAction }) => {
   // 当前选中的筛选类型
   const [activeFilter, setActiveFilter] = useState<string>("");
 
@@ -75,7 +76,11 @@ const FilterSection: React.FC<FilterSectionProps> = ({ selectedFilters, addFilte
               />
               <Button
                 colorScheme="blue"
-                onClick={handleAddFilter}
+                onClick={ async () => {
+                    handleAddFilter()
+                    const res = await searchCoursesAction()
+                    console.log(res)
+                }}
                 isDisabled={inputValue.trim() === ""}
               >
                 添加
