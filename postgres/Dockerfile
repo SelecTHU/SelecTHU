@@ -2,4 +2,4 @@
 FROM postgres:17
 
 # 将初始化脚本复制到容器中
-COPY ./postgres/init.sql /docker-entrypoint-initdb.d/
+COPY ./init.sql /docker-entrypoint-initdb.d/
