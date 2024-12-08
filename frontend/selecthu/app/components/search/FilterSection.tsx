@@ -24,7 +24,7 @@ export interface Filter {
 interface FilterSectionProps {
   selectedFilters: Filter[];
   addFilter: (filter: Filter) => void;
-  searchCoursesAction: () => Promise<object>;
+  searchCoursesAction: () => Promise<any>;
 }
 
 const filterOptions = [
