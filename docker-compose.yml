@@ -1,9 +1,9 @@
 services:
   # 数据库(postgres)
   db:
-    image: postgres:17
+    build: ./postgres
     volumes:
-      - ./postgres:/var/lib/postgresql/data
+      - ./postgres/psql:/var/lib/postgresql/data
     expose:
       - ${DB_PORT}
     restart: always
