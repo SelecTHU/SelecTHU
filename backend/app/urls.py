@@ -17,11 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.urls import include
-from django.conf import settings
-from django.views.static import serve
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
-    path('media/<str:path>', serve, {'document_root': settings.MEDIA_ROOT}, name='media'),
 ]

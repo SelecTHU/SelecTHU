@@ -10,9 +10,6 @@
 ## 后端api接口说明
 见 [api部分](./api/README.md)
 
-## 其他接口说明
-- `media/avatar/`：用户头像存储路径
-
 ## 依赖说明
 所需依赖见 [requirements.txt](./requirements.txt)
 
