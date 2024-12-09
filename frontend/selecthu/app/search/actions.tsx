@@ -1,8 +1,13 @@
 "use server"
 
 export async function searchCourses() {
-    const res = await fetch("/api/v1/courses/")
-    const json = await res.json()
+    try {
+        const res = await fetch("http://backend:8001/api/v1/courses/")
+        return res.status
+    } catch (error) {
+        return error.message
+    }
+    // const json = await res.json()
 
-    return json
+    // return json
 }
