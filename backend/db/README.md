@@ -407,8 +407,8 @@ db
 ```
 Name                Stmts   Miss  Cover
 ---------------------------------------
-db/v1/modifyDB.py     299    235    21%
-db/v1/queryDB.py      168     76    55%
+db/v1/modifyDB.py     303    235    22%
+db/v1/queryDB.py      185     79    57%
 ---------------------------------------
-TOTAL                 467    311    33%
+TOTAL                 488    314    36%
 ```

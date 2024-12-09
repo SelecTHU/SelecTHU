@@ -104,7 +104,7 @@ def get_user(user_id: str):
         user = models.User.objects.filter(user_id=user_id)
         if user.exists() is False:
             return const.RESPONSE_404
-        user = user.first()
+        user = models.User.objects.get(user_id=user_id)
         avatar_url = user.user_avatar.url
         curriculum = dict()
         if user.user_curriculum:
@@ -113,7 +113,7 @@ def get_user(user_id: str):
                 curriculum_id=user_curriculum_id
             )
             if user_curriculum.exists():
-                curriculum = user_curriculum.first().values("courses")
+                curriculum = user_curriculum.values("courses").first()
 
         # 返回结果
         return {
