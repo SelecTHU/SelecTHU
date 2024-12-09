@@ -127,17 +127,13 @@ def modify_user_info_basic(request, user_id):
         return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
     nickname = request.data.get("nickname", None)
-    avatar = request.FILES.get("avatar", None)
-
-    if nickname:
-        user["nickname"] = nickname
-    if avatar:
-        if user["avatar"]:
-            default_storage.delete(user["avatar"].path)  # 删除旧头像
-        user["avatar"] = avatar
-
-    db_utils.change_user_info(user_id, user["nickname"], user["avatar"])
-    return Response({"status": 200}, status=status.HTTP_200_OK)
+    avatar = request.data.get("avatar", None)
+    
+    res = db_utils.change_user_info(user_id, nickname, avatar)
+    
+    if res["status"] == 200:
+        return Response({"status": 200}, status=status.HTTP_200_OK)
+    return Response({"status": 400, "message": "Invalid nickname or avatar"}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(["POST"])
 @login_required
@@ -190,19 +186,20 @@ def filter_courses(request, user_id):
     """
     筛选课程
     """
-    filters = {
-        "code": request.query_params.get("code", None),
-        "name": request.query_params.get("name", None),
-        "teacher": request.query_params.get("teacher", None),
-        "credit": request.query_params.get("credit", None),
-        "period": request.query_params.get("period", None),
-        "time": request.query_params.get("time", None),
-        "department": request.query_params.get("department", None),
-        "type": request.query_params.get("type", None),
-        "search_mode": request.query_params.get("search_mode", "exact"),
-    }
-
-    courses = db_utils.get_course(filters)
+    print("printing request.query_params")
+    print(request.query_params)
+    
+    courses = db_utils.get_course(
+        code=request.query_params.get("code", None),
+        name=request.query_params.get("name", None),
+        teacher=request.query_params.get("teacher", None),
+        credit=request.query_params.get("credit", None),
+        period=request.query_params.get("period", None),
+        time=request.query_params.get("time", None),  # Assuming time is a JSON string or dictionary
+        department=request.query_params.get("department", None),
+        course_type=request.query_params.get("type", None),  # Renamed to course_type to match get_course
+        search_mode=request.query_params.get("search_mode", "exact"),
+    )
 
     return Response({
         "status": 200,
