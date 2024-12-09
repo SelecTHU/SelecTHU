@@ -27,6 +27,7 @@ services:
     build: ./backend
     volumes:
       - ./backend:/backend
+      - ./media:/backend/media
     expose:
       - "8001"
     depends_on:
@@ -61,6 +62,7 @@ services:
       - "8000:8080"
     volumes:
       - ./nginx:/etc/nginx/conf.d
+      - ./media:/media
     depends_on:
       - backend
       - frontend
