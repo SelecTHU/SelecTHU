@@ -382,6 +382,9 @@
   - **404 Not Found**：课程未找到或无法修改志愿。
   
 ### 附加说明
+#### 关于jwt请求头
+除了`backend-db-status`，`login-default`和`login`接口，其余接口都需要在请求头`Authorization`中带上`Bearer {jwt}`
+
 #### 一些数据的内部结构
   - selection（course_main，course_detail中）
     ```json

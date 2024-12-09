@@ -74,18 +74,17 @@ def get_user_info(request, user_id):
     if not user:
         return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    print(user)
     decided_list = user["decided"]
     courses_decided = []
     for item in decided_list:
-        course = db_utils.get_course(course_id= item["course_id"])
+        course = db_utils.get_course(course_id=item["course_id"])["course"][0]
         course["selection_type"] = item["selection_type"]
         courses_decided.append(course)
 
     favorite_ids = user["favorite"]
     courses_favorite = []
     for course_id in favorite_ids:
-        course = db_utils.get_course(course_id= course_id)
+        course = db_utils.get_course(course_id=course_id)["course"][0]
         courses_favorite.append(course)
 
     return Response({
@@ -137,7 +136,7 @@ def modify_user_info_basic(request, user_id):
             default_storage.delete(user["avatar"].path)  # 删除旧头像
         user["avatar"] = avatar
 
-    user.save()
+    db_utils.change_user_info(user_id, user["nickname"], user["avatar"])
     return Response({"status": 200}, status=status.HTTP_200_OK)
 
 @api_view(["POST"])
@@ -151,12 +150,15 @@ def modify_user_curriculum(request, user_id):
         return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
     curriculum = request.data.get("curriculum", None)
-    db_utils.modify_user_curriculum(user_id, curriculum)
-    return Response({"status": 200}, status=status.HTTP_200_OK)
+    op = db_utils.change_user_curriculum(user_id, curriculum)
+    if op["status"] == 200:
+        return Response({"status": 200}, status=status.HTTP_200_OK)
+    else:
+        return Response({"status": 400, "message": "Invalid curriculum"}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(["GET"])
 @login_required
-def get_selection_stage(request):
+def get_selection_stage(request, user_id):
     """
     查询选课阶段
     """
@@ -184,7 +186,7 @@ def get_curriculum(request, user_id):
 
 @api_view(["GET"])
 @login_required
-def filter_courses(request):
+def filter_courses(request, user_id):
     """
     筛选课程
     """
@@ -209,7 +211,7 @@ def filter_courses(request):
 
 @api_view(["GET"])
 @login_required
-def get_course_detail(request, course_id):
+def get_course_detail(request, course_id, user_id):
     """
     查询课程信息
     """
@@ -220,9 +222,9 @@ def get_course_detail(request, course_id):
     return Response({
         "status": 200,
         "course": {
-            "info": course["info"],
-            "score": course["score"],
-            "comments": course["comments"],
+            "info": course["details"]["info"],
+            "score": course["details"]["score"],
+            "comments": course["details"]["comments"],
         }
     }, status=status.HTTP_200_OK)
 
@@ -285,7 +287,7 @@ def get_courses_decided(request, user_id):
     decided_list = user["decided"]
     courses_decided = []
     for item in decided_list:
-        course = db_utils.get_course(course_id= item["course_id"])
+        course = db_utils.get_course(course_id= item["course_id"])["course"][0]
         course["selection_type"] = item["selection_type"]
         courses_decided.append(course)
     return Response({
@@ -305,11 +307,11 @@ def get_courses_favorite(request, user_id):
     favorite_ids = user["favorite"]
     courses_favorite = []
     for course_id in favorite_ids:
-        course = db_utils.get_course(course_id= course_id)
+        course = db_utils.get_course(course_id= course_id)["course"][0]
         courses_favorite.append(course)
     return Response({
         "status": 200,
-        "courses-decided": courses_favorite,
+        "courses-favorite": courses_favorite,
     }, status=status.HTTP_200_OK)
 
 
@@ -325,7 +327,7 @@ def modify_course_selection_type(request, user_id):
     user = db_utils.get_user(user_id)
     if not user:
         return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-    if selection_type not in ["decided", "favorite", "dismiss"]:
+    if selection_type[0] not in ['b', 'x', 'r', 't'] or selection_type[1] not in ['0', '1', '2', '3',]:
         return Response({"status": 400, "message": "Invalid selection type"}, status=status.HTTP_400_BAD_REQUEST)
     success = db_utils.change_course_level(user_id, course_id, selection_type)
     if not success:
