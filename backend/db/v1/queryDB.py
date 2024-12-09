@@ -130,69 +130,48 @@ def get_user(user_id: str):
 
 
 # 查询课程列表
-def get_courses(count: int = -1):
+def get_courses(index: int = 0, count: int = -1):
     """
     查询课程列表（指定数量）
 
+    :param `index`: 查询起始位置（默认为0）
     :param `count`: 查询数量（默认为-1，即全部查询）
     :return: 返回数据（在请求正确的情况下包含字典列表 `courses<type = list[dict]>` ）
     """
     const.logger.info("get_courses: calling", extra=const.LOGGING_TYPE.INFO)
 
-    if isinstance(count, int) is False:
+    if isinstance(index, int) is False or isinstance(count, int) is False:
         return const.RESPONSE_400
 
+    if index < 0 or index >= models.MainCourses.objects.count() or count < -1:
+        return const.RESPONSE_400
+    
     try:
         courses = []
-        if count == -1:
-            # 查询数据库
-            courses = models.MainCourses.objects.all().values(
-                "course_id",
-                "code",
-                "number",
-                "name",
-                "teacher",
-                "credit",
-                "time",
-                "department",
-                "course_type",
-                "features",
-                "text",
-                "capacity",
-                "grade",
-                "experiment",
-                "sec_choice",
-                "selection",
-            )
-            if not courses:
-                return const.RESPONSE_404
+        query_count = models.MainCourses.objects.count() if count == -1 or count > models.MainCourses.objects.count() else count
+        
+        # 查询数据库
+        courses = models.MainCourses.objects.all().values(
+            "course_id",
+            "code",
+            "number",
+            "name",
+            "teacher",
+            "credit",
+            "time",
+            "department",
+            "course_type",
+            "features",
+            "text",
+            "capacity",
+            "grade",
+            "experiment",
+            "sec_choice",
+            "selection",
+        )[index : index + query_count]
 
-        else:
-            # 判断count是否合法（是否超过数据库中的数据数量）
-            if count <= 0 or count > models.MainCourses.objects.count():
-                return const.RESPONSE_400
-
-            # 查询数据库
-            courses = models.MainCourses.objects.all().values(
-                "course_id",
-                "code",
-                "number",
-                "name",
-                "teacher",
-                "credit",
-                "time",
-                "department",
-                "course_type",
-                "features",
-                "text",
-                "capacity",
-                "grade",
-                "experiment",
-                "sec_choice",
-                "selection",
-            )[:count]
-            if not courses:
-                return const.RESPONSE_404
+        if not courses:
+            return const.RESPONSE_404
 
         # 返回结果
         return {"status": 200, "courses": list(courses)}

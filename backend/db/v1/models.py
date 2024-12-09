@@ -78,15 +78,15 @@ class Curriculum(models.Model):
     # 内部结构：
     # {
     #     key1: [
-    #         <course_code: str>,
+    #         <course_info: dict>,
     #         ...
     #     ],
     #     key2: [
-    #         <course_code: str>,
+    #         <course_info: dict>,
     #         ...
     #     ],
     #     key3: [
-    #         <course_code: str>,
+    #         <course_info: dict>,
     #         ...
     #     ],
     # }

@@ -2,6 +2,7 @@ import db.v1.const as const
 import db.v1.models as models
 
 import hashlib
+import json
 import time
 
 
@@ -19,33 +20,33 @@ def cal_curriculum_id(courses: dict) -> str:
         # 内部结构：
         # {
         #     key1: [
-        #         <course_code: str>,
+        #         <course_info: dict>,
         #         ...
         #     ],
         #     key2: [
-        #         <course_code: str>,
+        #         <course_info: dict>,
         #         ...
         #     ],
         #     key3: [
-        #         <course_code: str>,
+        #         <course_info: dict>,
         #         ...
         #     ],
         # }
-        # 排序规则：按照课程代码排序
+        # 排序规则：按照课程代码排序（course_info["code"]）
         for index in range(len(const.CURRICULUM_KEYS)):
             key = const.CURRICULUM_KEYS[index]
             if key not in courses.keys():
                 raise  # 课程列表不完整
-            courses[key].sort()
-            source_str += "".join(courses[key])
+            courses[key].sort(key=lambda x: x["code"])
+            source_str += json.dumps(courses[key], ensure_ascii=False, indent=0)
             source_str += const.SALT[index]
 
         # 创建sha256对象
         sha256 = hashlib.sha256()  # 创建sha256对象
         sha256.update(source_str.encode("utf-8"))  # 更新
-        id_ = sha256.hexdigest()  # 计算id
+        curriculum_id = sha256.hexdigest()  # 计算id
 
-        return id_
+        return curriculum_id
     except:
         raise  # 计算错误
 

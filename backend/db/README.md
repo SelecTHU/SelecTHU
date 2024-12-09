@@ -103,6 +103,7 @@ db
 5. **查询课程列表**<span id="get_courses"></span>
     - 对应函数: `db_utils.get_courses`
     - 请求参数:
+        -  `index<int>` (可选): 返回课程的起始索引，默认为 `0` ，即从第一门课程开始返回
         -  `count<int>` (可选): 返回课程数量，默认为 `-1` ，即返回所有课程
     - 返回值: `{ "status": <int>, "courses": <list[dict]> }`
     - 错误码：
