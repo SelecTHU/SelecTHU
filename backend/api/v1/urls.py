@@ -15,7 +15,7 @@ urlpatterns = [
     path('modify-user-curriculum/', views.modify_user_curriculum, name='modify_user_curriculum'),  # 修改个人培养方案
 
     # 选课管理
-    path('selection-stage/', views.get_selection_stage, name='get_selection_phase'),  # 获取选课阶段
+    path('selection-stage/', views.get_selection_stage, name='get_selection_stage'),  # 获取选课阶段
     path('curriculum/', views.get_curriculum, name='get_curriculum'),  # 获取培养方案
     path('courses/', views.filter_courses, name='filter_courses'),  # 筛选获取课程
     path('course-detail/<str:course_id>/', views.get_course_detail, name='get_course_detail'),  # 获取课程详细信息
