@@ -27,8 +27,8 @@ def generate_jwt(payload, expiry=None):
             else 1
         )
         expiry = now + datetime.timedelta(hours=expire_hours)
-        print("now:", now)
-        print("expiry:", expiry)
+        #print("now:", now)
+        #print("expiry:", expiry)
 
     _payload = {"exp": expiry}
     _payload.update(payload)
@@ -47,20 +47,19 @@ def verify_jwt(token):
     :return: dict: payload
     """
     secret = settings.JWT_SECRET
-    
+
+    # preprocessing
     if token.startswith("Bearer "):
         token = token.split(" ")[1]
-    #padding
     token += '=' * (4 - len(token) % 4)
-    
 
     try:
         payload = jwt.decode(token, secret, algorithms=["HS256"])
     except jwt.PyJWTError:
+        print("other error")
         payload = None
 
     return payload
-
 
 def jwt_authentication(request) -> int: 
     """
@@ -72,6 +71,7 @@ def jwt_authentication(request) -> int:
         payload = verify_jwt(token)
         if payload:
             user_id = payload.get("user_id")
+            request.user_id = user_id
             res = get_user(user_id)
             if res["status"] == 200:
                 return 1
@@ -93,8 +93,8 @@ def login_required(func):
             return Response(
                 {"message": "User must be authorized."}, status=status.HTTP_401_UNAUTHORIZED
             )
-        else:
-            return func(*args, **kwargs)
+        kwargs["user_id"] = request.user_id
+        return func(*args, **kwargs)
 
     return wrapper
 
@@ -107,3 +107,5 @@ def verify_password(user_id, password):
     """
     
     return True
+
+
