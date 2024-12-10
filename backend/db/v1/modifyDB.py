@@ -4,7 +4,7 @@
 """
 
 from db.v1.dbBasic import *
-
+from django.core.files.images import ImageFile
 
 """添加类操作"""
 
@@ -366,8 +366,7 @@ def change_course_level(user_id: str, course_id: str, selection_type: str):
         return const.RESPONSE_500
 
 
-# TODO:修改用户信息（确定参数avatar的格式）
-def change_user_info(user_id: str, nickname: str = None, avatar=None):
+def change_user_info(user_id: str, nickname: str = None, avatar: ImageFile = None):
     """
     修改用户信息（用户昵称、头像，至少需要一个参数）
 
@@ -394,8 +393,7 @@ def change_user_info(user_id: str, nickname: str = None, avatar=None):
             models.User.objects.filter(user_id=user_id).update(user_nickname=nickname)
 
         if avatar:
-            # TODO: 解析并修改头像
-            return const.RESPONSE_501
+            models.User.objects.filter(user_id=user_id).update(user_avatar=avatar)
 
         # 返回结果
         return {"status": 200, "msg": "change user info successfully"}

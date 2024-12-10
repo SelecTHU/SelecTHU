@@ -301,7 +301,7 @@ db
     - 请求参数:
         - `user_id<str>` : 用户ID
         - `nickname<str>` (可选): 用户昵称
-        - `avatar` (可选): 用户头像
+        - `avatar<ImageFile>` (可选): 用户头像
     - 返回值: `{ "status": <int>, "msg": <str> }`
     - 错误码：
         - `400` : 参数错误
