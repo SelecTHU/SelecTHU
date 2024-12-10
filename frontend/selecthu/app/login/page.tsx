@@ -16,6 +16,8 @@ import {
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 
+import { handleLogin } from "./actions"
+
 export default function LoginPage() {
   // 初始化路由器和状态变量
   const router = useRouter();
@@ -24,13 +26,13 @@ export default function LoginPage() {
   const [remember, setRemember] = useState(false); // 记住密码复选框状态
 
   // 处理登录按钮点击事件
-  const handleLogin = () => {
+  /* const handleLogin = () => {
     router.push("/main"); // 登录后跳转到主页
-  };
+  }; */
 
   useEffect(() => {
     async function fetchTest() {
-      let res = await fetch("http://localhost:8080/api/v1/backend-db-status/")
+      let res = await fetch("http://selecthu.shyuf.cn:8000/api/v1/backend-db-status/")
       let data = await res.json()
       return data
     }
@@ -98,7 +100,15 @@ export default function LoginPage() {
             </Checkbox>
           </Flex>
           {/* 登录按钮 */}
-          <Button colorScheme="brand" onClick={handleLogin}>
+          <Button colorScheme="brand" onClick={ async () => {
+              const res = await handleLogin()
+              if (res?.error) {
+                  console.log(res.error)
+              }
+              else {
+                  router.push("/main")
+              }
+          }}>
             登录
           </Button>
         </VStack>

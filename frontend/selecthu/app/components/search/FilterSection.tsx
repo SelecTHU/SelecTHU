@@ -76,11 +76,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ selectedFilters, addFilte
               />
               <Button
                 colorScheme="blue"
-                onClick={ async () => {
-                    handleAddFilter()
-                    const res = await searchCoursesAction()
-                    console.log(res)
-                }}
+                onClick={searchCoursesAction}
                 isDisabled={inputValue.trim() === ""}
               >
                 添加

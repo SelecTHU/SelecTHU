@@ -183,7 +183,33 @@ export default function SearchPage() {
             <FilterSection
               selectedFilters={selectedFilters}
               addFilter={addFilter}
-              searchCoursesAction={searchCourses}
+              searchCoursesAction={async () => {
+                  const res = await searchCourses()
+                  setCourses(res.map((data): Course => {
+                      return {
+                          id: data.course_id,
+                          courseNumber: data.code,
+                          sequenceNumber: data.number,
+                          name: data.name,
+                          teacher: data.teacher,
+                          credits: data.credit,
+                          department: data.department,
+                          time: "tbd",
+                          classroom: "not known",
+                          type: "not known",
+                          timeSlots: data.time.map((time) => {
+                              return {
+                                  day: time.d,
+                                  start: time.t0,
+                                  duration: 2
+                              }
+                          }),
+                          teachingInfo: "none",
+                          teacherInfo: "none",
+                          comments: [],
+                      }
+                  }))
+              }}
             />
 
             {/* 已选择的筛选标准展示部分 */}
