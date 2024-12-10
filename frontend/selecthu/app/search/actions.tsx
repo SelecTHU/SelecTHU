@@ -6,7 +6,7 @@ export async function searchCourses() {
     try {
         const cookieStore = await cookies()
         const jwt = cookieStore.get("jwt-token")
-        const res = await fetch("http://selecthu.shyuf.cn:8000/api/v1/courses/", {
+        const res = await fetch("http://backend:8001/api/v1/courses/", {
             headers: {
                 "Authorization": "Bearer " + jwt,
             },

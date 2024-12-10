@@ -31,8 +31,8 @@ class QueryDBTestCase(TestCase):
             }
         )
         curriculum1 = {
-            const.CURRICULUM_KEYS[0]: ["1000016"],
-            const.CURRICULUM_KEYS[1]: ["1000017"],
+            const.CURRICULUM_KEYS[0]: [{"code": "1000016"}],
+            const.CURRICULUM_KEYS[1]: [{"code": "1000017"}],
             const.CURRICULUM_KEYS[2]: [],
         }
         user = add_user("valid_user", curriculum1)
@@ -55,6 +55,11 @@ class QueryDBTestCase(TestCase):
         response = get_user("nonexistent_user")
         self.assertEqual(response, const.RESPONSE_404)
 
+    def test_get_user_found(self):
+        # 测试get_user成功找到用户
+        response = get_user("valid_user")
+        self.assertEqual(response["status"], 200)
+
     def test_get_curriculum_valid_user(self):
         # 测试get_curriculum函数对有效用户的返回
         response = get_curriculum("valid_user")
@@ -73,8 +78,8 @@ class QueryDBTestCase(TestCase):
         self.assertIsInstance(response["courses"], list)
 
     def test_get_courses_specific_count(self):
-        # 测试get_courses函数按指定数量返回课程
-        response = get_courses(count=2)
+        # 测试get_courses函数按指定数量返回课程（超出数量）
+        response = get_courses(count=10)
         self.assertEqual(response["status"], 200)
         self.assertEqual(len(response["courses"]), 2)
 
@@ -241,8 +246,8 @@ class ModifyDBTestCase(TestCase):
     def test_add_user_with_curriculum(self):
         # 测试add_user函数添加带培养方案的用户
         curriculum = {
-            const.CURRICULUM_KEYS[0]: ["1000016"],
-            const.CURRICULUM_KEYS[1]: ["1000017"],
+            const.CURRICULUM_KEYS[0]: [{"code": "1000016"}],
+            const.CURRICULUM_KEYS[1]: [{"code": "1000017"}],
             const.CURRICULUM_KEYS[2]: [],
         }
 
