@@ -186,8 +186,6 @@ def filter_courses(request, user_id):
     """
     筛选课程
     """
-    print("printing request.query_params")
-    print(request.query_params)
     
     courses = db_utils.get_course(
         code=request.query_params.get("code", None),
@@ -203,7 +201,7 @@ def filter_courses(request, user_id):
 
     return Response({
         "status": 200,
-        "courses-main": courses,
+        "courses-main": courses["course"],
     }, status=status.HTTP_200_OK)
 
 @api_view(["GET"])
