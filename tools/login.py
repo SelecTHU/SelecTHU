@@ -48,7 +48,8 @@ class Login:
 
     def __del__(self):
         self.logger.info("关闭httpx客户端")
-        self.client.close()
+        if self.client is not None:
+            self.client.close()
 
     def ocr_captcha(self, img_resp):
         try:
@@ -64,39 +65,48 @@ class Login:
             self.logger.error(f"验证码识别失败: {e}")
             return None
 
-    def login(self):
-        try:
-            self.logger.info("开始登录")
+    def login(self, retries: int = 5):
+        while retries > 0:
+            try:
+                self.logger.info("开始登录")
 
-            # 获取登录页面和cookies
-            init_resp = self.client.get(f"{self.base_url}/xsxk_index.jsp")
-            self.cookies.update(init_resp.cookies)
+                # 获取登录页面和cookies
+                init_resp = self.client.get(f"{self.base_url}/xsxk_index.jsp")
+                self.cookies.update(init_resp.cookies)
 
-            self.logger.info("已获取登录页面和cookies")
+                self.logger.info("已获取登录页面和cookies")
 
-            # 获取验证码图片
-            img_resp = self.client.get(self.captcha_url)
+                # 获取验证码图片
+                img_resp = self.client.get(self.captcha_url)
 
-            # 识别验证码
-            captcha = self.ocr_captcha(img_resp)
-            if captcha is None:
-                raise Exception("验证码识别失败")
-            self.data["_login_image_"] = captcha
+                # 识别验证码
+                captcha = self.ocr_captcha(img_resp)
+                if captcha is None:
+                    raise Exception("验证码识别失败")
+                self.data["_login_image_"] = captcha
 
-            # 提交登录信息
-            login_resp = self.client.post(self.login_form_url, data=self.data)
+                # 提交登录信息
+                login_resp = self.client.post(self.login_form_url, data=self.data)
 
-            self.logger.info("已提交登录信息")
+                self.logger.info("已提交登录信息")
 
-            while login_resp.status_code == 302:
-                redr_url = login_resp.headers["Location"]
-                self.logger.info(f"重定向到{redr_url}")
-                login_resp = self.client.get(redr_url)
-                time.sleep(0.5)
+                while login_resp.status_code == 302:
+                    redr_url = login_resp.headers["Location"]
+                    self.logger.info(f"重定向到{redr_url}")
+                    login_resp = self.client.get(redr_url)
+                    time.sleep(0.5)
 
-            self.logger.info("登录成功")
+                if (
+                    login_resp.url == f"{self.base_url}/xsxk_index.jsp"
+                    or login_resp.url == f"{self.base_url}/xklogin.do"
+                ):
+                    raise Exception("登录失败")
 
-            return (login_resp, self.cookies)
-        except Exception as e:
-            self.logger.error(f"登录失败: {e}")
-            return None
+                self.logger.info("登录成功")
+
+                return (login_resp, self.cookies)
+            except Exception as e:
+                self.logger.error(f"登录失败: {e}")
+                retries -= 1
+
+        return (None, None)
