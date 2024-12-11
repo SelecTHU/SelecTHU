@@ -48,11 +48,14 @@ services:
     build: ./frontend/selecthu
     expose:
       - "8000"
+    # ports:
+    #   - "8002:8000"
     command: "node /app/server.js"
     depends_on:
       - backend
     networks:
       - web_network
+      - app_network
 
   # nginx代理
   nginx:
