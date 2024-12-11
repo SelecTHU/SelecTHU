@@ -25,7 +25,7 @@ class User(models.Model):
     )  # 学号（用户唯一标识）（主键）
     user_nickname = models.CharField(max_length=64, db_column="nickname")  # 用户昵称
     user_avatar = models.ImageField(
-        db_column="avatar", blank=True, default="avatar/default_avatar.png", upload_to="avatar"
+        db_column="avatar", blank=True, default="avatar/default_avatar.png", upload_to="avatar/"
     )  # 用户头像
 
     user_curriculum = models.CharField(

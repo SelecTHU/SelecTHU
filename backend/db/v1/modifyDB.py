@@ -388,12 +388,16 @@ def change_user_info(user_id: str, nickname: str = None, avatar: ImageFile = Non
         if not models.User.objects.filter(user_id=user_id).exists():
             return const.RESPONSE_404
 
+        user = models.User.objects.get(user_id=user_id)
+
         # 修改用户信息
         if isinstance(nickname, str) and nickname:
-            models.User.objects.filter(user_id=user_id).update(user_nickname=nickname)
+            user.user_nickname = nickname
 
-        if avatar:
-            models.User.objects.filter(user_id=user_id).update(user_avatar=avatar)
+        if isinstance(avatar, ImageFile):
+            user.user_avatar = avatar
+
+        user.save()
 
         # 返回结果
         return {"status": 200, "msg": "change user info successfully"}
@@ -431,10 +435,12 @@ def change_user_curriculum(user_id: str, curriculum: dict):
             )
             curriculum_.save()
 
+        user = models.User.objects.get(user_id=user_id)
+
         # 修改用户培养方案
-        models.User.objects.filter(user_id=user_id).update(
-            user_curriculum=curriculum_id
-        )
+        user.user_curriculum = curriculum_id
+
+        user.save()
 
         # 返回结果
         return {"status": 200, "msg": "change user curriculum successfully"}
@@ -486,7 +492,8 @@ def remove_user(user_id: str):
             return const.RESPONSE_404
 
         # 删除
-        models.User.objects.filter(user_id=user_id).delete()
+        user = models.User.objects.get(user_id=user_id)
+        user.delete()
 
         # 返回结果
         return {"status": 200, "msg": "remove user successfully"}
