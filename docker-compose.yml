@@ -1,9 +1,9 @@
 services:
   # 数据库(postgres)
   db:
-    image: postgres:17
+    build: ./postgres
     volumes:
-      - ./postgres:/var/lib/postgresql/data
+      - ./postgres/psql:/var/lib/postgresql/data
     expose:
       - ${DB_PORT}
     restart: always
@@ -27,6 +27,7 @@ services:
     build: ./backend
     volumes:
       - ./backend:/backend
+      - ./media:/backend/media
     expose:
       - "8001"
     depends_on:
@@ -47,11 +48,14 @@ services:
     build: ./frontend/selecthu
     expose:
       - "8000"
+    # ports:
+    #   - "8002:8000"
     command: "node /app/server.js"
     depends_on:
       - backend
     networks:
       - web_network
+      - app_network
 
   # nginx代理
   nginx:
@@ -61,6 +65,7 @@ services:
       - "8000:8080"
     volumes:
       - ./nginx:/etc/nginx/conf.d
+      - ./media:/media
     depends_on:
       - backend
       - frontend
