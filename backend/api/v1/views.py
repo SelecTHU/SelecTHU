@@ -200,7 +200,7 @@ def filter_courses(request, user_id):
         name=request.query_params.get("name", None),
         teacher=request.query_params.get("teacher", None),
         credit=request.query_params.get("credit", None),
-        period=request.query_params.get("period", None),
+        # period=request.query_params.get("period", None),
         time=request.query_params.get("time", None),  # Assuming time is a JSON string or dictionary
         department=request.query_params.get("department", None),
         course_type=request.query_params.get("type", None),  # Renamed to course_type to match get_course

@@ -9,6 +9,7 @@ import {
   GridItem,
   useColorModeValue,
   Heading,
+  Button,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import Navbar from "../components/layout/Navbar";
@@ -16,6 +17,7 @@ import FilterSection, { Filter } from "../components/search/FilterSection";
 import SelectedFilters from "../components/search/SelectedFilters";
 import CoursesTable from "../components/search/CoursesTable";
 import SelectedCourseInfo from "../components/search/SelectedCourseInfo";
+import { searchCourses } from "./actions"
 
 // 从统一的类型文件导入 Course 接口
 import { Course, TimeSlot } from "../types/course";
@@ -181,6 +183,33 @@ export default function SearchPage() {
             <FilterSection
               selectedFilters={selectedFilters}
               addFilter={addFilter}
+              searchCoursesAction={async (filters) => {
+                  const res = await searchCourses(filters)
+                  setCourses(res.map((data): Course => {
+                      return {
+                          id: data.course_id,
+                          courseNumber: data.code,
+                          sequenceNumber: data.number,
+                          name: data.name,
+                          teacher: data.teacher,
+                          credits: data.credit,
+                          department: data.department,
+                          time: "tbd",
+                          classroom: "not known",
+                          type: "not known",
+                          timeSlots: data.time.map((time) => {
+                              return {
+                                  day: time.d,
+                                  start: time.t0,
+                                  duration: 2
+                              }
+                          }),
+                          teachingInfo: "none",
+                          teacherInfo: "none",
+                          comments: [],
+                      }
+                  }))
+              }}
             />
 
             {/* 已选择的筛选标准展示部分 */}
