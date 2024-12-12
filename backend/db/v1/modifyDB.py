@@ -4,7 +4,7 @@
 """
 
 from db.v1.dbBasic import *
-
+from django.core.files.images import ImageFile
 
 """添加类操作"""
 
@@ -89,12 +89,15 @@ def add_course(course: dict):
         # 添加到数据库
         # MainCourses：课程简要信息
         credit = int(course.get("credit", 0))
-        period = int(course.get("period", 0))
-        time = course.get("time", "")
+        time = course.get("time", list())
         department = course.get("department", "")
         course_type = course.get("course_type", "")
         capacity = int(course.get("capacity", 0))
-
+        features = course.get("features", "")
+        text = course.get("text", "")
+        sec_choice = course.get("sec_choice", False)
+        grade = course.get("grade", "")
+        experiment = course.get("experiment", "")
         selection = course.get("selection", const.SELECTION_BLANK.copy())
 
         # CoursesDetails：课程详细信息
@@ -111,11 +114,15 @@ def add_course(course: dict):
             name=name,
             teacher=teacher,
             credit=credit,
-            period=period,
             time=time,
             department=department,
             course_type=course_type,
+            features=features,
+            text=text,
             capacity=capacity,
+            sec_choice=sec_choice,
+            grade=grade,
+            experiment=experiment,
             selection=selection,
             link=course_details,
         )
@@ -359,8 +366,7 @@ def change_course_level(user_id: str, course_id: str, selection_type: str):
         return const.RESPONSE_500
 
 
-# TODO:修改用户信息（确定参数avatar的格式）
-def change_user_info(user_id: str, nickname: str = None, avatar=None):
+def change_user_info(user_id: str, nickname: str = None, avatar: ImageFile = None):
     """
     修改用户信息（用户昵称、头像，至少需要一个参数）
 
@@ -382,13 +388,16 @@ def change_user_info(user_id: str, nickname: str = None, avatar=None):
         if not models.User.objects.filter(user_id=user_id).exists():
             return const.RESPONSE_404
 
+        user = models.User.objects.get(user_id=user_id)
+
         # 修改用户信息
         if isinstance(nickname, str) and nickname:
-            models.User.objects.filter(user_id=user_id).update(user_nickname=nickname)
+            user.user_nickname = nickname
 
-        if avatar:
-            # TODO: 解析并修改头像
-            return const.RESPONSE_501
+        if isinstance(avatar, ImageFile):
+            user.user_avatar = avatar
+
+        user.save()
 
         # 返回结果
         return {"status": 200, "msg": "change user info successfully"}
@@ -426,10 +435,12 @@ def change_user_curriculum(user_id: str, curriculum: dict):
             )
             curriculum_.save()
 
+        user = models.User.objects.get(user_id=user_id)
+
         # 修改用户培养方案
-        models.User.objects.filter(user_id=user_id).update(
-            user_curriculum=curriculum_id
-        )
+        user.user_curriculum = curriculum_id
+
+        user.save()
 
         # 返回结果
         return {"status": 200, "msg": "change user curriculum successfully"}
@@ -481,7 +492,8 @@ def remove_user(user_id: str):
             return const.RESPONSE_404
 
         # 删除
-        models.User.objects.filter(user_id=user_id).delete()
+        user = models.User.objects.get(user_id=user_id)
+        user.delete()
 
         # 返回结果
         return {"status": 200, "msg": "remove user successfully"}

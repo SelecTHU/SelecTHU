@@ -37,6 +37,9 @@
 |   └── README.md
 ├── nginx
 |   └── app.conf
+├── postgres
+|   ├── psql
+|   └── Dockerfile
 ├── .gitignore
 ├── docker-compose.yml
 └── README.md

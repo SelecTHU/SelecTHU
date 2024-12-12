@@ -25,7 +25,7 @@ class User(models.Model):
     )  # 学号（用户唯一标识）（主键）
     user_nickname = models.CharField(max_length=64, db_column="nickname")  # 用户昵称
     user_avatar = models.ImageField(
-        db_column="avatar", blank=True, default="default_avater.png", upload_to="avatar/"
+        db_column="avatar", blank=True, default="avatar/default_avatar.png", upload_to="avatar/"
     )  # 用户头像
 
     user_curriculum = models.CharField(
@@ -78,15 +78,15 @@ class Curriculum(models.Model):
     # 内部结构：
     # {
     #     key1: [
-    #         <course_code: str>,
+    #         <course_info: dict>,
     #         ...
     #     ],
     #     key2: [
-    #         <course_code: str>,
+    #         <course_info: dict>,
     #         ...
     #     ],
     #     key3: [
-    #         <course_code: str>,
+    #         <course_info: dict>,
     #         ...
     #     ],
     # }
@@ -143,11 +143,15 @@ class MainCourses(models.Model):
     :param `name`: 课程名称
     :param `teacher`: 教师名称
     :param `credit`: 学分
-    :param `period`: 学时
     :param `time`: 开课时间
     :param `department`: 开课院系
     :param `course_type`: 课程类型（通识课组）
+    :param `features`: 课程特色
+    :param `text`: 选课文字说明
     :param `capacity`: 本科生课容量
+    :param `grade`: 年级
+    :param `experiment`: 实验信息
+    :param `sec_choice`: 二级选课
     :param `selection`: 选课情况
     :param `link`: 详细信息指向的表
     """
@@ -162,11 +166,15 @@ class MainCourses(models.Model):
     name = models.CharField(max_length=64, db_column="name")  # 课程名称
     teacher = models.CharField(max_length=32, db_column="teacher")  # 教师名称
     credit = models.IntegerField(db_column="credit")  # 学分
-    period = models.IntegerField(db_column="period")  # 学时
-    time = models.CharField(max_length=64, db_column="time")  # 开课时间
+    time = models.JSONField(db_column="time", blank=True, default=list)  # 开课时间
     department = models.CharField(max_length=64, db_column="department")  # 开课院系
-    course_type = models.CharField(max_length=64, db_column="type")  # 课程类型
+    course_type = models.CharField(max_length=64, db_column="type")  # 课程类型（通识课组）
+    features = models.CharField(max_length=128, db_column="features")  # 课程特色
+    text = models.CharField(max_length=512, db_column="text")  # 选课文字说明
     capacity = models.IntegerField(db_column="capacity")  # 本科生课容量
+    grade = models.CharField(max_length=32, db_column="grade")  # 年级
+    experiment = models.CharField(max_length=32, db_column="experiment")  # 实验信息
+    sec_choice = models.BooleanField(db_column="sec_choice", default=False)  # 二级选课
     selection = models.JSONField(db_column="selection", blank=True, default=dict)  # 选课情况
     # 内部结构：
     # {
