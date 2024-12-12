@@ -50,6 +50,9 @@ services:
       - "8000"
     # ports:
     #   - "8002:8000"
+    environment:
+      - AUTH_SECRET=${AUTH_SECRET}
+      - AUTH_TRUST_HOST=${AUTH_TRUST_HOST}
     command: "node /app/server.js"
     depends_on:
       - backend
