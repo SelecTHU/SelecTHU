@@ -14,7 +14,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth ({
                 let user = null
 
                 try {
-                    const resp = await fetch("http://selecthu.shyuf.cn:8000/api/v1/login-default/", {
+                    const resp = await fetch("http://backend:8001/api/v1/login-default/", {
                         method: "POST",
                         // body: {},
                     })
