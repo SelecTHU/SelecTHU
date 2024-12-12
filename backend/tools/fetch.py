@@ -1,3 +1,5 @@
+# 获取课程信息（简要信息和详情信息）
+
 import httpx
 from bs4 import BeautifulSoup
 from faker import Faker
