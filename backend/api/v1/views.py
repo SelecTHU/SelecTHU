@@ -9,11 +9,10 @@ from rest_framework.permissions import AllowAny
 from django.core.files.storage import default_storage
 
 from api.v1.utils import generate_jwt, login_required, verify_password
-
 from db.v1 import utils as db_utils
+from tools.scheduler import Scheduler
 
 @api_view(["GET"])
-@permission_classes([AllowAny])
 def backend_db_status(request):
     """
     后端状态检查
@@ -45,12 +44,19 @@ def login(request):
     if not password:
         return Response({"status": 400, "message": "password is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-    if not verify_password(user_id, password):
+    #if not verify_password(user_id, password):
+    #    return Response({"status": 401, "message": "Invalid user_id or password"}, status=status.HTTP_401_UNAUTHORIZED)
+    scheduler = Scheduler()
+    if not scheduler.login(user_id, password):
         return Response({"status": 401, "message": "Invalid user_id or password"}, status=status.HTTP_401_UNAUTHORIZED)
-
+    
     user = db_utils.get_user(user_id)
     if not user:
         db_utils.add_user(user_id)
+        curriculum = scheduler.get_curriculum()
+        if not curriculum:
+            return Response({"status": 401, "message": "Invalid user_id or password"}, status=status.HTTP_401_UNAUTHORIZED)
+        db_utils.change_user_curriculum(user_id, curriculum)
 
     payload = {"user_id": user_id}
     token = generate_jwt(payload)
@@ -146,6 +152,7 @@ def modify_user_curriculum(request, user_id):
         return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
     curriculum = request.data.get("curriculum", None)
+    #[TODO]
     op = db_utils.change_user_curriculum(user_id, curriculum)
     if op["status"] == 200:
         return Response({"status": 200}, status=status.HTTP_200_OK)
@@ -186,7 +193,8 @@ def filter_courses(request, user_id):
     """
     筛选课程
     """
-    
+
+    #TODO
     courses = db_utils.get_course(
         code=request.query_params.get("code", None),
         name=request.query_params.get("name", None),
@@ -229,7 +237,6 @@ def modify_course_condition(request, user_id):
     """
     修改课程状态
     """
-    #TODO：<db>，增加接口add_course_to_decided, add_course_to_favorite, remove_course_from_decided, remove_course_from_favorite
     course_id = request.data.get("course_id")
     cond = request.data.get("cond")
 
@@ -316,7 +323,6 @@ def modify_course_selection_type(request, user_id):
     """
     修改课程志愿
     """
-    #TODO：<db修改>增加change_course_level接口
     course_id = request.data.get("course_id")
     selection_type = request.data.get("selection_type")
     user = db_utils.get_user(user_id)
