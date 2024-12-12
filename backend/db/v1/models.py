@@ -25,7 +25,7 @@ class User(models.Model):
     )  # 学号（用户唯一标识）（主键）
     user_nickname = models.CharField(max_length=64, db_column="nickname")  # 用户昵称
     user_avatar = models.ImageField(
-        db_column="avatar", blank=True, default="default_avatar.png", upload_to="avatar/"
+        db_column="avatar", blank=True, default="avatar/default_avatar.png", upload_to="avatar/"
     )  # 用户头像
 
     user_curriculum = models.CharField(
@@ -78,15 +78,15 @@ class Curriculum(models.Model):
     # 内部结构：
     # {
     #     key1: [
-    #         <course_code: str>,
+    #         <course_info: dict>,
     #         ...
     #     ],
     #     key2: [
-    #         <course_code: str>,
+    #         <course_info: dict>,
     #         ...
     #     ],
     #     key3: [
-    #         <course_code: str>,
+    #         <course_info: dict>,
     #         ...
     #     ],
     # }

@@ -74,26 +74,27 @@ def get_user_info(request, user_id):
     if not user:
         return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    decided_ids = user.user_decided
+    decided_list = user["decided"]
     courses_decided = []
-    for course_id in decided_ids:
-        course = db_utils.get_course(id_= course_id)
+    for item in decided_list:
+        course = db_utils.get_course(course_id=item["course_id"])["course"][0]
+        course["selection_type"] = item["selection_type"]
         courses_decided.append(course)
 
-    favorite_ids = user.user_favorite
+    favorite_ids = user["favorite"]
     courses_favorite = []
     for course_id in favorite_ids:
-        course = db_utils.get_course(id_= course_id)
+        course = db_utils.get_course(course_id=course_id)["course"][0]
         courses_favorite.append(course)
 
     return Response({
         "status": 200,
         "user": {
-            "nickname": user.user_nickname,
-            "avatar": user.user_avatar,
+            "nickname": user["nickname"],
+            "avatar": user["avatar"],
             "courses-favorite": courses_favorite,
             "courses-decided": courses_decided,
-            "curriculum": user.user_curriculum,
+            "curriculum": user["curriculum"],
         }
     }, status=status.HTTP_200_OK)
 
@@ -110,8 +111,8 @@ def get_user_info_basic(request, user_id):
     return Response({
         "status": 200,
         "user": {
-            "nickname": user.user_nickname,
-            "avatar": user.user_avatar,
+            "nickname": user["nickname"],
+            "avatar": user["avatar"],
         }
     }, status=status.HTTP_200_OK)
 
@@ -126,17 +127,13 @@ def modify_user_info_basic(request, user_id):
         return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
     nickname = request.data.get("nickname", None)
-    avatar = request.FILES.get("avatar", None)
-
-    if nickname:
-        user.user_nickname = nickname
-    if avatar:
-        if user.avatar:
-            default_storage.delete(user.user_avatar.path)  # 删除旧头像
-        user.user_avatar = avatar
-
-    user.save()
-    return Response({"status": 200}, status=status.HTTP_200_OK)
+    avatar = request.data.get("avatar", None)
+    
+    res = db_utils.change_user_info(user_id, nickname, avatar)
+    
+    if res["status"] == 200:
+        return Response({"status": 200}, status=status.HTTP_200_OK)
+    return Response({"status": 400, "message": "Invalid nickname or avatar"}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(["POST"])
 @login_required
@@ -149,12 +146,15 @@ def modify_user_curriculum(request, user_id):
         return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
     curriculum = request.data.get("curriculum", None)
-    db_utils.modify_user_curriculum(user_id, curriculum)
-    return Response({"status": 200}, status=status.HTTP_200_OK)
+    op = db_utils.change_user_curriculum(user_id, curriculum)
+    if op["status"] == 200:
+        return Response({"status": 200}, status=status.HTTP_200_OK)
+    else:
+        return Response({"status": 400, "message": "Invalid curriculum"}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(["GET"])
 @login_required
-def get_selection_stage(request):
+def get_selection_stage(request, user_id):
     """
     查询选课阶段
     """
@@ -177,28 +177,29 @@ def get_curriculum(request, user_id):
     
     return Response({
         "status": 200,
-        "curriculum": user.user_curriculum,
+        "curriculum": user["curriculum"],
     }, status=status.HTTP_200_OK)
 
 @api_view(["GET"])
 @login_required
-def filter_courses(request):
+def filter_courses(request, user_id):
     """
     筛选课程
     """
-    filters = {
-        "code": request.query_params.get("code", None),
-        "name": request.query_params.get("name", None),
-        "teacher": request.query_params.get("teacher", None),
-        "credit": request.query_params.get("credit", None),
-        "period": request.query_params.get("period", None),
-        "time": request.query_params.get("time", None),
-        "department": request.query_params.get("department", None),
-        "type": request.query_params.get("type", None),
-        "search_mode": request.query_params.get("search_mode", "exact"),
-    }
-
-    courses = db_utils.get_course(filters)
+    print("printing request.query_params")
+    print(request.query_params)
+    
+    courses = db_utils.get_course(
+        code=request.query_params.get("code", None),
+        name=request.query_params.get("name", None),
+        teacher=request.query_params.get("teacher", None),
+        credit=request.query_params.get("credit", None),
+        # period=request.query_params.get("period", None),
+        time=request.query_params.get("time", None),  # Assuming time is a JSON string or dictionary
+        department=request.query_params.get("department", None),
+        course_type=request.query_params.get("type", None),  # Renamed to course_type to match get_course
+        search_mode=request.query_params.get("search_mode", "exact"),
+    )
 
     return Response({
         "status": 200,
@@ -207,7 +208,7 @@ def filter_courses(request):
 
 @api_view(["GET"])
 @login_required
-def get_course_detail(request, course_id):
+def get_course_detail(request, course_id, user_id):
     """
     查询课程信息
     """
@@ -218,9 +219,9 @@ def get_course_detail(request, course_id):
     return Response({
         "status": 200,
         "course": {
-            "info": course.info,
-            "score": course.score,
-            "comments": course.comments,
+            "info": course["details"]["info"],
+            "score": course["details"]["score"],
+            "comments": course["details"]["comments"],
         }
     }, status=status.HTTP_200_OK)
 
@@ -241,9 +242,9 @@ def modify_course_condition(request, user_id):
     if not user:
         return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
     
-    if course_id in user.user_decided:
+    if course_id in user["decided"]:
         prev_cond = "decided"
-    elif course_id in user.user_favorite:
+    elif course_id in user["favorite"]:
         prev_cond = "favorite"
     else:
         prev_cond = "dismiss"
@@ -280,14 +281,15 @@ def get_courses_decided(request, user_id):
     user = db_utils.get_user(user_id)
     if not user:
         return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-    course_ids = user.user_decided
-    courses = []
-    for course_id in course_ids:
-        course = db_utils.get_course(id_= course_id)
-        courses.append(course)
+    decided_list = user["decided"]
+    courses_decided = []
+    for item in decided_list:
+        course = db_utils.get_course(course_id= item["course_id"])["course"][0]
+        course["selection_type"] = item["selection_type"]
+        courses_decided.append(course)
     return Response({
         "status": 200,
-        "courses-decided": courses,
+        "courses-decided": courses_decided,
     }, status=status.HTTP_200_OK)
 
 @api_view(["GET"])
@@ -299,14 +301,14 @@ def get_courses_favorite(request, user_id):
     user = db_utils.get_user(user_id)
     if not user:
         return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-    course_ids = user.user_favorite
-    courses = []
-    for course_id in course_ids:
-        course = db_utils.get_course(id_= course_id)
-        courses.append(course)
+    favorite_ids = user["favorite"]
+    courses_favorite = []
+    for course_id in favorite_ids:
+        course = db_utils.get_course(course_id= course_id)["course"][0]
+        courses_favorite.append(course)
     return Response({
         "status": 200,
-        "courses-decided": courses,
+        "courses-favorite": courses_favorite,
     }, status=status.HTTP_200_OK)
 
 
@@ -322,7 +324,7 @@ def modify_course_selection_type(request, user_id):
     user = db_utils.get_user(user_id)
     if not user:
         return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-    if selection_type not in ["decided", "favorite", "dismiss"]:
+    if selection_type[0] not in ['b', 'x', 'r', 't'] or selection_type[1] not in ['0', '1', '2', '3',]:
         return Response({"status": 400, "message": "Invalid selection type"}, status=status.HTTP_400_BAD_REQUEST)
     success = db_utils.change_course_level(user_id, course_id, selection_type)
     if not success:
