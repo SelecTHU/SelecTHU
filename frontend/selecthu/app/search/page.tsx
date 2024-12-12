@@ -183,8 +183,8 @@ export default function SearchPage() {
             <FilterSection
               selectedFilters={selectedFilters}
               addFilter={addFilter}
-              searchCoursesAction={async () => {
-                  const res = await searchCourses()
+              searchCoursesAction={async (filters) => {
+                  const res = await searchCourses(filters)
                   setCourses(res.map((data): Course => {
                       return {
                           id: data.course_id,
