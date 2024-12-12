@@ -34,14 +34,14 @@ class User(models.Model):
 
     # 课程信息（列表）
     user_favorite = models.JSONField(
-        db_column="favorite", blank=True, default=list()
+        db_column="favorite", blank=True, default=list
     )  # 收藏课程
     # 内部结构：
     # [
     #     <course_id: str>,
     #     ...
     # ]
-    user_decided = models.JSONField(db_column="decided", blank=True, default=list())  # 已选课程
+    user_decided = models.JSONField(db_column="decided", blank=True, default=list)  # 已选课程
     # 内部结构：
     # [
     #     {
@@ -117,7 +117,7 @@ class CoursesDetails(models.Model):
     #     TODO: 完善表结构
     # }
     score = models.FloatField(db_column="score", blank=True, default=0)  # 课程评分
-    comments = models.JSONField(db_column="comments", blank=True, default=list())  # 课程评价
+    comments = models.JSONField(db_column="comments", blank=True, default=list)  # 课程评价
     # 内部结构：
     # [
     #     {
@@ -167,7 +167,7 @@ class MainCourses(models.Model):
     department = models.CharField(max_length=64, db_column="department")  # 开课院系
     course_type = models.CharField(max_length=64, db_column="type")  # 课程类型
     capacity = models.IntegerField(db_column="capacity")  # 本科生课容量
-    selection = models.JSONField(db_column="selection", blank=True, default=dict())  # 选课情况
+    selection = models.JSONField(db_column="selection", blank=True, default=dict)  # 选课情况
     # 内部结构：
     # {
     #     "total": <total: int>,  # 总人数
