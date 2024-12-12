@@ -1,16 +1,16 @@
 # 整个项目的调度器，用于调度各个模块的功能
 
-import curriculum
-import dotenv
-import fetch
-import fetchZy
-import logging
-import xkxtLogin
-import re
-import wlxtLogin
-import os
-
 from app.settings import BASE_DIR
+
+import tools.curriculum as curriculum
+import tools.fetch as fetch
+import tools.fetchZy as fetchZy
+import tools.xkxtLogin as xkxtLogin
+import tools.wlxtLogin as wlxtLogin
+
+import dotenv
+import logging
+import re
 
 
 # 配置日志
@@ -34,8 +34,8 @@ class Scheduler:
         """
         return False
         try:
-            xkxt_login_obj = xkxtLogin.Login(username, password)
-            status, name = xkxt_login_obj.login()
+            wlxt_login_obj = wlxtLogin.Login(username, password)
+            status, name = wlxt_login_obj.login()
 
             if status == 500:
                 raise Exception("登录失败")
