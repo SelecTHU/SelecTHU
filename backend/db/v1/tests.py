@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.core.files.images import ImageFile
 from db.v1.queryDB import *
 from db.v1.modifyDB import *
 
@@ -259,3 +260,23 @@ class ModifyDBTestCase(TestCase):
         # 测试add_user函数在输入无效时的返回
         response = add_user(user_id=12345)
         self.assertEqual(response, const.RESPONSE_400)
+
+    def test_change_user_info_avatar(self):
+        # 测试change_user_info函数修改用户头像
+        add_user(user_id="testuser")
+        resp = get_user("testuser")
+        self.assertEqual(resp["status"], 200)
+        self.assertEqual(resp["avatar"], "/media/avatar/default_avatar.png")
+
+        # 获取测试图片(test_avatar.png)
+        imageFile = ImageFile(open("media/avatar/test_avatar.png", "rb"))
+        imageFile.name = "test_avatar.png"
+
+        response = change_user_info("testuser", avatar=imageFile)
+        self.assertEqual(response["status"], 200)
+        self.assertEqual(response["msg"], "change user info successfully")
+
+        new_resp = get_user("testuser")
+        self.assertEqual(new_resp["status"], 200)
+        self.assertNotEqual(resp["avatar"], new_resp["avatar"])
+        self.assertRegex(new_resp["avatar"], r"^/media/avatar/test_avatar(_\w+)?\.png$")
