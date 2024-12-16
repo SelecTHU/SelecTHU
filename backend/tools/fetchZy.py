@@ -1,3 +1,5 @@
+# 获取课程志愿数据
+
 import httpx
 from bs4 import BeautifulSoup
 import re

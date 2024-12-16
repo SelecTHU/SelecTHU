@@ -5,6 +5,7 @@ import bs4
 import httpx
 import time
 
+
 class Login:
     base_url = "https://learn.tsinghua.edu.cn"
     login_page = "/f/login"
@@ -30,7 +31,10 @@ class Login:
         }
 
         self.client = httpx.Client(
-            cookies=self.cookies, headers=self.headers, base_url=self.base_url, verify=False
+            cookies=self.cookies,
+            headers=self.headers,
+            base_url=self.base_url,
+            verify=False,
         )
 
         self.logger = logger
@@ -42,7 +46,7 @@ class Login:
 
     def _parse_wlxt_page(self, resp):
         soup = bs4.BeautifulSoup(resp.text, "html.parser")
-        
+
         w_header = soup.find("div", class_="w")
         if w_header:
             right = w_header.find("div", class_="right")
@@ -53,10 +57,10 @@ class Login:
                     if name:
                         self.logger.info(f"解析页面成功，用户名为<{name}>")
                         return name
-        
+
         self.logger.error(f"解析页面失败")
         return None
-    
+
     def login(self, retries: int = 3):
         while retries > 0:
             try:
@@ -66,7 +70,7 @@ class Login:
                 self.logger.info(f"获取登录页面成功")
 
                 resp = self.client.post(self.login_form_url, data=self.data)
-                                        
+
                 # 处理重定向
                 if resp.status_code == 200:
                     soup = bs4.BeautifulSoup(resp.text, "html.parser")
@@ -76,7 +80,7 @@ class Login:
                         if "登录成功" in div.text:
                             # 获取cookies
                             print(resp.cookies)
-                            
+
                             redirect_url = div.find("a").get("href")
 
                             params = redirect_url.split("?")[1].split("&")
@@ -108,8 +112,6 @@ class Login:
                 self.logger.error(f"出现异常: {e}")
                 retries -= 1
                 return False
-            
+
         self.logger.error(f"登录失败")
         return False
-    
-

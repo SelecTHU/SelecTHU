@@ -247,12 +247,16 @@ def get_course(
             if search_mode == "fuzzy":
                 # 模糊搜索
                 if name is not None:
+                    # 将特殊字符转义
+                    name = re.escape(name)
                     query_name = ".*" + ".*".join(name) + ".*"
                     course_list = course_list.filter(name__iregex=query_name)
                 if features is not None:
+                    features = re.escape(features)
                     query_features = ".*" + ".*".join(features) + ".*"
                     course_list = course_list.filter(features__iregex=query_features)
                 if text is not None:
+                    text = re.escape(text)
                     query_text = ".*" + ".*".join(text) + ".*"
                     course_list = course_list.filter(text__iregex=query_text)
             elif search_mode == "exact":

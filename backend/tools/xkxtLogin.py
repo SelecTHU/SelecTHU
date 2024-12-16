@@ -108,7 +108,7 @@ class Login:
                 self.logger.error(f"登录失败: {e}")
                 retries -= 1
                 time.sleep(0.5)
-        
+
         self.logger.error("登录失败")
         # 登录失败
         return False, None, None
