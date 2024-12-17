@@ -1,12 +1,11 @@
 # 获取课程志愿数据
+from bs4 import BeautifulSoup
+from faker import Faker
 
 import httpx
-from bs4 import BeautifulSoup
+import json
 import re
 import time
-import json
-import logging
-from faker import Faker
 
 
 class ZyFetcher:
@@ -92,19 +91,3 @@ class ZyFetcher:
         for m in ["tbzySearchBR", "tbzySearchTy"]:
             result[m] = self._fetch_data(m)
         return result
-
-
-if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    )
-
-    cookies = httpx.Cookies()
-    cookies.set("JSESSIONID", "<Your JSESSIONID here>")
-
-    fetcher = ZyFetcher("2024-2025-2", cookies)
-
-    with open("result", "w") as f:
-        print(fetcher.fetch_data("tbzySearchBR"), file=f)
-        print(fetcher.fetch_data("tbzySearchTy"), file=f)

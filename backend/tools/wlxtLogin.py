@@ -3,13 +3,15 @@ from faker import Faker
 
 import bs4
 import httpx
+import re
+import ssl
 import time
 
 
 class Login:
     base_url = "https://learn.tsinghua.edu.cn"
     login_page = "/f/login"
-    login_form_url = "https://id.tsinghua.edu.cn/do/off/ui/auth/login/post/bb5df85216504820be7bba2b0ae1535b/0?/login.do"
+    # login_form_url = "https://id.tsinghua.edu.cn/do/off/ui/auth/login/post/bb5df85216504820be7bba2b0ae1535b/0?/login.do"
 
     def __init__(self, username, password, logger):
         self.username = username
@@ -30,11 +32,19 @@ class Login:
             "atOnce": "true",
         }
 
+        # 创建自定义SSL上下文
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+
         self.client = httpx.Client(
             cookies=self.cookies,
             headers=self.headers,
-            base_url=self.base_url,
             verify=False,
+            http2=True,
+            trust_env=True,
+            transport=httpx.HTTPTransport(verify=ssl_context),
+            follow_redirects=True,
         )
 
         self.logger = logger
@@ -44,74 +54,60 @@ class Login:
         if self.client is not None:
             self.client.close()
 
-    def _parse_wlxt_page(self, resp):
-        soup = bs4.BeautifulSoup(resp.text, "html.parser")
-
-        w_header = soup.find("div", class_="w")
-        if w_header:
-            right = w_header.find("div", class_="right")
-            if right:
-                user_log = right.find("a", class_="user-log")
-                if user_log:
-                    name = user_log.get_text()
-                    if name:
-                        self.logger.info(f"解析页面成功，用户名为<{name}>")
-                        return name
-
-        self.logger.error(f"解析页面失败")
+        self.logger.error("解析页面失败")
         return None
-
+    
     def login(self, retries: int = 3):
         while retries > 0:
             try:
-                self.logger.info(f"开始登录")
-                resp = self.client.get(self.login_page)
-                self.cookies.update(resp.cookies)
-                self.logger.info(f"获取登录页面成功")
+                self.logger.info("开始登录")
+                resp = self.client.get(f"{self.base_url}{self.login_page}")
+                self.client.cookies.update(resp.cookies)
+                login_form_url = soup.find(id="loginForm").get("action")
+                self.logger.info("获取登录页面成功")
 
-                resp = self.client.post(self.login_form_url, data=self.data)
+                resp = self.client.post(login_form_url, data=self.data)
 
                 # 处理重定向
                 if resp.status_code == 200:
                     soup = bs4.BeautifulSoup(resp.text, "html.parser")
-                    div = soup.find("div", class_="wrapper")
+                    redirect_url = re.search(
+                    r'window.location.replace\("([^"]+)" \);', soup.find_all("script")[0].get_text()
+                    ).group(1)
 
-                    if div:
-                        if "登录成功" in div.text:
-                            # 获取cookies
-                            print(resp.cookies)
+                    params = dict([p.split("=") for p in redirect_url.split("?")[1].split("&")])
 
-                            redirect_url = div.find("a").get("href")
+                    if params["status"] == "SUCCESS":
+                        resp = self.client.get(redirect_url)
+                        
+                        # 二次重定向
+                        soup = bs4.BeautifulSoup(resp.text, "html.parser")
 
-                            params = redirect_url.split("?")[1].split("&")
-                            url = redirect_url.split("?")[0]
-                            for i in range(len(params)):
-                                params[i] = params[i].split("=")
-                            params = dict(params)
+                        redirect_url = re.search(
+                            r'window.location="([^"]+)";', soup.find_all("script")[0].get_text()
+                        ).group(1)
 
-                            print(params)
-                            # print(redirect_url)
-                            resp = self.client.get(url, params=params)
-                            with open("wlxt.html", "w") as f:
-                                f.write(resp.text)
+                        resp = self.client.get(f"{self.base_url}{redirect_url}")
+                        
+                        soup = bs4.BeautifulSoup(resp.text, "html.parser")
+                        
+                        name = soup.find(id="filtericon2").get_text().strip()
 
-                            # 解析页面
-                            name = self._parse_wlxt_page(resp)
-                            if name:
-                                self.logger.info(f"登录成功")
-                                return name
-                    else:
-                        raise Exception("验证未通过")
-                else:
-                    self.logger.error(f"登录失败")
-                    retries -= 1
-                self.logger.info(f"登录成功")
-
+                        if name:
+                            self.logger.info("登录成功")
+                            return True, name
+                        else:
+                            raise Exception("名称获取失败")
+                        
+                    elif params["status"] == "BAD_CREDENTIALS":
+                        raise Exception("用户名或密码错误")
+                    
+                self.logger.error("登录失败")
                 raise Exception("验证未通过")
             except Exception as e:
                 self.logger.error(f"出现异常: {e}")
                 retries -= 1
-                return False
+                time.sleep(0.3)
 
-        self.logger.error(f"登录失败")
-        return False
+        self.logger.error("登录失败")
+        return False, None

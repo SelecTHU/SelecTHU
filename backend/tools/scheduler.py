@@ -1,5 +1,4 @@
 # 整个项目的调度器，用于调度各个模块的功能
-
 from app.settings import BASE_DIR
 
 import tools.curriculum as curriculum
@@ -13,46 +12,51 @@ import logging
 import re
 
 
-# 配置日志
-logging.basicConfig(
-    level=logging.INFO,
-    filename="xkxt.log",
-    format="(%(asctime)s) [%(levelname)s] %(name)s: %(message)s",
-)
-
-
 class Scheduler:
+    # 配置日志
+    _file_handler: logging.FileHandler = logging.FileHandler(
+        filename=BASE_DIR / "logs" / "xkxt.log",
+        encoding="utf-8",
+    )
+    _file_handler.setLevel(logging.INFO)
+    _file_handler.setFormatter(
+        logging.Formatter("(%(asctime)s) [%(levelname)s] %(name)s: %(message)s")
+    )
+
     def __init__(self):
         dotenv.load_dotenv(BASE_DIR / ".env")
         self.logger = logging.getLogger("Scheduler")
+        self.logger.addHandler(Scheduler._file_handler)
         self.cookies = None
         self.p_xnxq = None
 
-    def verify(self, username, password):
+    def verify(self, username: str, password: str):
         """
-        该函数暂时不可用！
+        登录网络学堂验证，并尝试获取姓名
+
+        :param `username`: 用户名
+        :param `password`: 密码
+        :return: 登录成功返回 `Tuple[True, name]` ，否则返回 `Tuple[False, None]`
         """
-        return False
         try:
             wlxt_login_obj = wlxtLogin.Login(username, password)
             status, name = wlxt_login_obj.login()
 
-            if status == 500:
+            if status == False:
                 raise Exception("登录失败")
 
             self.logger.info(f"登录成功")
-            return True
+            return True, name
         except Exception as e:
             self.logger.error(f"出现异常: {e}")
-            return False
+            return False, None
 
-    def login(self, username, password):
+    def login(self, username: str, password: str):
         """
         登录选课系统
 
         :param `username`: 用户名
         :param `password`: 密码
-
         :return: 登录成功返回`True`，否则返回`False`
         """
         try:
@@ -72,7 +76,7 @@ class Scheduler:
         except Exception as e:
             self.logger.error(f"出现异常: {e}")
 
-    def get_curriculum(self, p_xnxq=None, cookies=None):
+    def get_curriculum(self, p_xnxq: str = None, cookies=None, format: bool = True):
         """
         获取培养方案
 
@@ -80,14 +84,13 @@ class Scheduler:
 
         :param `p_xnxq`: 学年学期
         :param `cookies`: 用户登录的cookies
-
         :return: 获取成功返回培养方案，否则返回`None`
         """
         try:
             use_p_xnxq = p_xnxq if p_xnxq != None else self.p_xnxq
             use_cookies = cookies if cookies != None else self.cookies
             curriculum_obj = curriculum.Curriculum(use_p_xnxq, use_cookies, self.logger)
-            user_curriculum = curriculum_obj.get_curriculum()
+            user_curriculum = curriculum_obj.get_curriculum(format=format)
 
             if user_curriculum == None:
                 raise Exception("获取培养方案失败")
@@ -98,7 +101,7 @@ class Scheduler:
             self.logger.error(f"出现异常: {e}")
             return None
 
-    def get_courses(self, p_xnxq=None, cookies=None):
+    def get_courses(self, p_xnxq: str = None, cookies=None):
         """
         获取课程信息
 
@@ -107,7 +110,6 @@ class Scheduler:
 
         :param `p_xnxq`: 学年学期
         :param `cookies`: 用户登录的cookies
-
         :return: 获取成功返回课程信息，否则返回`None`
         """
         try:
@@ -126,7 +128,7 @@ class Scheduler:
             self.logger.error(f"出现异常: {e}")
             return None
 
-    def get_zy(self, p_xnxq=None, cookies=None):
+    def get_zy(self, p_xnxq: str = None, cookies=None):
         """
         获取实时志愿信息
 
@@ -135,7 +137,6 @@ class Scheduler:
 
         :param `p_xnxq`: 学年学期
         :param `cookies`: 用户登录的cookies
-
         :return: 获取成功返回志愿信息，否则返回`None`
         """
         try:
