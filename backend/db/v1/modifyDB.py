@@ -98,7 +98,7 @@ def add_course(course: dict):
         sec_choice = course.get("sec_choice", False)
         grade = course.get("grade", "")
         experiment = course.get("experiment", "")
-        selection = course.get("selection", const.SELECTION_BLANK.copy())
+        selection = course.get("selection", deepcopy(const.SELECTION_BLANK))
 
         # CoursesDetails：课程详细信息
         info = course.get("info", dict())
@@ -501,7 +501,7 @@ def change_course_selection(course_id: str, selection: dict):
         course = models.MainCourses.objects.get(course_id=course_id)
 
         # 更新志愿信息
-        course.selection = selection.copy()
+        course.selection = deepcopy(selection)
         course.save()
 
         # 返回结果
