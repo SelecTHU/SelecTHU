@@ -27,7 +27,7 @@ class Scheduler:
         self.cookies = None
         self.p_xnxq = None
 
-    def verify(self, username, password):
+    def verify(self, username: str, password: str):
         """
         登录网络学堂验证，并尝试获取姓名
 
@@ -48,7 +48,7 @@ class Scheduler:
             self.logger.error(f"出现异常: {e}")
             return False, None
 
-    def login(self, username, password):
+    def login(self, username: str, password: str):
         """
         登录选课系统
 
@@ -73,7 +73,7 @@ class Scheduler:
         except Exception as e:
             self.logger.error(f"出现异常: {e}")
 
-    def get_curriculum(self, p_xnxq=None, cookies=None):
+    def get_curriculum(self, p_xnxq: str = None, cookies=None, format: bool = True):
         """
         获取培养方案
 
@@ -87,7 +87,7 @@ class Scheduler:
             use_p_xnxq = p_xnxq if p_xnxq != None else self.p_xnxq
             use_cookies = cookies if cookies != None else self.cookies
             curriculum_obj = curriculum.Curriculum(use_p_xnxq, use_cookies, self.logger)
-            user_curriculum = curriculum_obj.get_curriculum()
+            user_curriculum = curriculum_obj.get_curriculum(format=format)
 
             if user_curriculum == None:
                 raise Exception("获取培养方案失败")
@@ -98,7 +98,7 @@ class Scheduler:
             self.logger.error(f"出现异常: {e}")
             return None
 
-    def get_courses(self, p_xnxq=None, cookies=None):
+    def get_courses(self, p_xnxq: str = None, cookies=None):
         """
         获取课程信息
 
@@ -125,7 +125,7 @@ class Scheduler:
             self.logger.error(f"出现异常: {e}")
             return None
 
-    def get_zy(self, p_xnxq=None, cookies=None):
+    def get_zy(self, p_xnxq: str = None, cookies=None):
         """
         获取实时志愿信息
 
