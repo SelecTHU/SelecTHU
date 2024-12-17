@@ -48,14 +48,13 @@ def login(request):
     #    return Response({"status": 401, "message": "Invalid user_id or password"}, status=status.HTTP_401_UNAUTHORIZED)
     scheduler = Scheduler()
     if not scheduler.login(user_id, password):
-        return Response({"status": 401, "message": "Invalid user_id or password"}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({"status": 402, "message": "Invalid user_id or password"}, status=status.HTTP_401_UNAUTHORIZED)
     
-    user = db_utils.get_user(user_id)
-    if not user:
+    response = db_utils.get_user(user_id)
+    if response["status"] == 404:
         db_utils.add_user(user_id)
         curriculum = scheduler.get_curriculum()
-        if not curriculum:
-            return Response({"status": 401, "message": "Invalid user_id or password"}, status=status.HTTP_401_UNAUTHORIZED)
+        print(curriculum)
         db_utils.change_user_curriculum(user_id, curriculum)
 
     payload = {"user_id": user_id}
@@ -200,7 +199,7 @@ def filter_courses(request, user_id):
         name=request.query_params.get("name", None),
         teacher=request.query_params.get("teacher", None),
         credit=request.query_params.get("credit", None),
-        # period=request.query_params.get("period", None),
+        period=request.query_params.get("period", None),
         time=request.query_params.get("time", None),  # Assuming time is a JSON string or dictionary
         department=request.query_params.get("department", None),
         course_type=request.query_params.get("type", None),  # Renamed to course_type to match get_course

@@ -11,10 +11,10 @@ class Curriculum:
 
     curr_url = "jhBks.vjhBksPyfakcbBs.do"
 
-    def __init__(self, p_xnxq, cookies):
+    def __init__(self, p_xnxq, cookies, logger):
         # 学年学期
         self.p_xnxq = p_xnxq
-
+        
         self.params = {
             "m": "showBksZxZdxjxjhXmxqkclist",
             "p_xnxq": p_xnxq,
@@ -37,7 +37,7 @@ class Curriculum:
             cookies=self.cookies, headers=self.headers, base_url=self.base_url
         )
 
-        self.logger = logging.getLogger("Curriculum")
+        self.logger = logger
 
     def __del__(self):
         self.logger.info("关闭httpx客户端")
