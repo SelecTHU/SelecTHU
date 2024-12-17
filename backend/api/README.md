@@ -100,11 +100,14 @@
           "name": <str>,
           "teacher": <str>,
           "credit": <int>,
-          "period": <int>,
           "time": <dict>,
           "department": <str>,
           "course-type": <str>,
+          "features": <str>,
+          "text": <str>,
           "capacity": <int>,
+          "grade": <str>,
+          "sec-choice": <dict>,
           "selection": <dict>,
         },
         ...
@@ -117,12 +120,14 @@
           "name": <str>,
           "teacher": <str>,
           "credit": <int>,
-          "period": <int>,
           "time": <dict>,
           "department": <str>,
           "course-type": <str>,
+          "features": <str>,
+          "text": <str>,
           "capacity": <int>,
-          "selection": <dicr>,
+          "grade": <str>,
+          "sec-choice": <dict>,
           "selection-type": <str>,
         },
         ...
@@ -222,15 +227,19 @@
 - 接口：`/api/v1/courses/`
 - 请求类型：`GET`
 - 请求参数：
-    - "code": <str>（可选）
-    - "name": <str>（可选）
-    - "teacher": <str>（可选）
-    - "credit": <int>（可选）
-    - "period": <int>（可选）
-    - "time": <dict>（可选）
-    - "department": <str>（可选）
-    - "type": <str>（可选）
-    - "search_mode": <str>（可选，在"exact"精确搜索, "fuzzy"模糊搜索, "exclude"排除搜索三选一，默认exact）
+    - `code<str>`（可选）：课程代码
+    - `number<str>`（可选）：课程号
+    - `name<str>`（可选）：课程名
+    - `teacher<str>`（可选）：教师名
+    - `credit<int>`（可选）：学分
+    - `time<dict>`（可选）：上课时间
+    - `department<str>`（可选）：开课院系
+    - `course-type<str>`（可选）：课程类型
+    - `features<str>`（可选）：课程特色
+    - `text<str>`（可选）：课程简介
+    - `grade<str>`（可选）：适用年级
+    - `sec-choice<dict>`（可选）：二级选课
+    - `search-mode<str>`（可选）：搜索模式（`exact`或`fuzzy`）
 - 返回值：
   ```json
   {
@@ -243,12 +252,15 @@
         "name": <str>,
         "teacher": <str>,
         "credit": <int>,
-        "period": <int>,
         "time": <dict>,
         "department": <str>,
         "course-type": <str>,
+        "features": <str>,
+        "text": <str>,
         "capacity": <int>,
-        "selection": <dicr>
+        "grade": <str>,
+        "sec-choice": <dict>,
+        "selection": <dict>,
       },
       ...
     ]
@@ -317,12 +329,15 @@
         "name": <str>,
         "teacher": <str>,
         "credit": <int>,
-        "period": <int>,
         "time": <dict>,
         "department": <str>,
         "course-type": <str>,
+        "features": <str>,
+        "text": <str>,
         "capacity": <int>,
-        "selection": <dicr>,
+        "grade": <str>,
+        "sec-choice": <dict>,
+        "selection": <dict>,
         "selection-type": <str>,
       },
       ...
@@ -349,12 +364,15 @@
         "name": <str>,
         "teacher": <str>,
         "credit": <int>,
-        "period": <int>,
         "time": <dict>,
         "department": <str>,
         "course-type": <str>,
+        "features": <str>,
+        "text": <str>,
         "capacity": <int>,
-        "selection": <dicr>
+        "grade": <str>,
+        "sec-choice": <dict>,
+        "selection": <dict>,
       },
       ...
     ]
@@ -430,4 +448,4 @@
 
 ### 问题
 
-1. **course相关db接口**：当前是先获取list再逐个id查询，能否优化为直接给db_util传入course_id列表进行查询
+1. **志愿的实时刷新**
