@@ -83,14 +83,13 @@ class Curriculum:
             # 学年学期共用两个td，需要考虑偏移
             offset = len(keys) - len(tds)  
             course = {}
-            
+
             # 遍历所有的 td
             course[keys[tds.index(tds[0])]] = xn
             course[keys[tds.index(tds[1])]] = xq
             for td in tds:
-                print(self._get_text(td).strip(), end=" ")
                 course[keys[tds.index(td) + offset]] = self._get_text(td).strip()
-            print()
+
             user_curriculum.append(course)
 
         return user_curriculum
