@@ -48,14 +48,12 @@ def login(request):
     #    return Response({"status": 401, "message": "Invalid user_id or password"}, status=status.HTTP_401_UNAUTHORIZED)
     scheduler = Scheduler()
     if not scheduler.login(user_id, password):
-        return Response({"status": 402, "message": "Invalid user_id or password"}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({"status": 401, "message": "Invalid user_id or password"}, status=status.HTTP_401_UNAUTHORIZED)
     
     response = db_utils.get_user(user_id)
     if response["status"] == 404:
-        db_utils.add_user(user_id)
         curriculum = scheduler.get_curriculum()
-        print(curriculum)
-        db_utils.change_user_curriculum(user_id, curriculum)
+        db_utils.add_user(user_id, curriculum)
 
     payload = {"user_id": user_id}
     token = generate_jwt(payload)
@@ -192,18 +190,20 @@ def filter_courses(request, user_id):
     """
     筛选课程
     """
-
-    #TODO
     courses = db_utils.get_course(
         code=request.query_params.get("code", None),
+        number=request.query_params.get("number", None),
         name=request.query_params.get("name", None),
         teacher=request.query_params.get("teacher", None),
         credit=request.query_params.get("credit", None),
-        period=request.query_params.get("period", None),
         time=request.query_params.get("time", None),  # Assuming time is a JSON string or dictionary
         department=request.query_params.get("department", None),
-        course_type=request.query_params.get("type", None),  # Renamed to course_type to match get_course
-        search_mode=request.query_params.get("search_mode", "exact"),
+        course_type=request.query_params.get("course-type", None),  # Renamed to course_type to match get_course
+        features=request.query_params.get("features", None),
+        text=request.query_params.get("text", None),
+        grade=request.query_params.get("grade", None),
+        sec_choice=request.query_params.get("sec-choice", None),
+        search_mode=request.query_params.get("search-mode", "exact"),
     )
 
     return Response({
@@ -236,17 +236,19 @@ def modify_course_condition(request, user_id):
     """
     修改课程状态
     """
+    # TODO: 刚加入时需要设置默认志愿
     course_id = request.data.get("course_id")
-    cond = request.data.get("cond")
+    condition = request.data.get("condition")
 
-    if cond not in ["decided", "favorite", "dismiss"]:
+    if condition not in ["decided", "favorite", "dismiss"]:
         return Response({"status": 400, "message": "Invalid condition"}, status=status.HTTP_400_BAD_REQUEST)
 
+    code = db_utils.get_course(course_id=course_id)["course"][0]["code"]
     user = db_utils.get_user(user_id)
     if not user:
         return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
     
-    if course_id in user["decided"]:
+    if course_id in [item["course_id"] for item in user["decided"]]:
         prev_cond = "decided"
     elif course_id in user["favorite"]:
         prev_cond = "favorite"
@@ -254,23 +256,28 @@ def modify_course_condition(request, user_id):
         prev_cond = "dismiss"
     
     success = True
-    if cond == "dismiss":
+    if condition == "dismiss":
         if prev_cond == "decided":
             success = db_utils.remove_course_from_decided(user_id, course_id)
         elif prev_cond == "favorite":
             success = db_utils.remove_course_from_favorite(user_id, course_id)
-    elif cond == "favorite":
+    elif condition == "favorite":
         if prev_cond == "decided":
             success = db_utils.remove_course_from_decided(user_id, course_id)
             success = db_utils.add_course_to_favorite(user_id, course_id) and success
         elif prev_cond == "dismiss":
             success = db_utils.add_course_to_favorite(user_id, course_id)
     else:
+        curriculum = user["curriculum"]["courses"]
+        in0 = code in [item["code"] for item in curriculum['0']]
+        in1 = code in [item["code"] for item in curriculum['1']]
+        in2 = code in [item["code"] for item in curriculum['2']]
+        selection_type = "b3" if in0 else "x3" if in1 else "t3" if in2 else "r3"
         if prev_cond == "favorite":
             success = db_utils.remove_course_from_favorite(user_id, course_id)
-            success = db_utils.add_course_to_decided(user_id, course_id) and success
+            success = db_utils.add_course_to_decided(user_id, course_id, selection_type) and success
         elif prev_cond == "dismiss":
-            success = db_utils.add_course_to_decided(user_id, course_id)
+            success = db_utils.add_course_to_decided(user_id, course_id, selection_type)
     
     if not success:
         return Response({"status": 404, "message": "Course not found or error in condition change"}, status=status.HTTP_404_NOT_FOUND)
@@ -327,7 +334,7 @@ def modify_course_selection_type(request, user_id):
     user = db_utils.get_user(user_id)
     if not user:
         return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-    if selection_type[0] not in ['b', 'x', 'r', 't'] or selection_type[1] not in ['0', '1', '2', '3',]:
+    if selection_type[0] not in ['b', 'x', 'r', 't'] or selection_type[1] not in ['0', '1', '2', '3']:
         return Response({"status": 400, "message": "Invalid selection type"}, status=status.HTTP_400_BAD_REQUEST)
     success = db_utils.change_course_level(user_id, course_id, selection_type)
     if not success:
