@@ -1,11 +1,10 @@
 # 获取课程信息（简要信息和详情信息）
-
-import httpx
 from bs4 import BeautifulSoup
 from faker import Faker
-import logging
-import time
+
+import httpx
 import re
+import time
 
 
 class Fetcher:
@@ -135,7 +134,7 @@ class Fetcher:
                         # 获取table的html
                         content = table.prettify().strip()
                         item["详情"] = content
-                        # xu
+                        #
                         # info = {}
                         # for table_tr in table.find_all("tr"):
                         #     table_tds = table_tr.find_all("td")
