@@ -107,7 +107,7 @@
           "text": <str>,
           "capacity": <int>,
           "grade": <str>,
-          "sec-choice": <dict>,
+          "sec-choice": <bool>,
           "selection": <dict>,
         },
         ...
@@ -127,7 +127,7 @@
           "text": <str>,
           "capacity": <int>,
           "grade": <str>,
-          "sec-choice": <dict>,
+          "sec-choice": <bool>,
           "selection-type": <str>,
         },
         ...
@@ -238,7 +238,7 @@
     - `features<str>`（可选）：课程特色
     - `text<str>`（可选）：课程简介
     - `grade<str>`（可选）：适用年级
-    - `sec-choice<dict>`（可选）：二级选课
+    - `sec-choice<bool>`（可选）：二级选课
     - `search-mode<str>`（可选）：搜索模式（`exact`或`fuzzy`）
 - 返回值：
   ```json
@@ -259,7 +259,7 @@
         "text": <str>,
         "capacity": <int>,
         "grade": <str>,
-        "sec-choice": <dict>,
+        "sec-choice": <bool>,
         "selection": <dict>,
       },
       ...
@@ -336,7 +336,7 @@
         "text": <str>,
         "capacity": <int>,
         "grade": <str>,
-        "sec-choice": <dict>,
+        "sec-choice": <bool>,
         "selection": <dict>,
         "selection-type": <str>,
       },
@@ -371,7 +371,7 @@
         "text": <str>,
         "capacity": <int>,
         "grade": <str>,
-        "sec-choice": <dict>,
+        "sec-choice": <bool>,
         "selection": <dict>,
       },
       ...
