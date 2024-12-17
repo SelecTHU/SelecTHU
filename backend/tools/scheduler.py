@@ -12,18 +12,21 @@ import logging
 import re
 
 
-# 配置日志
-logging.basicConfig(
-    level=logging.INFO,
-    filename="xkxt.log",
-    format="(%(asctime)s) [%(levelname)s] %(name)s: %(message)s",
-)
-
-
 class Scheduler:
+    # 配置日志
+    _file_handler: logging.FileHandler = logging.FileHandler(
+        filename=BASE_DIR / "logs" / "xkxt.log",
+        encoding="utf-8",
+    )
+    _file_handler.setLevel(logging.INFO)
+    _file_handler.setFormatter(
+        logging.Formatter("(%(asctime)s) [%(levelname)s] %(name)s: %(message)s")
+    )
+
     def __init__(self):
         dotenv.load_dotenv(BASE_DIR / ".env")
         self.logger = logging.getLogger("Scheduler")
+        self.logger.addHandler(Scheduler._file_handler)
         self.cookies = None
         self.p_xnxq = None
 

@@ -366,6 +366,18 @@ db
         - `500` : 内部错误
     - 说明: 修改用户的培养方案。如果指定的培养方案不存在，将自动添加该培养方案。
 
+19. **更新课程志愿信息**<span id="change_course_selection"></span>
+    - 对应函数: `db_utils.change_course_selection`
+    - 请求参数:
+        - `course_id<str>` : 课程识别码
+        - `selection<dict>` : 课程志愿信息（包含志愿类型和志愿等级）
+    - 返回值: `{ "status": <int>, "msg": <str> }`
+    - 错误码：
+        - `400` : 参数错误
+        - `404` : 课程不存在
+        - `500` : 内部错误
+    - 说明: 更新课程的志愿信息，该操作会覆盖原有志愿信息。该接口实际上是 `change_course_main` 的部分替代方案。
+
 #### 其他信息
 1. 更多常量定义见 [`const.py`](./v1/const.py)
 2. `avatar` 字段详细说明：<span id="avatar-explain"></span>

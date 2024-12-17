@@ -458,7 +458,58 @@ def change_course_main():
 
     经考虑，该接口暂不实现
     """
+    const.logger.info("change_course_main: calling", extra=const.LOGGING_TYPE.INFO)
     return const.RESPONSE_501
+
+
+# 更新课程志愿信息
+def change_course_selection(course_id: str, selection: dict):
+    """
+    更新课程志愿信息
+
+    该接口是在放弃实现 `change_course_main` 后的替代方案
+
+    :param course_id: 课程识别码
+    :param selection: 课程志愿信息
+    :return: 执行结果
+    """
+    const.logger.info("change_course_selection: calling", extra=const.LOGGING_TYPE.INFO)
+
+    # 检查输入合法性
+    if isinstance(course_id, str) is False or isinstance(selection, dict) is False:
+        return const.RESPONSE_400
+
+    # selection格式检查
+    if not all([key in selection for key in const.SELECTION_BLANK.keys()]):
+        return const.RESPONSE_400
+    
+    # 数据检查
+    total = selection["total"]
+    for key in const.SELECTION_BLANK.keys():
+        if not isinstance(selection[key], int) or selection[key] < 0 or selection[key] > total:
+            return const.RESPONSE_400
+        if key != "total":
+            total -= selection[key]
+    if total != 0:
+        return const.RESPONSE_400
+    
+    try:
+        # 检查课程是否存在
+        if not models.MainCourses.objects.filter(course_id=course_id).exists():
+            return const.RESPONSE_404
+        
+        course = models.MainCourses.objects.get(course_id=course_id)
+
+        # 更新志愿信息
+        course.selection = selection.copy()
+        course.save()
+
+        # 返回结果
+        return {"status": 200, "msg": "change course selection successfully"}
+
+    except Exception as e:
+        const.logger.info("change_course_selection: %s", e, extra=const.LOGGING_TYPE.ERROR)
+        return const.RESPONSE_500
 
 
 # 修改课程详细信息
@@ -468,6 +519,7 @@ def change_course_detail():
 
     经考虑，该接口暂不实现
     """
+    const.logger.info("change_course_detail: calling", extra=const.LOGGING_TYPE.INFO)
     return const.RESPONSE_501
 
 
