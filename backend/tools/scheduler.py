@@ -1,5 +1,4 @@
 # 整个项目的调度器，用于调度各个模块的功能
-
 from app.settings import BASE_DIR
 
 import tools.curriculum as curriculum
@@ -30,21 +29,24 @@ class Scheduler:
 
     def verify(self, username, password):
         """
-        该函数暂时不可用！
+        登录网络学堂验证，并尝试获取姓名
+
+        :param `username`: 用户名
+        :param `password`: 密码
+        :return: 登录成功返回 `Tuple[True, name]` ，否则返回 `Tuple[False, None]`
         """
-        return False
         try:
             wlxt_login_obj = wlxtLogin.Login(username, password)
             status, name = wlxt_login_obj.login()
 
-            if status == 500:
+            if status == False:
                 raise Exception("登录失败")
 
             self.logger.info(f"登录成功")
-            return True
+            return True, name
         except Exception as e:
             self.logger.error(f"出现异常: {e}")
-            return False
+            return False, None
 
     def login(self, username, password):
         """
@@ -52,7 +54,6 @@ class Scheduler:
 
         :param `username`: 用户名
         :param `password`: 密码
-
         :return: 登录成功返回`True`，否则返回`False`
         """
         try:
@@ -80,7 +81,6 @@ class Scheduler:
 
         :param `p_xnxq`: 学年学期
         :param `cookies`: 用户登录的cookies
-
         :return: 获取成功返回培养方案，否则返回`None`
         """
         try:
@@ -107,7 +107,6 @@ class Scheduler:
 
         :param `p_xnxq`: 学年学期
         :param `cookies`: 用户登录的cookies
-
         :return: 获取成功返回课程信息，否则返回`None`
         """
         try:
@@ -135,7 +134,6 @@ class Scheduler:
 
         :param `p_xnxq`: 学年学期
         :param `cookies`: 用户登录的cookies
-
         :return: 获取成功返回志愿信息，否则返回`None`
         """
         try:
