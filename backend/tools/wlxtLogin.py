@@ -11,7 +11,7 @@ import time
 class Login:
     base_url = "https://learn.tsinghua.edu.cn"
     login_page = "/f/login"
-    # login_form_url = "https://id.tsinghua.edu.cn/do/off/ui/auth/login/post/bb5df85216504820be7bba2b0ae1535b/0?/login.do"
+    login_form_url = "https://id.tsinghua.edu.cn/do/off/ui/auth/login/post/bb5df85216504820be7bba2b0ae1535b/0?/login.do"
 
     def __init__(self, username, password, logger):
         self.username = username
@@ -63,7 +63,9 @@ class Login:
                 self.logger.info("开始登录")
                 resp = self.client.get(f"{self.base_url}{self.login_page}")
                 self.client.cookies.update(resp.cookies)
+                soup = bs4.BeautifulSoup(resp.text, "html.parser")
                 login_form_url = soup.find(id="loginForm").get("action")
+                login_form_url = login_form_url if login_form_url else self.login_form_url
                 self.logger.info("获取登录页面成功")
 
                 resp = self.client.post(login_form_url, data=self.data)

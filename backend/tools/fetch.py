@@ -1,5 +1,6 @@
 # 获取课程信息（简要信息和详情信息）
 from bs4 import BeautifulSoup
+from copy import deepcopy
 from faker import Faker
 
 import httpx
@@ -163,7 +164,7 @@ class Fetcher:
                 time.sleep(0.3)  # 避免请求过快
 
             self.logger.info(f"成功获取{len(result)}条课程信息")
-            return result
+            return deepcopy(result)
 
         except Exception as e:
             self.logger.error(f"获取课程信息失败: {e}")
