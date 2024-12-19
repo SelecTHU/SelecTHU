@@ -17,6 +17,7 @@ class QueryDBTestCase(TestCase):
                 "credit": 3,
                 "department": "霜之哀伤",
                 "course_type": "专业必修",
+                "info": {"课程介绍": "罗伯特的计算机网络课程"},
             }
         )
         res2 = add_course(
@@ -66,6 +67,27 @@ class QueryDBTestCase(TestCase):
         response = get_curriculum("valid_user")
         self.assertEqual(response["status"], 200)
         self.assertIn("curriculum", response)
+    
+    def test_get_curriculum_existance(self):
+        # 测试get_curriculum_existance函数是否正确返回
+        test_curriculum_1 = {
+            const.CURRICULUM_KEYS[0]: [{"code": "1000016"}],
+            const.CURRICULUM_KEYS[1]: [{"code": "1000017"}],
+            const.CURRICULUM_KEYS[2]: [],
+        }
+        test_curriculum_2 = {
+            const.CURRICULUM_KEYS[0]: [{"code": "1000016"}, {"code": "1000017"}],
+            const.CURRICULUM_KEYS[1]: [{"code": "1000018"}],
+            const.CURRICULUM_KEYS[2]: [],
+        }            
+
+        response = get_curriculum_existance(test_curriculum_1)
+        self.assertEqual(response["status"], 200)
+        self.assertEqual(response["value"], True)
+
+        response = get_curriculum_existance(test_curriculum_2)
+        self.assertEqual(response["status"], 200)
+        self.assertEqual(response["value"], False)
 
     def test_get_curriculum_invalid_user(self):
         # 测试get_curriculum函数对无效用户的返回
@@ -83,6 +105,12 @@ class QueryDBTestCase(TestCase):
         response = get_courses(count=10)
         self.assertEqual(response["status"], 200)
         self.assertEqual(len(response["courses"]), 2)
+
+    def test_get_courses_specific_count_2(self):
+        # 测试get_courses函数按指定数量返回课程（非0起始）
+        response = get_courses(index=1, count=1)
+        self.assertEqual(response["status"], 200)
+        self.assertEqual(len(response["courses"]), 1)
 
     def test_get_course_by_id(self):
         # 测试get_course函数根据课程id检索
@@ -148,6 +176,34 @@ class QueryDBTestCase(TestCase):
         self.assertIsInstance(response["course"], list)
         self.assertEqual(len(response["course"]), 2)
 
+    def test_get_course_exact_search(self):
+        # 测试get_course函数（精确检索）
+        response = get_course(name="计算机", search_mode="exact")
+        self.assertEqual(response["status"], 200)
+        self.assertIn("course", response)
+        self.assertIsInstance(response["course"], list)
+        self.assertEqual(len(response["course"]), 0)
+
+        response = get_course(name="计算机网络", search_mode="exact")
+        self.assertEqual(response["status"], 200)
+        self.assertIn("course", response)
+        self.assertIsInstance(response["course"], list)
+        self.assertEqual(len(response["course"]), 1)
+
+    def test_get_course_exclude_search(self):
+        # 测试get_course函数（排除检索）
+        response = get_course(name="计算机", search_mode="exclude")
+        self.assertEqual(response["status"], 200)
+        self.assertIn("course", response)
+        self.assertIsInstance(response["course"], list)
+        self.assertEqual(len(response["course"]), 2)
+
+        response = get_course(name="计算机网络", search_mode="exclude")
+        self.assertEqual(response["status"], 200)
+        self.assertIn("course", response)
+        self.assertIsInstance(response["course"], list)
+        self.assertEqual(len(response["course"]), 1)
+
     def test_get_course_by_multi_cond_1(self):
         # 测试get_course函数根据多种条件：课程名、教师名
         response = get_course(name="计算机网络", teacher="罗伯特")
@@ -181,6 +237,35 @@ class QueryDBTestCase(TestCase):
         self.assertIn("course", response)
         self.assertIsInstance(response["course"], list)
         self.assertEqual(len(response["course"]), 2)
+
+    def test_get_course_by_multi_cond_5(self):
+        # 测试get_course函数根据多种条件：课程名、学分、开课院系、课程类型、精确检索
+        response = get_course(
+            name="计算机组成原理",
+            credit=4,
+            department="火之高兴",
+            course_type="专业必修",
+            search_mode="exact"
+        )
+        self.assertEqual(response["status"], 200)
+        self.assertIn("course", response)
+        self.assertIsInstance(response["course"], list)
+        self.assertEqual(len(response["course"]), 1)
+
+    def test_get_course_by_multi_cond_6(self):
+        # 测试get_course函数根据多种条件：课序号、课程号、教师名、开课院系、课程类型、排除检索
+        response = get_course(
+            code="1000017",
+            number="02",
+            teacher="无敌喵喵拳",
+            department="火之高兴",
+            course_type="专业必修",
+            search_mode="exclude"
+        )
+        self.assertEqual(response["status"], 200)
+        self.assertIn("course", response)
+        self.assertIsInstance(response["course"], list)
+        self.assertEqual(len(response["course"]), 0)
 
     def test_get_course_detail_by_info(self):
         # 测试get_course_detail_by_info正确返回
@@ -232,6 +317,45 @@ class QueryDBTestCase(TestCase):
 
 
 class ModifyDBTestCase(TestCase):
+    def setUp(self):
+        res1 = add_course(
+            {
+                "code": "1000016",
+                "number": "01",
+                "name": "计算机网络",
+                "teacher": "罗伯特",
+                "credit": 3,
+                "department": "霜之哀伤",
+                "course_type": "专业必修",
+                "info": {"课程介绍": "罗伯特的计算机网络课程"},
+            }
+        )
+        res2 = add_course(
+            {
+                "code": "1000017",
+                "number": "02",
+                "name": "计算机组成原理",
+                "teacher": "无敌喵喵拳",
+                "credit": 4,
+                "department": "火之高兴",
+                "course_type": "专业必修",
+                "info": {"课程介绍": "无敌喵喵拳喵喵拳无敌"},
+            }
+        )
+        curriculum1 = {
+            const.CURRICULUM_KEYS[0]: [{"code": "1000016"}],
+            const.CURRICULUM_KEYS[1]: [{"code": "1000017"}],
+            const.CURRICULUM_KEYS[2]: [],
+        }
+        user = add_user("valid_user", curriculum1)
+        if user["status"] != 200:
+            print("[ERROR] Failed to add user")
+            raise Exception("Failed to add user")
+        if res1["status"] != 200 or res2["status"] != 200:
+            print("[ERROR] Failed to add courses")
+            raise Exception("Failed to add courses")
+        return super().setUp()
+
     def test_add_user_success(self):
         # 测试add_user函数成功添加用户时的返回
         response = add_user(user_id="testuser")
@@ -280,3 +404,127 @@ class ModifyDBTestCase(TestCase):
         self.assertEqual(new_resp["status"], 200)
         self.assertNotEqual(resp["avatar"], new_resp["avatar"])
         self.assertRegex(new_resp["avatar"], r"^/media/avatar/test_avatar(_\w+)?\.png$")
+
+    def test_add_course(self):
+        # 测试add_course函数成功添加课程时的返回
+        response = add_course(
+            {
+                "code": "1000020",
+                "number": "02",
+                "name": "计算机组成原理",
+                "teacher": "无敌喵喵拳",
+                "credit": 4,
+                "department": "火之高兴",
+                "course_type": "专业必修",
+                "info": {"课程介绍": "无敌喵喵拳喵喵拳无敌"},
+            }
+        )
+        self.assertEqual(response["status"], 200)
+        self.assertEqual(response["msg"], "add course successfully")
+
+    def test_add_course_type_error_input(self):
+        # 测试add_course函数在输入格式错误时的返回
+        response = add_course("this is not a dictionary")
+        self.assertEqual(response["status"], 400)
+    
+    def test_add_course_error_input(self):
+        # 测试add_course函数在输入内容错误时的返回
+        response = add_course(
+            {
+                "code": "1000021",
+                "number": "025",
+                "name": "计算机组成原理",
+                "teacher": "无敌喵喵拳",
+                "credit": "hhhh",
+                "department": 124,
+                "course_type": 214142,
+                "info": {"课程介绍": "无敌喵喵拳喵喵拳无敌"},
+            }
+        )
+        self.assertEqual(response["status"], 500)
+    def test_add_course_exist(self):
+        # 测试add_course函数在课程已存在时的返回
+        response = add_course(
+             {
+                "code": "1000016",
+                "number": "01",
+                "name": "计算机网络",
+                "teacher": "罗伯特",
+                "credit": 3,
+                "department": "霜之哀伤",
+                "course_type": "专业必修",
+                "info": {"课程介绍": "罗伯特的计算机网络课程"},
+            }
+        )
+        self.assertEqual(response, const.RESPONSE_409)
+
+    def test_add_curriculum(self):
+        # 测试add_curriculum函数成功添加培养方案时的返回
+        test_curriculum = {
+            const.CURRICULUM_KEYS[0]: [{"code": "1000016"}],
+            const.CURRICULUM_KEYS[1]: [{"code": "1000017"}],
+            const.CURRICULUM_KEYS[2]: [{"code": "1000217"}],
+        }
+        response = add_curriculum(test_curriculum)
+        self.assertEqual(response["status"], 200)
+        self.assertEqual(response["msg"], "add curriculum successfully")
+
+    def test_add_curriculum_error_type(self):
+        # 测试add_curriculum函数在输入类型错误时的返回
+        response = add_curriculum("this is not a dictionary")
+        self.assertEqual(response, const.RESPONSE_400)
+
+        test_curriculum = {
+            const.CURRICULUM_KEYS[0]: [{"code": "1000016"}],
+            "hhhh": [{"code": "1000017"}],
+            const.CURRICULUM_KEYS[2]: 12345,
+        }
+        response = add_curriculum(test_curriculum)
+        self.assertEqual(response, const.RESPONSE_400)
+
+    def test_add_curriculum_error_input(self):
+        # 测试add_curriculum函数在输入内容错误时的返回
+        test_curriculum = {
+            const.CURRICULUM_KEYS[0]: [{"code": "1000016"}],
+            const.CURRICULUM_KEYS[1]: [{"code": "1000017"}],
+            const.CURRICULUM_KEYS[2]: 12345,
+        }
+        response = add_curriculum(test_curriculum)
+        self.assertEqual(response, const.RESPONSE_500)
+
+    def test_add_curriculum_exist(self):
+        # 测试add_curriculum函数在培养方案已存在时的返回
+        test_curriculum = {
+            const.CURRICULUM_KEYS[0]: [{"code": "1000016"}],
+            const.CURRICULUM_KEYS[1]: [{"code": "1000017"}],
+            const.CURRICULUM_KEYS[2]: [],
+        }
+        response = add_curriculum(test_curriculum)
+        self.assertEqual(response["status"], 409)
+
+    def test_add_course_to_decided(self):
+        # 测试add_course_to_decided函数成功添加课程时的返回
+        response = add_course_to_decided("valid_user", "1000016", "b2")
+        self.assertEqual(response["status"], 200)
+        self.assertEqual(response["msg"], "add course to decided successfully")
+
+    def test_add_course_to_decided_error_type(self):
+        # 测试add_course_to_decided函数在输入类型错误时的返回
+        response = add_course_to_decided("valid_user", 1000016, "b2")
+        self.assertEqual(response, const.RESPONSE_400)
+
+    def test_add_course_to_decided_invalid_user(self):
+        # 测试add_course_to_decided函数在用户不存在时的返回
+        response = add_course_to_decided("invalid_user", "1000016", "b2")
+        self.assertEqual(response, const.RESPONSE_404)
+
+    def test_add_course_to_decided_invalid_course(self):
+        # 测试add_course_to_decided函数在课程冲突时的返回
+        response = add_course_to_decided("valid_user", "1000018", "b2")
+        response = add_course_to_decided("valid_user", "1000018", "b2")
+        self.assertEqual(response, const.RESPONSE_409)
+
+    def test_add_course_to_decided_error_input(self):
+        # 测试add_course_to_decided函数在输入内容错误时的返回
+        response = add_course_to_decided("valid_user", "1000016", "b5")
+        self.assertEqual(response, const.RESPONSE_400)
