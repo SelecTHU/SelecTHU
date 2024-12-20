@@ -149,15 +149,18 @@ def add_curriculum(curriculum: dict) -> dict:
         return const.RESPONSE_400
 
     try:
+        for key in const.CURRICULUM_KEYS:
+            if key not in curriculum:
+                return const.RESPONSE_400
         # 计算id
-        course_id = cal_curriculum_id(curriculum)
+        curriculum_id = cal_curriculum_id(curriculum)
         # 检查是否已存在
-        if models.Curriculum.objects.filter(course_id=course_id).exists():
+        if models.Curriculum.objects.filter(curriculum_id=curriculum_id).exists():
             # 返回结果：资源冲突（培养方案已存在）
             return const.RESPONSE_409
 
         # 添加到数据库
-        curriculum = models.Curriculum(course_id=course_id, courses=curriculum)
+        curriculum = models.Curriculum(curriculum_id=curriculum_id, courses=curriculum)
         curriculum.save()
 
         # 返回结果：添加成功

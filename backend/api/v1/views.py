@@ -339,4 +339,3 @@ def modify_course_selection_type(request, user_id):
     success = db_utils.change_course_level(user_id, course_id, selection_type)
     if not success:
         return Response({"status": 404, "message": "Course not found or error in selection type change"}, status=status.HTTP_404_NOT_FOUND)
-    return Response({"status": 200}, status=status.HTTP_200_OK)
