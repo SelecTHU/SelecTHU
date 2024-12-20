@@ -15,7 +15,7 @@ class Curriculum:
     def __init__(self, p_xnxq, cookies, logger):
         # 学年学期
         self.p_xnxq = p_xnxq
-
+        
         self.params = {
             "m": "showBksZxZdxjxjhXmxqkclist",
             "p_xnxq": p_xnxq,
