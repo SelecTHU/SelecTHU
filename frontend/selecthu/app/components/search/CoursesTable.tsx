@@ -18,21 +18,38 @@ import {
 } from "@chakra-ui/react";
 import { AddIcon } from "@chakra-ui/icons";
 import { useState } from "react";
-import { Course } from '../../types/course'; // 导入统一接口
+import { Course } from '../../types/course';
 
+// 添加 Volunteer 接口
+interface Volunteer {
+  id: string;
+  type: string;
+  priority: number;
+}
 
 interface CoursesTableProps {
   courses: Course[];
   onSelectCourse: (courseId: string) => void;
   selectedCourseId: string | null;
-  onAddCourse: (courseId: string) => void; // 添加 onAddCourse
+  onAddCourse: (courseId: string) => void;
+  // 新增的属性
+  courseVolunteers: {
+    [courseId: string]: Volunteer[];
+  };
+  onVolunteerDrop: (courseId: string, volunteer: Volunteer) => void;
+  onVolunteerRemove: (courseId: string, volunteerId: string) => void;
+  getCourseColor: (courseId: string) => string;
 }
 
 const CoursesTable: React.FC<CoursesTableProps> = ({
   courses,
   onSelectCourse,
   selectedCourseId,
-  onAddCourse, // 接收 onAddCourse
+  onAddCourse,
+  courseVolunteers,
+  onVolunteerDrop,
+  onVolunteerRemove,
+  getCourseColor,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [coursesPerPage, setCoursesPerPage] = useState(20);
@@ -43,14 +60,33 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
   const borderCol = useColorModeValue("gray.200", "gray.700");
   const hoverCol = useColorModeValue("gray.50", "gray.600");
 
-  // 获取当前页的课程
   const indexOfLastCourse = currentPage * coursesPerPage;
   const indexOfFirstCourse = indexOfLastCourse - coursesPerPage;
   const currentCourses = courses.slice(indexOfFirstCourse, indexOfLastCourse);
 
-  // 处理课程添加
   const handleAddCourse = (courseId: string) => {
     onAddCourse(courseId);
+  };
+
+  // 新增：渲染志愿标签
+  const renderVolunteers = (courseId: string) => {
+    const volunteers = courseVolunteers && courseVolunteers[courseId] ? courseVolunteers[courseId] : [];
+    return (
+      <Stack direction="row" spacing={1}>
+        {volunteers.map((volunteer, index) => (
+          <Box
+            key={index}
+            bg={`${volunteer.type}.100`}
+            px={1}
+            py={0.5}
+            borderRadius="sm"
+            fontSize="xs"
+          >
+            {`${volunteer.priority}志愿`}
+          </Box>
+        ))}
+      </Stack>
+    );
   };
 
   return (
@@ -60,12 +96,10 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
       borderRadius="md"
       boxShadow="md"
     >
-      {/* 课程表标题 */}
       <Text fontSize="lg" mb={4} fontWeight="bold">
         课程列表
       </Text>
 
-      {/* 课程表 */}
       <Table variant="simple" border="1px" borderColor={borderCol}>
         <Thead bg={tableBg}>
           <Tr>
@@ -76,6 +110,7 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
             <Th borderRight="1px solid" borderColor={borderCol}>开课院系</Th>
             <Th borderRight="1px solid" borderColor={borderCol}>授课教师</Th>
             <Th borderRight="1px solid" borderColor={borderCol}>上课时间</Th>
+            <Th borderRight="1px solid" borderColor={borderCol}>志愿情况</Th>
             <Th>选课情况</Th>
           </Tr>
         </Thead>
@@ -84,11 +119,7 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
             <Tr
               key={course.id}
               cursor="pointer"
-              bg={
-                selectedCourseId === course.id
-                  ? tableBg
-                  : "transparent"
-              }
+              bg={selectedCourseId === course.id ? tableBg : "transparent"}
               onClick={() => onSelectCourse(course.id)}
               _hover={{ bg: hoverCol }}
             >
@@ -99,7 +130,7 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
                   colorScheme="green"
                   aria-label="添加课程"
                   onClick={(e) => {
-                    e.stopPropagation(); // 阻止事件冒泡以避免触发行点击
+                    e.stopPropagation();
                     handleAddCourse(course.id);
                   }}
                 />
@@ -122,8 +153,10 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
               <Td borderRight="1px solid" borderColor={borderCol}>
                 {course.time}
               </Td>
+              <Td borderRight="1px solid" borderColor={borderCol}>
+                {renderVolunteers(course.id)}
+              </Td>
               <Td>
-                {/* 选课人数情况展示为色带（示例，实际可根据数据调整） */}
                 <Box w="100px" h="8px" bg="green.400" borderRadius="md" />
               </Td>
             </Tr>
@@ -131,20 +164,15 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
         </Tbody>
       </Table>
 
-      {/* 分页和每页显示数量选择 */}
       <Flex justifyContent="space-between" alignItems="center" mt={4}>
-        {/* 分页信息 */}
         <Text>共 {totalPages} 页</Text>
 
-        {/* 分页控制 */}
         <Stack direction="row" spacing={4} align="center">
           <IconButton
             aria-label="上一页"
             icon={<Text>&lt;</Text>}
             size="sm"
-            onClick={() =>
-              setCurrentPage((prev) => Math.max(prev - 1, 1))
-            }
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             isDisabled={currentPage === 1}
           />
           <Text>第 {currentPage} 页</Text>
@@ -152,9 +180,7 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
             aria-label="下一页"
             icon={<Text>&gt;</Text>}
             size="sm"
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-            }
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
             isDisabled={currentPage === totalPages}
           />
           <Select

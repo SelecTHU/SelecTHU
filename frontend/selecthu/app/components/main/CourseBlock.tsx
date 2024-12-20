@@ -1,21 +1,26 @@
 // components/main/CourseBlock.tsx
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useCallback } from "react";
 import {
   Box,
   Text,
+  Stack,
   useColorModeValue,
 } from "@chakra-ui/react";
 import { Course } from "@/app/types/course";
-import { useDrag } from "react-dnd";
-import { ItemTypes } from "./constants"; // 推荐将 ItemTypes 移到单独的文件中
+import { Volunteer } from "@/app/types/volunteer";
+import { useDrag, useDrop } from "react-dnd";
+import { ItemTypes } from "./constants";
 import { getEmptyImage } from "react-dnd-html5-backend";
 
 interface CourseBlockProps {
   course: Course;
   color: string;
-  duration: number; // 持续时间属性
-  slotHeight: number; // 每节课的高度
+  duration: number;
+  slotHeight: number;
+  volunteers: Volunteer[];
+  onVolunteerDrop: (courseId: string, volunteer: Volunteer) => void;
+  onVolunteerRemove: (courseId: string, volunteerId: string) => void;
 }
 
 export default function CourseBlock({
@@ -23,8 +28,13 @@ export default function CourseBlock({
   color,
   duration,
   slotHeight,
+  volunteers,
+  onVolunteerDrop,
+  onVolunteerRemove,
 }: CourseBlockProps) {
-  // 使用 useDrag 钩子
+  const courseRef = useRef<HTMLDivElement>(null);
+
+  // 课程块的拖拽功能
   const [{ isDragging }, drag, preview] = useDrag(() => ({
     type: ItemTypes.COURSE,
     item: { course },
@@ -33,41 +43,115 @@ export default function CourseBlock({
     }),
   }));
 
-  // 抑制默认的拖拽预览
+  // 志愿放置功能
+  const [{ isOver }, drop] = useDrop(() => ({
+    accept: ItemTypes.VOLUNTEER,
+    drop: (volunteer: Volunteer) => {
+      if (volunteer.type === course.type) {
+        onVolunteerDrop(course.id, volunteer);
+      }
+    },
+    canDrop: (volunteer: Volunteer) => volunteer.type === course.type,
+    collect: monitor => ({
+      isOver: monitor.canDrop() && monitor.isOver(),
+    }),
+  }));
+
+  // 抑制默认拖拽预览
   useEffect(() => {
     preview(getEmptyImage(), { captureDraggingState: true });
   }, [preview]);
 
-  const boxRef = useRef<HTMLDivElement>(null);
-  drag(boxRef);
+  // 合并 refs
+  useEffect(() => {
+    if (courseRef.current) {
+      drag(courseRef.current);
+      drop(courseRef.current);
+    }
+  }, [drag, drop]);
 
-  // 使用 useColorModeValue，根据主题模式选择适当的颜色
+  // 志愿标签组件
+  const VolunteerTag = ({ volunteer }: { volunteer: Volunteer }) => {
+    const volunteerRef = useRef<HTMLDivElement>(null);
+    const [{ isDragging: isVolunteerDragging }, volunteerDrag] = useDrag(() => ({
+      type: ItemTypes.VOLUNTEER,
+      item: volunteer,
+      collect: (monitor) => ({
+        isDragging: monitor.isDragging(),
+      }),
+      end: (item, monitor) => {
+        if (monitor.didDrop()) {
+          onVolunteerRemove(course.id, volunteer.id);
+        }
+      },
+    }));
+
+    useEffect(() => {
+      if (volunteerRef.current) {
+        volunteerDrag(volunteerRef.current);
+      }
+    }, [volunteerDrag]);
+
+    return (
+      <Box
+        ref={volunteerRef}
+        bg={`${volunteer.type}.100`}
+        px={1}
+        py={0.5}
+        borderRadius="sm"
+        fontSize="xs"
+        opacity={isVolunteerDragging ? 0.5 : 1}
+        cursor="move"
+      >
+        {`${volunteer.priority}志愿`}
+      </Box>
+    );
+  };
+
+  // 颜色模式
   const bgColor = useColorModeValue(`${color}.100`, `${color}.700`);
   const textColor = useColorModeValue("black", "white");
 
-  // 计算课程块的高度
-  const totalHeight = duration * slotHeight;
-
   return (
     <Box
-      ref={boxRef}
-      p={2}
-      bg={bgColor}
-      borderRadius="md"
-      minHeight={`${totalHeight}px`} // 设置最小高度
-      width="100%"
-      fontSize="xs"
-      display="flex"
-      flexDirection="column"
-      justifyContent="center"
-      opacity={isDragging ? 0 : 1} // 使用 isDragging 控制不透明度
-      color={textColor}
-      cursor="grab"
-      _active={{ cursor: "grabbing" }}
+      ref={courseRef}
+      position="relative"
+      opacity={isDragging ? 0 : isOver ? 0.7 : 1}
+      transition="opacity 0.2s"
     >
-      <Text fontWeight="bold">{course.name}</Text>
-      <Text>{course.teacher}</Text>
-      <Text>{course.classroom}</Text>
+      <Stack
+        position="absolute"
+        top="-20px"
+        left="0"
+        direction="row"
+        spacing={1}
+      >
+        {volunteers.map(volunteer => (
+          <VolunteerTag
+            key={volunteer.id}
+            volunteer={volunteer}
+          />
+        ))}
+      </Stack>
+      
+      <Box
+        p={2}
+        bg={bgColor}
+        borderRadius="md"
+        minHeight={`${duration * slotHeight}px`}
+        width="100%"
+        fontSize="xs"
+        display="flex"
+        flexDirection="column"
+        justifyContent="center"
+        color={textColor}
+        cursor="grab"
+        _active={{ cursor: "grabbing" }}
+      >
+        <Text fontWeight="bold">{course.name}</Text>
+        <Text>{course.teacher}</Text>
+        <Text>{course.classroom}</Text>
+      </Box>
     </Box>
   );
 }

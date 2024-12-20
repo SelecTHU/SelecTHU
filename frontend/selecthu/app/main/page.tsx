@@ -16,6 +16,7 @@ import StatusCard from "../components/main/StatusCard";
 import CourseTable from "../components/main/CourseTable";
 import TeachingPlan from "../components/main/TeachingPlan";
 import CourseList from "../components/main/CourseList";
+import VolunteerCard from "../components/main/VolunteerCard";
 
 // 引入 React DnD 所需的模块
 import { DndProvider } from "react-dnd";
@@ -26,6 +27,22 @@ import CustomDragLayer from "../components/main/CustomDragLayer";
 
 // 引入统一的 Course 接口
 import { Course } from "../types/course";
+
+import { useToast } from "@chakra-ui/react";
+
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton,
+  useDisclosure,
+  VStack,
+} from "@chakra-ui/react";
+import * as XLSX from 'xlsx';
+import html2canvas from 'html2canvas';
+
 
 // 示例课程数据
 const sampleCourses: Course[] = [
@@ -76,12 +93,82 @@ const sampleCourses: Course[] = [
   // 可以添加更多课程，确保每个课程对象包含所有必需的属性
 ];
 
+import { Volunteer as VolunteerType } from "../types/volunteer";
+
+interface Volunteer extends VolunteerType {}
+
 export default function MainPage() {
   // 管理可用课程列表（备选清单）
   const [availableCourses, setAvailableCourses] = useState<Course[]>(sampleCourses);
 
   // 管理已选课程列表（课程表中的课程）
   const [selectedCourses, setSelectedCourses] = useState<Course[]>([]);
+
+  // 更新志愿相关状态
+  const [availableVolunteers, setAvailableVolunteers] = useState<Volunteer[]>([
+    { id: '1', type: 'required', priority: 1 },
+    { id: '2', type: 'required', priority: 2 },
+  ]);
+
+  const [courseVolunteers, setCourseVolunteers] = useState<{
+    [courseId: string]: Volunteer[];
+  }>({});
+
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const [isExporting, setIsExporting] = useState(false);
+
+  const toast = useToast();
+
+
+
+  // 添加新的处理方法
+  const handleVolunteerDrop = (courseId: string, volunteer: Volunteer) => {
+    const course = selectedCourses.find(c => c.id === courseId);
+    if (!course || course.type !== volunteer.type) return;
+
+    setCourseVolunteers(prev => ({
+      ...prev,
+      [courseId]: [...(prev[courseId] || []), volunteer]
+    }));
+
+    setAvailableVolunteers(prev => 
+      prev.filter(v => v.id !== volunteer.id)
+    );
+  };
+
+  const handleVolunteerRemove = (courseId: string, volunteerId: string) => {
+    const volunteer = courseVolunteers[courseId]?.find(v => v.id === volunteerId);
+    if (!volunteer) return;
+
+    setCourseVolunteers(prev => ({
+      ...prev,
+      [courseId]: prev[courseId].filter(v => v.id !== volunteerId)
+    }));
+
+    setAvailableVolunteers(prev => [...prev, volunteer]);
+  };
+
+  const handleVolunteerDrag = (volunteer: Volunteer) => {  // 新增这个处理函数
+    if (!selectedCourses || selectedCourses.length === 0) return;
+    
+    // 这里可以添加逻辑来决定要将志愿分配给哪个课程
+    // 比如可以使用最后选中的课程或其他逻辑
+    const targetCourseId = selectedCourses[selectedCourses.length - 1].id;
+    handleVolunteerDrop(targetCourseId, volunteer);
+  };
+
+  // 新增处理志愿返回的函数
+  const handleVolunteerReturn = (volunteer: Volunteer) => {
+    // 找到包含这个志愿的课程
+    const courseId = Object.entries(courseVolunteers).find(
+      ([_, volunteers]) => volunteers.some(v => v.id === volunteer.id)
+    )?.[0];
+
+    if (courseId) {
+      handleVolunteerRemove(courseId, volunteer.id);
+    }
+  };
 
   // 颜色数组，确保颜色名称与 Chakra UI 的颜色方案一致
   const colors = [
@@ -135,19 +222,125 @@ export default function MainPage() {
 
   // 将课程从已选课程移动到备选清单
   const moveCourseToAvailable = (course: Course) => {
-    // 从已选课程中删除
-    setSelectedCourses((prevSelectedCourses) =>
-      prevSelectedCourses.filter((c) => c.id !== course.id)
+    const volunteers = courseVolunteers[course.id] || [];
+    
+    setAvailableVolunteers(prev => [...prev, ...volunteers]);
+    
+    setCourseVolunteers(prev => {
+      const newState = { ...prev };
+      delete newState[course.id];
+      return newState;
+    });
+
+    setSelectedCourses(prev =>
+      prev.filter(c => c.id !== course.id)
     );
 
-    // 添加回备选清单（如果尚未存在）
-    setAvailableCourses((prevAvailableCourses) => {
-      if (!prevAvailableCourses.some((c) => c.id === course.id)) {
-        return [...prevAvailableCourses, course];
+    setAvailableCourses(prev => {
+      if (!prev.some(c => c.id === course.id)) {
+        return [...prev, course];
       }
-      return prevAvailableCourses;
+      return prev;
     });
   };
+
+  // 导出为Excel文件
+const exportToXLSX = () => {
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.aoa_to_sheet([
+    ['时间', '周一', '周二', '周三', '周四', '周五'],
+    ...Array(12).fill(0).map((_, index) => {
+      const row = [`第${index + 1}节`];
+      for (let day = 1; day <= 5; day++) {
+        const coursesInSlot = selectedCourses.filter(course =>
+          course.timeSlots.some(slot =>
+            slot.day === day &&
+            index + 1 >= slot.start &&
+            index + 1 < slot.start + slot.duration
+          )
+        );
+        row.push(coursesInSlot.map(course => course.name).join('\n'));
+      }
+      return row;
+    })
+  ]);
+
+  XLSX.utils.book_append_sheet(workbook, worksheet, "课程表");
+  XLSX.writeFile(workbook, "课程表.xlsx");
+  onClose();
+};
+
+// 导出为PNG图片
+const exportToPNG = async () => {
+  setIsExporting(true);
+  const courseTableElement = document.querySelector('.course-table');
+  
+  if (!courseTableElement) {
+    toast({
+      title: "导出失败",
+      description: "未找到课程表元素",
+      status: "error",
+      duration: 3000,
+      isClosable: true,
+    });
+    setIsExporting(false);
+    return;
+  }
+
+  try {
+    // 创建一个包装元素来确保完整捕获
+    const wrapper = document.createElement('div');
+    wrapper.style.padding = '20px';
+    wrapper.style.background = 'white';
+    wrapper.appendChild(courseTableElement.cloneNode(true));
+    document.body.appendChild(wrapper);
+
+    const canvas = await html2canvas(wrapper, {
+      scale: 2, // 提高清晰度
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+      allowTaint: true,
+      foreignObjectRendering: true,
+      // 设置更大的渲染范围以确保捕获完整内容
+      width: wrapper.offsetWidth,
+      height: wrapper.offsetHeight,
+      windowWidth: wrapper.offsetWidth,
+      windowHeight: wrapper.offsetHeight
+    });
+
+    // 清理临时元素
+    document.body.removeChild(wrapper);
+
+    // 创建下载链接
+    const link = document.createElement('a');
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    link.download = `课程表_${timestamp}.png`;
+    link.href = canvas.toDataURL('image/png', 1.0);
+    link.click();
+
+    toast({
+      title: "导出成功",
+      description: "课程表已保存为PNG图片",
+      status: "success",
+      duration: 3000,
+      isClosable: true,
+    });
+
+    onClose();
+  } catch (error) {
+    console.error('导出PNG失败:', error);
+    toast({
+      title: "导出失败",
+      description: "请稍后重试",
+      status: "error",
+      duration: 3000,
+      isClosable: true,
+    });
+  } finally {
+    setIsExporting(false);
+  }
+};
 
   // 定义统一的高度
   const cardHeight = "150px"; // 调整高度以匹配按钮区域的高度
@@ -158,15 +351,16 @@ export default function MainPage() {
       <CustomDragLayer /> {/* 添加自定义拖拽层 */}
       <Box minH="100vh" bg={useColorModeValue("gray.50", "gray.900")}>
         <Navbar />
-
         <Box p={4}>
           <Grid templateColumns="repeat(12, 1fr)" gap={4}>
-            {/* 状态卡片区域 */}
+            {/* 添加志愿卡片 */}
             <GridItem colSpan={3}>
-              <StatusCard
-                title="志愿分配"
-                content="第一轮志愿分配进行中..."
-                height={cardHeight} // 使用height属性
+              <VolunteerCard
+                height={cardHeight}
+                availableVolunteers={availableVolunteers}
+                onVolunteerDrag={handleVolunteerDrag}
+                onVolunteerRemove={handleVolunteerRemove}
+                onVolunteerReturn={handleVolunteerReturn}
               />
             </GridItem>
             {/* 调整后的选课阶段卡片区域 */}
@@ -201,6 +395,7 @@ export default function MainPage() {
                     w="100%"
                     rounded="md"
                     mb={2}
+                    onClick={onOpen}  // 修改这里
                   >
                     导出课表
                   </Button>
@@ -226,7 +421,10 @@ export default function MainPage() {
               <CourseTable
                 selectedCourses={selectedCourses}
                 addCourseToTable={addCourseToTable}
-                getCourseColor={getCourseColor} // 传递 getCourseColor 函数
+                getCourseColor={getCourseColor}
+                courseVolunteers={courseVolunteers}
+                onVolunteerDrop={handleVolunteerDrop}
+                onVolunteerRemove={handleVolunteerRemove}
               />
             </GridItem>
 
@@ -246,6 +444,33 @@ export default function MainPage() {
           </Grid>
         </Box>
       </Box>
+      
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>选择导出格式</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            <VStack spacing={4} width="100%">
+              <Button
+                colorScheme="blue"
+                width="100%"
+                onClick={exportToXLSX}
+              >
+                导出为 Excel (XLSX)
+              </Button>
+              <Button
+                colorScheme="blue"
+                width="100%"
+                onClick={exportToPNG}
+              >
+                导出为图片 (PNG)
+              </Button>
+            </VStack>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+
     </DndProvider>
   );
 }
