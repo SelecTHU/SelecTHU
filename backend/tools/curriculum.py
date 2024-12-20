@@ -1,4 +1,5 @@
 # 用于在登录后获取培养方案
+from copy import deepcopy
 from db.v1.const import CURRICULUM_KEYS, CURRICULUM_BLANK
 from faker import Faker
 
@@ -14,7 +15,7 @@ class Curriculum:
     def __init__(self, p_xnxq, cookies, logger):
         # 学年学期
         self.p_xnxq = p_xnxq
-        
+
         self.params = {
             "m": "showBksZxZdxjxjhXmxqkclist",
             "p_xnxq": p_xnxq,
@@ -61,7 +62,7 @@ class Curriculum:
 
         # 先找到 table  id="kcTable">
         table = soup.find("table", id="kcTable")
-        user_curriculum = []
+        user_curriculum = list()
 
         # 先找到所有的表头
         keys = []
@@ -92,7 +93,7 @@ class Curriculum:
 
             user_curriculum.append(course)
 
-        return user_curriculum
+        return deepcopy(user_curriculum)
 
     def _parse_to_db_format(self, curriculum):
         self.logger.info("开始转换为数据库格式")
@@ -104,7 +105,7 @@ class Curriculum:
             "体育必修": CURRICULUM_KEYS[2],
         }
 
-        db_curriculum = CURRICULUM_BLANK.copy()
+        db_curriculum = deepcopy(CURRICULUM_BLANK)
 
         for course in curriculum:
             # 学年 学期 -> xnxq
@@ -128,7 +129,7 @@ class Curriculum:
 
             db_curriculum[belong_to].append(formatted_course)
 
-        return db_curriculum
+        return deepcopy(db_curriculum)
 
     def get_curriculum(self, format: bool = True):
         """
@@ -142,10 +143,11 @@ class Curriculum:
             response = self.client.get(self.curr_url, params=self.params)
             self.logger.info("获取成功")
 
+            curriculum = list()
             curriculum = self._parse_curriculum(response.text)
             if format:
                 curriculum = self._parse_to_db_format(curriculum)
-            return curriculum
+            return deepcopy(curriculum)
         except Exception as e:
             self.logger.error(f"获取失败: {e}")
             return None

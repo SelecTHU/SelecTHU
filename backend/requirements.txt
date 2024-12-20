@@ -6,6 +6,7 @@ eventlet>=0.24.1
 faker
 gunicorn
 httpx
+httpx[http2]
 pillow
 psycopg[binary]
 pyjwt

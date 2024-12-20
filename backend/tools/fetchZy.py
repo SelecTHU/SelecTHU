@@ -1,5 +1,6 @@
 # 获取课程志愿数据
 from bs4 import BeautifulSoup
+from copy import deepcopy
 from faker import Faker
 
 import httpx
@@ -80,7 +81,7 @@ class ZyFetcher:
                 time.sleep(0.3)
 
             self.logger.info(f"成功获取{m}数据")
-            return result
+            return deepcopy(result)
 
         except Exception as e:
             self.logger.error(f"获取数据失败: {e}")

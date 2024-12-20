@@ -1,5 +1,6 @@
 # 整个项目的调度器，用于调度各个模块的功能
 from app.settings import BASE_DIR
+from copy import deepcopy
 
 import tools.curriculum as curriculum
 import tools.fetch as fetch
@@ -39,7 +40,7 @@ class Scheduler:
         :return: 登录成功返回 `Tuple[True, name]` ，否则返回 `Tuple[False, None]`
         """
         try:
-            wlxt_login_obj = wlxtLogin.Login(username, password)
+            wlxt_login_obj = wlxtLogin.Login(username, password, self.logger)
             status, name = wlxt_login_obj.login()
 
             if status == False:
@@ -96,7 +97,7 @@ class Scheduler:
                 raise Exception("获取培养方案失败")
 
             self.logger.info(f"获取培养方案成功")
-            return user_curriculum
+            return deepcopy(user_curriculum)
         except Exception as e:
             self.logger.error(f"出现异常: {e}")
             return None
@@ -123,7 +124,7 @@ class Scheduler:
                 raise Exception("获取课程信息失败")
 
             self.logger.info(f"获取课程信息成功")
-            return courses
+            return deepcopy(courses)
         except Exception as e:
             self.logger.error(f"出现异常: {e}")
             return None
@@ -149,7 +150,7 @@ class Scheduler:
                 raise Exception("获取志愿信息失败")
 
             self.logger.info(f"获取志愿信息成功")
-            return zy
+            return deepcopy(zy)
         except Exception as e:
             self.logger.error(f"出现异常: {e}")
             return None

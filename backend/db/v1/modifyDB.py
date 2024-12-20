@@ -98,7 +98,7 @@ def add_course(course: dict):
         sec_choice = course.get("sec_choice", False)
         grade = course.get("grade", "")
         experiment = course.get("experiment", "")
-        selection = course.get("selection", const.SELECTION_BLANK.copy())
+        selection = course.get("selection", deepcopy(const.SELECTION_BLANK))
 
         # CoursesDetails：课程详细信息
         info = course.get("info", dict())
@@ -149,15 +149,18 @@ def add_curriculum(curriculum: dict) -> dict:
         return const.RESPONSE_400
 
     try:
+        for key in const.CURRICULUM_KEYS:
+            if key not in curriculum:
+                return const.RESPONSE_400
         # 计算id
-        course_id = cal_curriculum_id(curriculum)
+        curriculum_id = cal_curriculum_id(curriculum)
         # 检查是否已存在
-        if models.Curriculum.objects.filter(course_id=course_id).exists():
+        if models.Curriculum.objects.filter(curriculum_id=curriculum_id).exists():
             # 返回结果：资源冲突（培养方案已存在）
             return const.RESPONSE_409
 
         # 添加到数据库
-        curriculum = models.Curriculum(course_id=course_id, courses=curriculum)
+        curriculum = models.Curriculum(curriculum_id=curriculum_id, courses=curriculum)
         curriculum.save()
 
         # 返回结果：添加成功
@@ -501,7 +504,7 @@ def change_course_selection(course_id: str, selection: dict):
         course = models.MainCourses.objects.get(course_id=course_id)
 
         # 更新志愿信息
-        course.selection = selection.copy()
+        course.selection = deepcopy(selection)
         course.save()
 
         # 返回结果
