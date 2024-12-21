@@ -1,6 +1,7 @@
+// app/login/page.tsx
+
 "use client";
 
-// 引入必要的React hooks和Chakra UI组件
 import { useState, useEffect } from "react";
 import {
   Box,
@@ -13,22 +14,24 @@ import {
   Link,
   Text,
   VStack,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
-
 import { handleLogin } from "./actions"
 
 export default function LoginPage() {
-  // 初始化路由器和状态变量
   const router = useRouter();
-  const [account, setAccount] = useState(""); // 账号状态
-  const [password, setPassword] = useState(""); // 密码状态
-  const [remember, setRemember] = useState(false); // 记住密码复选框状态
-
-  // 处理登录按钮点击事件
-  /* const handleLogin = () => {
-    router.push("/main"); // 登录后跳转到主页
-  }; */
+  const [account, setAccount] = useState("");
+  const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(false);
+  const [agreement, setAgreement] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     async function fetchTest() {
@@ -41,7 +44,6 @@ export default function LoginPage() {
   }, []);
 
   return (
-    // 整体页面容器：居中布局，浅蓝色背景
     <Flex
       minHeight="100vh"
       width="100%"
@@ -51,9 +53,6 @@ export default function LoginPage() {
       bg="brand.50"
       pb={8}
     >
-
-
-      {/* 登录表单白色卡片容器 */}
       <Box
         bg="white"
         p={8}
@@ -63,13 +62,10 @@ export default function LoginPage() {
         boxShadow="lg"
         mb={6}
       >
-        {/* 表单内容垂直排列 */}
         <VStack spacing={4} align="stretch">
-          {/* 登录标题 */}
           <Text fontWeight="bold" fontSize="2xl" textAlign="center" mb={4} color="brand.500">
             SelecTHU · 清华选课助手
           </Text>
-          {/* 账号输入框 */}
           <FormControl id="account">
             <FormLabel>账号</FormLabel>
             <Input
@@ -79,7 +75,6 @@ export default function LoginPage() {
               placeholder="请输入账号"
             />
           </FormControl>
-          {/* 密码输入框 */}
           <FormControl id="password">
             <FormLabel>密码</FormLabel>
             <Input
@@ -89,7 +84,6 @@ export default function LoginPage() {
               placeholder="请输入密码"
             />
           </FormControl>
-          {/* 记住密码复选框 */}
           <Flex alignItems="center" justifyContent="space-between">
             <Checkbox
               isChecked={remember}
@@ -98,9 +92,28 @@ export default function LoginPage() {
             >
               记住密码
             </Checkbox>
+            <Flex alignItems="center">
+              <Checkbox
+                isChecked={agreement}
+                onChange={(e) => setAgreement(e.target.checked)}
+                colorScheme="purpleAccent"
+              >
+                同意
+              </Checkbox>
+              <Text
+                ml={1}
+                color="blue.500"
+                cursor="pointer"
+                textDecoration="underline"
+                onClick={() => setIsModalOpen(true)}
+              >
+                用户条款
+              </Text>
+            </Flex>
           </Flex>
-          {/* 登录按钮 */}
-          <Button colorScheme="brand" onClick={ async () => {
+          <Button 
+            colorScheme="brand" 
+            onClick={async () => {
               const res = await handleLogin()
               if (res?.error) {
                   console.log(res.error)
@@ -108,13 +121,14 @@ export default function LoginPage() {
               else {
                   router.push("/main")
               }
-          }}>
+            }}
+            isDisabled={!agreement}
+          >
             登录
           </Button>
         </VStack>
       </Box>
 
-      {/* 页脚链接部分 */}
       <Flex
         justifyContent="center"
         color="gray.500"
@@ -134,7 +148,6 @@ export default function LoginPage() {
         <Link href="/info/other" mx={2}>其他</Link>
       </Flex>
 
-      {/* 版权信息 */}
       <Text
         textAlign="center"
         color="gray.500"
@@ -143,6 +156,35 @@ export default function LoginPage() {
       >
         @清华大学软件学院
       </Text>
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} size="xl">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>用户条款</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text>
+              1. 服务条款的确认和接纳
+              <br /><br />
+              本网站的各项内容和服务的所有权归清华大学软件学院所有。用户在接受本网站服务之前，请务必仔细阅读本条款。用户使用本网站的服务即表示用户完全接受本服务条款。
+              <br /><br />
+              2. 服务内容
+              <br /><br />
+              本网站为用户提供选课辅助服务。本网站保留随时修改或中断服务而不需告知用户的权利。
+              <br /><br />
+              3. 用户隐私制度
+              <br /><br />
+              本网站将严格保护用户隐私，未经用户同意不会向第三方披露用户个人信息。
+              {/* 可以继续添加更多条款内容 */}
+            </Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="blue" mr={3} onClick={() => setIsModalOpen(false)}>
+              关闭
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Flex>
   );
 }
