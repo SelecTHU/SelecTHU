@@ -7,12 +7,10 @@ v1版本
 from app.settings import BASE_DIR
 from typing import Final
 
-import dotenv
 import logging
 import os
 
-
-dotenv.load_dotenv(BASE_DIR / ".env")
+# 日志
 logger: Final[logging.Logger] = logging.getLogger("db_v1_logger")
 if not os.path.exists(BASE_DIR / "logs"):
     os.makedirs(BASE_DIR / "logs")
