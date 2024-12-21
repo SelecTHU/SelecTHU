@@ -73,25 +73,6 @@ export default function CourseTable({
     );
   };
 
-  const renderVolunteers = (courseId: string) => {
-    const volunteers = courseVolunteers[courseId] || [];
-    return (
-      <Stack direction="row" spacing={1}>
-        {volunteers.map((volunteer, index) => (
-          <Box
-            key={index}
-            bg={`${volunteer.type}.100`}
-            px={1}
-            py={0.5}
-            borderRadius="sm"
-            fontSize="xs"
-          >
-            {`${volunteer.priority}志愿`}
-          </Box>
-        ))}
-      </Stack>
-    );
-  };
 
   const shouldShowCourse = (day: number, slot: number): boolean => {
     const course = getCourse(day, slot);
@@ -227,7 +208,6 @@ export default function CourseTable({
                           onVolunteerDrop={onVolunteerDrop}
                           onVolunteerRemove={onVolunteerRemove}
                         />
-                        {renderVolunteers(course.id)}
                       </Box>
                     ) : null}
                   </Td>

@@ -188,7 +188,7 @@ export default function MainPage() {
         remaining: 1
       });
       
-      // 二志愿：体育1个，其他类型2个
+      // 二志愿：体育1个，其他类型合并为1个志愿，数量为2
       if (type === 'sports') {
         volunteers.push({
           id: `${type}-2`,
@@ -198,25 +198,19 @@ export default function MainPage() {
         });
       } else {
         volunteers.push({
-          id: `${type}-2-1`,
+          id: `${type}-2`,
           type: type,
           priority: 2,
-          remaining: 1
-        });
-        volunteers.push({
-          id: `${type}-2-2`,
-          type: type,
-          priority: 2,
-          remaining: 1
+          remaining: 2  // 直接设置为2，而不是创建两个separate的志愿
         });
       }
       
-      // 三志愿：无限多个，设置一个较大的初始值
+      // 三志愿：无限多个
       volunteers.push({
         id: `${type}-3`,
         type: type,
         priority: 3,
-        remaining: 999 // 表示无限
+        remaining: 999
       });
     });
     
@@ -241,32 +235,68 @@ export default function MainPage() {
 
 
 
-  // 修改 handleVolunteerDrop 函数
   const handleVolunteerDrop = (courseId: string, volunteer: VolunteerWithCount) => {
     const course = selectedCourses.find(c => c.id === courseId);
     if (!course || course.type !== volunteer.type) return;
-
-    setCourseVolunteers(prev => ({
-      ...prev,
-      [courseId]: [...(prev[courseId] || []), volunteer]
-    }));
-
-    setAvailableVolunteers(prev => {
-      return prev.map(v => {
-        if (v.id === volunteer.id) {
-          // 如果是三志愿，保持不变
-          if (v.priority === 3) return v;
-          // 其他志愿减少剩余数量
-          return {
-            ...v,
-            remaining: v.remaining - 1
-          };
-        }
-        return v;
-      }).filter(v => v.remaining > 0); // 移除剩余数量为0的志愿
+  
+    // 先获取当前课程的志愿
+    const currentVolunteers = courseVolunteers[courseId] || [];
+    const existingVolunteer = currentVolunteers[0];
+  
+    // 使用 Promise 确保状态更新按序执行
+    Promise.resolve().then(async () => {
+      // 1. 如果存在旧志愿，先将其返回到志愿池
+      if (existingVolunteer) {
+        setAvailableVolunteers(prev => {
+          // 创建新数组以避免直接修改状态
+          const newVolunteers = [...prev];
+          
+          // 查找相同类型和优先级的志愿
+          const existingIndex = newVolunteers.findIndex(v => 
+            v.type === existingVolunteer.type && 
+            v.priority === existingVolunteer.priority
+          );
+  
+          if (existingIndex >= 0 && existingVolunteer.priority !== 3) {
+            // 如果找到相同的志愿，增加其数量
+            newVolunteers[existingIndex] = {
+              ...newVolunteers[existingIndex],
+              remaining: newVolunteers[existingIndex].remaining + 1
+            };
+          } else if (existingVolunteer.priority !== 3) {
+            // 如果没找到且不是三志愿，添加新的志愿
+            newVolunteers.push({
+              ...existingVolunteer,
+              remaining: 1
+            });
+          }
+  
+          return newVolunteers;
+        });
+      }
+  
+      // 2. 更新课程的志愿
+      setCourseVolunteers(prev => ({
+        ...prev,
+        [courseId]: [{ ...volunteer, remaining: 1 }]
+      }));
+  
+      // 3. 从可用池中减少新志愿的数量
+      setAvailableVolunteers(prev => {
+        return prev.map(v => {
+          if (v.type === volunteer.type && 
+              v.priority === volunteer.priority && 
+              v.priority !== 3) {
+            return {
+              ...v,
+              remaining: Math.max(0, v.remaining - 1)
+            };
+          }
+          return v;
+        });
+      });
     });
   };
-
   const handleVolunteerRemove = (courseId: string, volunteerId: string) => {
     const volunteer = courseVolunteers[courseId]?.find(v => v.id === volunteerId);
     if (!volunteer) return;
@@ -285,38 +315,56 @@ export default function MainPage() {
     handleVolunteerDrop(targetCourseId, volunteer);
   };
 
-// 修改 handleVolunteerReturn 函数
-const handleVolunteerReturn = (volunteer: VolunteerWithCount) => {
-  const courseId = Object.entries(courseVolunteers).find(
-    ([_, volunteers]) => volunteers.some(v => v.id === volunteer.id)
-  )?.[0];
-
-  if (courseId) {
-    setCourseVolunteers(prev => ({
-      ...prev,
-      [courseId]: prev[courseId].filter(v => v.id !== volunteer.id)
-    }));
-
-    setAvailableVolunteers(prev => {
-      const existingVolunteer = prev.find(v => 
+  const handleVolunteerReturn = (volunteer: VolunteerWithCount) => {
+    // 找到包含此志愿的课程
+    const courseEntry = Object.entries(courseVolunteers).find(
+      ([_, volunteers]) => volunteers.some(v => 
         v.type === volunteer.type && 
         v.priority === volunteer.priority
-      );
-
-      if (existingVolunteer) {
-        return prev.map(v => {
-          if (v.id === existingVolunteer.id && v.priority !== 3) {
-            return { ...v, remaining: v.remaining + 1 };
+      )
+    );
+  
+    if (courseEntry) {
+      const [courseId, volunteers] = courseEntry;
+      
+      // 从课程中移除志愿
+      setCourseVolunteers(prev => ({
+        ...prev,
+        [courseId]: prev[courseId].filter(v => 
+          !(v.type === volunteer.type && v.priority === volunteer.priority)
+        )
+      }));
+  
+      // 返回志愿到志愿池
+      setAvailableVolunteers(prev => {
+        const existingVolunteer = prev.find(v => 
+          v.type === volunteer.type && 
+          v.priority === volunteer.priority
+        );
+  
+        if (existingVolunteer) {
+          // 如果存在，增加数量
+          return prev.map(v => {
+            if (v.type === volunteer.type && 
+                v.priority === volunteer.priority && 
+                v.priority !== 3) {
+              return {
+                ...v,
+                remaining: v.remaining + 1
+              };
+            }
+            return v;
+          });
+        } else {
+          // 如果不存在且不是三志愿，添加新的
+          if (volunteer.priority !== 3) {
+            return [...prev, { ...volunteer, remaining: 1 }];
           }
-          return v;
-        });
-      } else if (volunteer.priority !== 3) {
-        return [...prev, { ...volunteer, remaining: 1 }];
-      }
-      return prev;
-    });
-  }
-};
+          return prev;
+        }
+      });
+    }
+  };
 
   // 颜色数组，确保颜色名称与 Chakra UI 的颜色方案一致
   const colors = [
