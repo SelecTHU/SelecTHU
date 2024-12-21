@@ -58,9 +58,10 @@ export default function VolunteerCard({
     
     const [{ isDragging }, drag] = useDrag(() => ({
       type: ItemTypes.VOLUNTEER,
-      item: volunteer,  // 传递完整的志愿对象
+      item: () => ({ ...volunteer }), // 创建新的对象，避免修改原对象
       end: (item, monitor) => {
         const dropResult = monitor.getDropResult();
+        // 只有在成功放置并返回结果时才触发志愿减少
         if (item && dropResult) {
           onVolunteerDrag({
             id: volunteer.id,
@@ -72,7 +73,7 @@ export default function VolunteerCard({
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),
       }),
-    }));
+    }), [volunteer]); // 添加依赖项
 
     useEffect(() => {
       if (boxRef.current) {

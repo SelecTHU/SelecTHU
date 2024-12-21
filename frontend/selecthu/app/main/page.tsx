@@ -178,7 +178,6 @@ export default function MainPage() {
     
     let volunteers: VolunteerWithCount[] = [];
     
-    // 为每种类型生成志愿
     types.forEach(type => {
       // 一志愿：每种类型1个
       volunteers.push({
@@ -188,24 +187,15 @@ export default function MainPage() {
         remaining: 1
       });
       
-      // 二志愿：体育1个，其他类型合并为1个志愿，数量为2
-      if (type === 'sports') {
-        volunteers.push({
-          id: `${type}-2`,
-          type: type,
-          priority: 2,
-          remaining: 1
-        });
-      } else {
-        volunteers.push({
-          id: `${type}-2`,
-          type: type,
-          priority: 2,
-          remaining: 2  // 直接设置为2，而不是创建两个separate的志愿
-        });
-      }
+      // 二志愿：体育1个，其他2个
+      volunteers.push({
+        id: `${type}-2`,
+        type: type,
+        priority: 2,
+        remaining: type === 'sports' ? 1 : 2
+      });
       
-      // 三志愿：无限多个
+      // 三志愿：每种类型只有一个，但无限次数
       volunteers.push({
         id: `${type}-3`,
         type: type,
@@ -216,6 +206,7 @@ export default function MainPage() {
     
     return volunteers;
   };
+
 
     // 更新志愿相关状态
     const [availableVolunteers, setAvailableVolunteers] = useState<VolunteerWithCount[]>(
@@ -239,64 +230,58 @@ export default function MainPage() {
     const course = selectedCourses.find(c => c.id === courseId);
     if (!course || course.type !== volunteer.type) return;
   
-    // 先获取当前课程的志愿
+    // 获取当前状态的快照
     const currentVolunteers = courseVolunteers[courseId] || [];
     const existingVolunteer = currentVolunteers[0];
   
-    // 使用 Promise 确保状态更新按序执行
-    Promise.resolve().then(async () => {
-      // 1. 如果存在旧志愿，先将其返回到志愿池
+    Promise.resolve().then(() => {
+      // 1. 处理现有志愿的返回
       if (existingVolunteer) {
         setAvailableVolunteers(prev => {
-          // 创建新数组以避免直接修改状态
-          const newVolunteers = [...prev];
-          
           // 查找相同类型和优先级的志愿
-          const existingIndex = newVolunteers.findIndex(v => 
+          const existingIndex = prev.findIndex(v => 
             v.type === existingVolunteer.type && 
             v.priority === existingVolunteer.priority
           );
   
-          if (existingIndex >= 0 && existingVolunteer.priority !== 3) {
-            // 如果找到相同的志愿，增加其数量
-            newVolunteers[existingIndex] = {
-              ...newVolunteers[existingIndex],
-              remaining: newVolunteers[existingIndex].remaining + 1
+          if (existingIndex >= 0) {
+            // 更新现有志愿的数量
+            const updatedVolunteers = [...prev];
+            updatedVolunteers[existingIndex] = {
+              ...prev[existingIndex],
+              remaining: prev[existingIndex].remaining + 1
             };
+            return updatedVolunteers;
           } else if (existingVolunteer.priority !== 3) {
-            // 如果没找到且不是三志愿，添加新的志愿
-            newVolunteers.push({
-              ...existingVolunteer,
-              remaining: 1
-            });
+            // 如果不存在且不是三志愿，添加新的志愿
+            return [...prev, { ...existingVolunteer, remaining: 1 }];
           }
-  
-          return newVolunteers;
+          return prev;
         });
       }
   
-      // 2. 更新课程的志愿
+      // 2. 更新课程志愿
       setCourseVolunteers(prev => ({
         ...prev,
         [courseId]: [{ ...volunteer, remaining: 1 }]
       }));
   
-      // 3. 从可用池中减少新志愿的数量
+      // 3. 更新可用志愿池
       setAvailableVolunteers(prev => {
+        // 创建新数组并更新目标志愿的数量
         return prev.map(v => {
-          if (v.type === volunteer.type && 
-              v.priority === volunteer.priority && 
-              v.priority !== 3) {
+          if (v.type === volunteer.type && v.priority === volunteer.priority) {
             return {
               ...v,
-              remaining: Math.max(0, v.remaining - 1)
+              remaining: Math.max(0, v.priority === 3 ? 999 : v.remaining - 1)
             };
           }
           return v;
-        });
+        }).filter(v => v.remaining > 0 || v.priority === 3); // 保留有剩余数量的志愿和三志愿
       });
     });
   };
+  
   const handleVolunteerRemove = (courseId: string, volunteerId: string) => {
     const volunteer = courseVolunteers[courseId]?.find(v => v.id === volunteerId);
     if (!volunteer) return;
@@ -311,9 +296,17 @@ export default function MainPage() {
 
   const handleVolunteerDrag = (volunteer: VolunteerWithCount) => {
     if (!selectedCourses || selectedCourses.length === 0) return;
+    
+    // 检查是否存在可以赋予的目标课程
     const targetCourseId = selectedCourses[selectedCourses.length - 1].id;
-    handleVolunteerDrop(targetCourseId, volunteer);
+    const targetCourse = selectedCourses.find(c => c.id === targetCourseId);
+    
+    // 只有在有匹配的课程类型时才处理志愿
+    if (targetCourse && targetCourse.type === volunteer.type) {
+      handleVolunteerDrop(targetCourseId, volunteer);
+    }
   };
+
 
   const handleVolunteerReturn = (volunteer: VolunteerWithCount) => {
     // 找到包含此志愿的课程
@@ -325,47 +318,40 @@ export default function MainPage() {
     );
   
     if (courseEntry) {
-      const [courseId, volunteers] = courseEntry;
+      const [courseId] = courseEntry;
       
       // 从课程中移除志愿
       setCourseVolunteers(prev => ({
         ...prev,
-        [courseId]: prev[courseId].filter(v => 
-          !(v.type === volunteer.type && v.priority === volunteer.priority)
-        )
+        [courseId]: []
       }));
   
       // 返回志愿到志愿池
       setAvailableVolunteers(prev => {
-        const existingVolunteer = prev.find(v => 
+        // 查找相同类型和优先级的志愿
+        const existingIndex = prev.findIndex(v => 
           v.type === volunteer.type && 
           v.priority === volunteer.priority
         );
   
-        if (existingVolunteer) {
-          // 如果存在，增加数量
-          return prev.map(v => {
-            if (v.type === volunteer.type && 
-                v.priority === volunteer.priority && 
-                v.priority !== 3) {
-              return {
-                ...v,
-                remaining: v.remaining + 1
-              };
-            }
-            return v;
-          });
-        } else {
-          // 如果不存在且不是三志愿，添加新的
-          if (volunteer.priority !== 3) {
-            return [...prev, { ...volunteer, remaining: 1 }];
-          }
-          return prev;
+        if (existingIndex >= 0) {
+          // 更新现有志愿的数量
+          const updatedVolunteers = [...prev];
+          updatedVolunteers[existingIndex] = {
+            ...prev[existingIndex],
+            remaining: prev[existingIndex].remaining + 1
+          };
+          return updatedVolunteers;
+        } else if (volunteer.priority !== 3) {
+          // 如果不存在且不是三志愿，添加新的志愿
+          return [...prev, { ...volunteer, remaining: 1 }];
         }
+        return prev;
       });
     }
   };
 
+  
   // 颜色数组，确保颜色名称与 Chakra UI 的颜色方案一致
   const colors = [
     "blue",
