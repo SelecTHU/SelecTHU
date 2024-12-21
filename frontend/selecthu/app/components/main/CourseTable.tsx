@@ -207,16 +207,17 @@ export default function CourseTable({
                 return (
                   <Td
                     key={`cell-${dayIndex}-${slotIndex}`}
-                    p={0}
+                    p={0}  // 确保设置为 0
                     rowSpan={rowSpan}
                     textAlign="center"
                     border="1px solid"
                     borderColor={borderColor}
                     verticalAlign="top"
-                    height={course ? `${slotHeight * rowSpan}px` : `${slotHeight}px`}
+                    height={`${slotHeight * rowSpan}px`}
+                    position="relative"  // 添加相对定位
                   >
                     {course && shouldShowCourse(dayIndex + 1, slotIndex + 1) ? (
-                      <>
+                      <Box position="absolute" top={0} left={0} right={0} bottom={0}>  
                         <CourseBlock
                           course={course}
                           color={color}
@@ -227,7 +228,7 @@ export default function CourseTable({
                           onVolunteerRemove={onVolunteerRemove}
                         />
                         {renderVolunteers(course.id)}
-                      </>
+                      </Box>
                     ) : null}
                   </Td>
                 );

@@ -51,14 +51,14 @@ const sampleCourses: Course[] = [
     name: "高等数学",
     teacher: "张教授",
     classroom: "教学楼A101",
-    type: "必修",
+    type: "required",
     credits: 4,
     timeSlots: [
       { day: 1, start: 1, duration: 2 }, // 周一1-2节
-      { day: 3, start: 3, duration: 3 }, // 周三3-5节
+      { day: 3, start: 1, duration: 2 }, // 周三1-2节
     ],
     department: "数学与统计学院",
-    time: "周一 08:00-10:00 / 周三 09:00-12:00",
+    time: "周一 08:00-10:00 / 周三 08:00-10:00",
     teachingInfo: "教室：教学楼A101，投影仪、白板",
     teacherInfo: "电子邮箱：zhang@example.com",
     comments: [
@@ -73,14 +73,14 @@ const sampleCourses: Course[] = [
     name: "线性代数",
     teacher: "李教授",
     classroom: "教学楼B202",
-    type: "必修",
+    type: "required",
     credits: 3,
     timeSlots: [
-      { day: 2, start: 4, duration: 2 }, // 周二4-5节
-      { day: 4, start: 1, duration: 1 }, // 周四1节
+      { day: 2, start: 3, duration: 2 }, // 周二3-4节
+      { day: 4, start: 3, duration: 2 }, // 周四3-4节
     ],
     department: "数学与统计学院",
-    time: "周二 14:00-16:00 / 周四 09:00-10:00",
+    time: "周二 10:00-12:00 / 周四 10:00-12:00",
     teachingInfo: "教室：教学楼B202，配备计算机实验环境",
     teacherInfo: "电子邮箱：li@example.com",
     comments: [
@@ -90,7 +90,70 @@ const sampleCourses: Course[] = [
     courseNumber: "MATH102",
     sequenceNumber: "002",
   },
-  // 可以添加更多课程，确保每个课程对象包含所有必需的属性
+  {
+    id: "3",
+    name: "大学物理",
+    teacher: "王教授",
+    classroom: "理科楼C303",
+    type: "limited",
+    credits: 4,
+    timeSlots: [
+      { day: 1, start: 6, duration: 2 }, // 周一6-7节
+      { day: 3, start: 6, duration: 2 }, // 周三6-7节
+    ],
+    department: "物理学院",
+    time: "周一 14:00-16:00 / 周三 14:00-16:00",
+    teachingInfo: "教室：理科楼C303，物理实验室",
+    teacherInfo: "电子邮箱：wang@example.com",
+    comments: [
+      "理论与实验相结合",
+      "实验课程丰富多样",
+    ],
+    courseNumber: "PHYS101",
+    sequenceNumber: "003",
+  },
+  {
+    id: "4",
+    name: "程序设计",
+    teacher: "陈教授",
+    classroom: "计算机楼D404",
+    type: "optional",
+    credits: 3,
+    timeSlots: [
+      { day: 2, start: 6, duration: 3 }, // 周二6-8节
+    ],
+    department: "计算机科学与技术学院",
+    time: "周二 14:00-17:00",
+    teachingInfo: "教室：计算机楼D404，编程实验室",
+    teacherInfo: "电子邮箱：chen@example.com",
+    comments: [
+      "注重实践能力培养",
+      "配有助教答疑",
+    ],
+    courseNumber: "CS101",
+    sequenceNumber: "004",
+  },
+  {
+    id: "5",
+    name: "羽毛球",
+    teacher: "刘教授",
+    classroom: "体育馆",
+    type: "sports",
+    credits: 1,
+    timeSlots: [
+      { day: 5, start: 3, duration: 2 }, // 周五3-4节
+    ],
+    department: "体育学院",
+    time: "周五 10:00-12:00",
+    teachingInfo: "场地：体育馆羽毛球场",
+    teacherInfo: "电子邮箱：liu@example.com",
+    comments: [
+      "适合初学者",
+      "器材齐全",
+    ],
+    courseNumber: "PE101",
+    sequenceNumber: "005",
+  },
 ];
 
 import { Volunteer as VolunteerType } from "../types/volunteer";

@@ -33,6 +33,7 @@ export default function CourseBlock({
   onVolunteerRemove,
 }: CourseBlockProps) {
   const courseRef = useRef<HTMLDivElement>(null);
+  const borderColor = useColorModeValue("gray.200", "gray.600");
 
   // 课程块的拖拽功能
   const [{ isDragging }, drag, preview] = useDrag(() => ({
@@ -112,45 +113,89 @@ export default function CourseBlock({
   const bgColor = useColorModeValue(`${color}.100`, `${color}.700`);
   const textColor = useColorModeValue("black", "white");
 
+  // 根据课程类型决定顶部区域的显示文本
+  const getTypeText = (type: string) => {
+    switch(type) {
+      case 'required': return '必修';
+      case 'limited': return '限选';
+      case 'optional': return '任选';
+      case 'sports': return '体育';
+      
+      default: return '任选';
+    }
+  };
+
   return (
     <Box
       ref={courseRef}
       position="relative"
       opacity={isDragging ? 0 : isOver ? 0.7 : 1}
       transition="opacity 0.2s"
+      height="100%"
+      border="1px solid"
+      borderColor={borderColor}
+      display="flex"
+      flexDirection="column"
     >
-      <Stack
-        position="absolute"
-        top="-20px"
-        left="0"
-        direction="row"
-        spacing={1}
-      >
-        {volunteers.map(volunteer => (
-          <VolunteerTag
-            key={volunteer.id}
-            volunteer={volunteer}
-          />
-        ))}
-      </Stack>
-      
+      {/* 顶部类型区域 */}
       <Box
-        p={2}
-        bg={bgColor}
-        borderRadius="md"
-        minHeight={`${duration * slotHeight}px`}
         width="100%"
-        fontSize="xs"
+        bg={useColorModeValue(`${color}.50`, `${color}.900`)}
+        borderBottom="1px solid"
+        borderColor={borderColor}
+        height="16px" // 固定高度
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Text fontSize="10px" lineHeight="1">
+          {getTypeText(course.type)}
+        </Text>
+      </Box>
+
+      {/* 主要课程信息区域 */}
+      <Box
+        bg={useColorModeValue(`${color}.100`, `${color}.700`)}
+        px={2}
+        py={1}
+        flex={1}
         display="flex"
         flexDirection="column"
         justifyContent="center"
-        color={textColor}
+        color={useColorModeValue("gray.800", "white")}
         cursor="grab"
         _active={{ cursor: "grabbing" }}
       >
-        <Text fontWeight="bold">{course.name}</Text>
-        <Text>{course.teacher}</Text>
-        <Text>{course.classroom}</Text>
+        <Text fontWeight="bold" fontSize="sm">
+          {course.name}
+        </Text>
+        <Text fontSize="xs">{course.teacher}</Text>
+        <Text fontSize="xs">{course.classroom}</Text>
+
+        {/* 如果需要显示志愿信息，可以在这里添加 */}
+        {volunteers.length > 0 && (
+          <Stack direction="row" spacing={1} mt={1} justifyContent="center">
+            {volunteers.map(volunteer => (
+              <VolunteerTag key={volunteer.id} volunteer={volunteer} />
+            ))}
+          </Stack>
+        )}
+      </Box>
+
+      {/* 底部信息区域 */}
+      <Box
+        width="100%"
+        bg={useColorModeValue(`${color}.50`, `${color}.900`)}
+        borderTop="1px solid"
+        borderColor={borderColor}
+        height="16px" // 固定高度
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Text fontSize="10px" lineHeight="1">
+          {course.courseNumber}
+        </Text>
       </Box>
     </Box>
   );
