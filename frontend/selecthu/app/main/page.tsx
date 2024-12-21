@@ -30,6 +30,8 @@ import { Course } from "../types/course";
 
 import { useToast } from "@chakra-ui/react";
 
+import { Volunteer, VolunteerWithCount } from '@/app/types/volunteer';
+
 import {
   Modal,
   ModalOverlay,
@@ -156,9 +158,7 @@ const sampleCourses: Course[] = [
   },
 ];
 
-import { Volunteer as VolunteerType } from "../types/volunteer";
-
-interface Volunteer extends VolunteerType {}
+// Removed redundant Volunteer declaration
 
 export default function MainPage() {
   // 管理可用课程列表（备选清单）
@@ -167,15 +167,71 @@ export default function MainPage() {
   // 管理已选课程列表（课程表中的课程）
   const [selectedCourses, setSelectedCourses] = useState<Course[]>([]);
 
-  // 更新志愿相关状态
-  const [availableVolunteers, setAvailableVolunteers] = useState<Volunteer[]>([
-    { id: '1', type: 'required', priority: 1 },
-    { id: '2', type: 'required', priority: 2 },
-  ]);
 
-  const [courseVolunteers, setCourseVolunteers] = useState<{
-    [courseId: string]: Volunteer[];
-  }>({});
+  const generateInitialVolunteers = () => {
+    const types: Array<'required' | 'limited' | 'optional' | 'sports'> = [
+      'required', 
+      'limited', 
+      'optional', 
+      'sports'
+    ];
+    
+    let volunteers: VolunteerWithCount[] = [];
+    
+    // 为每种类型生成志愿
+    types.forEach(type => {
+      // 一志愿：每种类型1个
+      volunteers.push({
+        id: `${type}-1`,
+        type: type,
+        priority: 1,
+        remaining: 1
+      });
+      
+      // 二志愿：体育1个，其他类型2个
+      if (type === 'sports') {
+        volunteers.push({
+          id: `${type}-2`,
+          type: type,
+          priority: 2,
+          remaining: 1
+        });
+      } else {
+        volunteers.push({
+          id: `${type}-2-1`,
+          type: type,
+          priority: 2,
+          remaining: 1
+        });
+        volunteers.push({
+          id: `${type}-2-2`,
+          type: type,
+          priority: 2,
+          remaining: 1
+        });
+      }
+      
+      // 三志愿：无限多个，设置一个较大的初始值
+      volunteers.push({
+        id: `${type}-3`,
+        type: type,
+        priority: 3,
+        remaining: 999 // 表示无限
+      });
+    });
+    
+    return volunteers;
+  };
+
+    // 更新志愿相关状态
+    const [availableVolunteers, setAvailableVolunteers] = useState<VolunteerWithCount[]>(
+      generateInitialVolunteers()
+    );
+    
+
+    const [courseVolunteers, setCourseVolunteers] = useState<{
+      [courseId: string]: VolunteerWithCount[];
+    }>({});
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -185,8 +241,8 @@ export default function MainPage() {
 
 
 
-  // 添加新的处理方法
-  const handleVolunteerDrop = (courseId: string, volunteer: Volunteer) => {
+  // 修改 handleVolunteerDrop 函数
+  const handleVolunteerDrop = (courseId: string, volunteer: VolunteerWithCount) => {
     const course = selectedCourses.find(c => c.id === courseId);
     if (!course || course.type !== volunteer.type) return;
 
@@ -195,9 +251,20 @@ export default function MainPage() {
       [courseId]: [...(prev[courseId] || []), volunteer]
     }));
 
-    setAvailableVolunteers(prev => 
-      prev.filter(v => v.id !== volunteer.id)
-    );
+    setAvailableVolunteers(prev => {
+      return prev.map(v => {
+        if (v.id === volunteer.id) {
+          // 如果是三志愿，保持不变
+          if (v.priority === 3) return v;
+          // 其他志愿减少剩余数量
+          return {
+            ...v,
+            remaining: v.remaining - 1
+          };
+        }
+        return v;
+      }).filter(v => v.remaining > 0); // 移除剩余数量为0的志愿
+    });
   };
 
   const handleVolunteerRemove = (courseId: string, volunteerId: string) => {
@@ -212,26 +279,44 @@ export default function MainPage() {
     setAvailableVolunteers(prev => [...prev, volunteer]);
   };
 
-  const handleVolunteerDrag = (volunteer: Volunteer) => {  // 新增这个处理函数
+  const handleVolunteerDrag = (volunteer: VolunteerWithCount) => {
     if (!selectedCourses || selectedCourses.length === 0) return;
-    
-    // 这里可以添加逻辑来决定要将志愿分配给哪个课程
-    // 比如可以使用最后选中的课程或其他逻辑
     const targetCourseId = selectedCourses[selectedCourses.length - 1].id;
     handleVolunteerDrop(targetCourseId, volunteer);
   };
 
-  // 新增处理志愿返回的函数
-  const handleVolunteerReturn = (volunteer: Volunteer) => {
-    // 找到包含这个志愿的课程
-    const courseId = Object.entries(courseVolunteers).find(
-      ([_, volunteers]) => volunteers.some(v => v.id === volunteer.id)
-    )?.[0];
+// 修改 handleVolunteerReturn 函数
+const handleVolunteerReturn = (volunteer: VolunteerWithCount) => {
+  const courseId = Object.entries(courseVolunteers).find(
+    ([_, volunteers]) => volunteers.some(v => v.id === volunteer.id)
+  )?.[0];
 
-    if (courseId) {
-      handleVolunteerRemove(courseId, volunteer.id);
-    }
-  };
+  if (courseId) {
+    setCourseVolunteers(prev => ({
+      ...prev,
+      [courseId]: prev[courseId].filter(v => v.id !== volunteer.id)
+    }));
+
+    setAvailableVolunteers(prev => {
+      const existingVolunteer = prev.find(v => 
+        v.type === volunteer.type && 
+        v.priority === volunteer.priority
+      );
+
+      if (existingVolunteer) {
+        return prev.map(v => {
+          if (v.id === existingVolunteer.id && v.priority !== 3) {
+            return { ...v, remaining: v.remaining + 1 };
+          }
+          return v;
+        });
+      } else if (volunteer.priority !== 3) {
+        return [...prev, { ...volunteer, remaining: 1 }];
+      }
+      return prev;
+    });
+  }
+};
 
   // 颜色数组，确保颜色名称与 Chakra UI 的颜色方案一致
   const colors = [
@@ -287,18 +372,24 @@ export default function MainPage() {
   const moveCourseToAvailable = (course: Course) => {
     const volunteers = courseVolunteers[course.id] || [];
     
-    setAvailableVolunteers(prev => [...prev, ...volunteers]);
+    setAvailableVolunteers(prev => {
+      const newVolunteers = volunteers.map(v => ({
+        ...v,
+        remaining: 1, // 或者其他适当的值
+      }));
+      return [...prev, ...newVolunteers];
+    });
     
     setCourseVolunteers(prev => {
       const newState = { ...prev };
       delete newState[course.id];
       return newState;
     });
-
+  
     setSelectedCourses(prev =>
       prev.filter(c => c.id !== course.id)
     );
-
+  
     setAvailableCourses(prev => {
       if (!prev.some(c => c.id === course.id)) {
         return [...prev, course];

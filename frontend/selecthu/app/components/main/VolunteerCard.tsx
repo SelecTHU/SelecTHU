@@ -10,15 +10,18 @@ import {
 } from '@chakra-ui/react';
 import { useDrag, useDrop } from 'react-dnd';
 import { ItemTypes } from './constants';
-import { Volunteer } from '@/app/types/volunteer';
+import { Volunteer, VolunteerWithCount } from '@/app/types/volunteer';
+
 
 interface VolunteerCardProps {
   height: string;
   onVolunteerDrag: (volunteer: Volunteer) => void;
-  availableVolunteers: Volunteer[];
+  availableVolunteers: VolunteerWithCount[];
   onVolunteerReturn: (volunteer: Volunteer) => void;
   onVolunteerRemove: (courseId: string, volunteerId: string) => void;
 }
+
+
 
 export default function VolunteerCard({
   height,
@@ -45,51 +48,58 @@ export default function VolunteerCard({
     }),
   }));
 
-  const VolunteerBox = ({ volunteer }: { volunteer: Volunteer }) => {
-    const boxRef = useRef<HTMLDivElement>(null);
-    
-    const [{ isDragging }, drag] = useDrag(() => ({
-      type: ItemTypes.VOLUNTEER,
-      item: volunteer,
-      collect: (monitor) => ({
-        isDragging: monitor.isDragging(),
-      }),
-      end: (item, monitor) => {
-        const dropResult = monitor.getDropResult();
-        if (dropResult) {
-          onVolunteerDrag(volunteer);
-        }
-      },
-    }));
+// components/main/VolunteerCard.tsx
 
-    // 使用 useEffect 来处理 ref
-    useEffect(() => {
-      if (boxRef.current) {
-        drag(boxRef.current);
-      }
-    }, [drag]);
+const VolunteerBox = ({ volunteer }: { volunteer: VolunteerWithCount }) => {
+  const boxRef = useRef<HTMLDivElement>(null);
+  
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: ItemTypes.VOLUNTEER,
+    item: volunteer,
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  }));
 
-    return (
-      <Box
-        ref={boxRef}
-        bg={volunteerBgColors[volunteer.type]}
-        p={1}
-        borderRadius="sm"
-        cursor="move"
-        opacity={isDragging ? 0.5 : 1}
-        position="relative"
-        mb={1}
-        _hover={{ shadow: 'md' }}
-      >
-        <Text fontSize="xs">
-          {volunteer.type === 'required' ? '必修' :
-           volunteer.type === 'limited' ? '限选' :
-           volunteer.type === 'optional' ? '任选' : '体育'}
-          {volunteer.priority}志愿
-        </Text>
-      </Box>
-    );
+  useEffect(() => {
+    if (boxRef.current) {
+      drag(boxRef.current);
+    }
+  }, [drag]);
+
+  // 获取志愿类型的中文名称
+  const getTypeText = (type: string) => {
+    switch(type) {
+      case 'required': return '必修';
+      case 'limited': return '限选';
+      case 'optional': return '任选';
+      case 'sports': return '体育';
+      default: return '';
+    }
   };
+
+  return (
+    <Box
+      ref={boxRef}
+      bg={volunteerBgColors[volunteer.type]}
+      p={2}
+      borderRadius="md"
+      cursor="move"
+      opacity={isDragging ? 0.5 : 1}
+      _hover={{ shadow: 'md' }}
+      width="100%"
+    >
+      <Flex justify="space-between" align="center">
+        <Text fontSize="sm">
+          {`${getTypeText(volunteer.type)}${volunteer.priority}`}
+        </Text>
+        <Text fontSize="xs" color="gray.600">
+          {volunteer.priority === 3 ? '∞' : `×${volunteer.remaining}`}
+        </Text>
+      </Flex>
+    </Box>
+  );
+};
 
   const renderVolunteerSection = (type: Volunteer['type']) => {
     const typeVolunteers = availableVolunteers.filter(v => v.type === type);
@@ -138,10 +148,23 @@ export default function VolunteerCard({
       <Text fontSize="lg" fontWeight="bold" mb={4}>
         志愿分配
       </Text>
-      {renderVolunteerSection('required')}
-      {renderVolunteerSection('limited')}
-      {renderVolunteerSection('optional')}
-      {renderVolunteerSection('sports')}
+      {/* 使用水平Flex布局排列四种类型 */}
+      <Flex justify="space-between" gap={2}>
+        {['required', 'limited', 'optional', 'sports'].map((type) => (
+          <Stack key={type} spacing={2} flex="1" minW="50px">
+            {/* 垂直排列1、2、3志愿 */}
+            {[1, 2, 3].map(priority => (
+              <Stack key={priority} spacing={1}>
+                {availableVolunteers
+                  .filter(v => v.type === type && v.priority === priority)
+                  .map(volunteer => (
+                    <VolunteerBox key={volunteer.id} volunteer={volunteer} />
+                  ))}
+              </Stack>
+            ))}
+          </Stack>
+        ))}
+      </Flex>
     </Box>
   );
 }
