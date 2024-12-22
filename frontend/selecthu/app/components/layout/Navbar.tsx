@@ -75,6 +75,7 @@ export default function Navbar() {
     "/search": "搜索课程",
     "/profile": "个人信息",
     "/": "主页",
+    "/llm": "智慧选课",
     // 根据需要添加更多路由路径和对应的页面名称
   };
 
@@ -98,15 +99,14 @@ export default function Navbar() {
         <HStack spacing={4} alignItems="center">
           <NavLink href="/main">模拟选课</NavLink>
           <NavLink href="/search">搜索课程</NavLink>
+          <NavLink href="/llm">智慧选课</NavLink> {/* 添加新导航链接 */}
           <NavLink href="/profile">个人信息</NavLink>
           <ColorModeToggle />
-          {/* 用户头像和昵称 */}
+          {/* 用户头像和昵称部分保持不变 */}
           <HStack spacing={2}>
-            {/* 头像链接到个人信息页 */}
             <Link as={NextLink} href="/profile">
               <Avatar size="sm" src={avatarSrc} name={nickname} />
             </Link>
-            {/* 昵称链接到个人信息页 */}
             <Link as={NextLink} href="/profile">
               <Text cursor="pointer">{nickname}</Text>
             </Link>
