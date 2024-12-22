@@ -12,3 +12,4 @@ psycopg[binary]
 pyjwt
 python-dotenv==1.0.0
 scrypt
+zhipuai

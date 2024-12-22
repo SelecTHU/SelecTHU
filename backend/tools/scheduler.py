@@ -8,7 +8,6 @@ import tools.fetchZy as fetchZy
 import tools.xkxtLogin as xkxtLogin
 import tools.wlxtLogin as wlxtLogin
 
-import dotenv
 import logging
 import re
 
@@ -16,7 +15,7 @@ import re
 class Scheduler:
     # 配置日志
     _file_handler: logging.FileHandler = logging.FileHandler(
-        filename=BASE_DIR / "logs" / "xkxt.log",
+        filename=BASE_DIR / "logs" / "crawler.log",
         encoding="utf-8",
     )
     _file_handler.setLevel(logging.INFO)
@@ -25,7 +24,6 @@ class Scheduler:
     )
 
     def __init__(self):
-        dotenv.load_dotenv(BASE_DIR / ".env")
         self.logger = logging.getLogger("Scheduler")
         self.logger.addHandler(Scheduler._file_handler)
         self.cookies = None
@@ -76,6 +74,7 @@ class Scheduler:
             return True
         except Exception as e:
             self.logger.error(f"出现异常: {e}")
+            return False
 
     def get_curriculum(self, p_xnxq: str = None, cookies=None, format: bool = True):
         """

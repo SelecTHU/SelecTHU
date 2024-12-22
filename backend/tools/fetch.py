@@ -100,17 +100,16 @@ class Fetcher:
 
                 # 解析表格
                 table = soup.find("table")
-                keys = [
-                    self._get_text(span)
-                    for span in table.find("tr", class_="trr1").find_all("span")
-                ]
+                tds = table.find("tr", class_="trr1").find_all("td")
+                keys = [self._get_text(td) for td in tds]
 
                 for tr in table.find_all("tr", class_="trr2"):
-                    spans = tr.find_all("span")
+                    tds = tr.find_all("td")
                     # 获取课程信息
-                    item = {
-                        keys[i]: self._get_text(spans[i]) for i in range(len(spans))
-                    }
+                    item = {}
+                    for i in range(len(tds)):
+                        text = self._get_text(tds[i])
+                        item[keys[i]] = text if text else ""
 
                     # 获取课程详情
                     self.logger.info(f"正在获取{item['课程号']}课程详情")
@@ -161,7 +160,7 @@ class Fetcher:
 
                     time.sleep(0.1)
 
-                time.sleep(0.3)  # 避免请求过快
+                time.sleep(0.2)  # 避免请求过快
 
             self.logger.info(f"成功获取{len(result)}条课程信息")
             return deepcopy(result)
