@@ -44,6 +44,7 @@ import {
 } from "@chakra-ui/react";
 import * as XLSX from 'xlsx';
 import html2canvas from 'html2canvas';
+import CourseListView from "../components/main/CourseListView";
 
 
 // 示例课程数据
@@ -166,6 +167,8 @@ export default function MainPage() {
 
   // 管理已选课程列表（课程表中的课程）
   const [selectedCourses, setSelectedCourses] = useState<Course[]>([]);
+
+  const [isListView, setIsListView] = useState(false);
 
 
   const generateInitialVolunteers = () => {
@@ -589,14 +592,15 @@ const exportToPNG = async () => {
                   </Button>
                   {/* 列表查看按钮 */}
                   <Button
-                    variant="outline"
-                    colorScheme="blue"
-                    size="sm" // 调整按钮大小
-                    w="100%"
-                    rounded="md"
-                  >
-                    列表查看
-                  </Button>
+                  variant="outline"
+                  colorScheme="blue"
+                  size="sm"
+                  w="100%"
+                  rounded="md"
+                  onClick={() => setIsListView(!isListView)}
+                >
+                  {isListView ? "课表查看" : "列表查看"}
+                </Button>
                 </Flex>
               </Box>
             </GridItem>
@@ -606,14 +610,22 @@ const exportToPNG = async () => {
 
             {/* 课程表区域 */}
             <GridItem colSpan={8}>
-              <CourseTable
-                selectedCourses={selectedCourses}
-                addCourseToTable={addCourseToTable}
-                getCourseColor={getCourseColor}
-                courseVolunteers={courseVolunteers}
-                onVolunteerDrop={handleVolunteerDrop}
-                onVolunteerRemove={handleVolunteerRemove}
-              />
+              {isListView ? (
+                <CourseListView
+                  selectedCourses={selectedCourses}
+                  getCourseColor={getCourseColor}
+                  courseVolunteers={courseVolunteers}
+                />
+              ) : (
+                <CourseTable
+                  selectedCourses={selectedCourses}
+                  addCourseToTable={addCourseToTable}
+                  getCourseColor={getCourseColor}
+                  courseVolunteers={courseVolunteers}
+                  onVolunteerDrop={handleVolunteerDrop}
+                  onVolunteerRemove={handleVolunteerRemove}
+                />
+              )}
             </GridItem>
 
             {/* 右侧面板 */}
