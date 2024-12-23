@@ -7,6 +7,7 @@ import { useState } from "react";
 import CoursesTable from "./CoursesTable";
 import SelectedCourseInfo from "./SelectedCourseInfo";
 import { Course } from "../../types/course";
+import { Volunteer } from "@/app/types/volunteer";
 
 const CourseSelectionPage = () => {
   // 初始化课程数据，包括高等数学和软件工程
@@ -91,11 +92,17 @@ const CourseSelectionPage = () => {
     <Flex>
       <Box flex="1" mr={4}>
         <CoursesTable 
-          courses={courses} 
-          onSelectCourse={setSelectedCourseId} 
+          courses={courses}
+          onSelectCourse={setSelectedCourseId}
           selectedCourseId={selectedCourseId}
           onAddCourse={handleAddCourse} // 传递 onAddCourse
-        />
+          courseVolunteers={{}} onVolunteerDrop={function (courseId: string, volunteer: Volunteer): void {
+            throw new Error("Function not implemented.");
+          } } onVolunteerRemove={function (courseId: string, volunteerId: string): void {
+            throw new Error("Function not implemented.");
+          } } getCourseColor={function (courseId: string): string {
+            throw new Error("Function not implemented.");
+          } }        />
       </Box>
       <Box flex="1">
         <SelectedCourseInfo 
