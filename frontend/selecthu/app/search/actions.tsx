@@ -33,7 +33,7 @@ export async function searchCourses(filters) {
         })
         const json = await res.json()
         console.log(json)
-        return json["courses-main"].course
+        return json["courses-main"]
     } catch (error) {
         console.log(error.message)
         return error.message

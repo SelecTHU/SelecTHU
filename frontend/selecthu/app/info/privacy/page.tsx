@@ -95,7 +95,7 @@ export default function PrivacyPage() {
           </Box>
 
           <Text color="gray.700" lineHeight="tall">
-            SelecTHU（以下简称"我们"）非常重视用户的隐私保护。本隐私政策说明我们如何收集、使用和保护您的个人信息。
+            SelecTHU（以下简称“我们”）非常重视用户的隐私保护。本隐私政策说明我们如何收集、使用和保护您的个人信息。
             使用我们的服务即表示您同意本隐私政策的内容。
           </Text>
 
