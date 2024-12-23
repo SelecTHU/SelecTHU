@@ -39,10 +39,10 @@ def chat(messages: list[dict], stream: bool = False) -> dict:
         return {"status": 500, "msg": str(e)}
 
 
-def new_chat(messages: list[dict], conversation_id: str = None, stream: bool = True):
+def new_chat(question: str, conversation_id: str = None, stream: bool = True):
     if (
         (conversation_id is not None and isinstance(conversation_id, str) is False)
-        or isinstance(messages, list) is False
+        or isinstance(question, str) is False
         or isinstance(stream, bool) is False
     ):
         return {"status": 400, "message": "argument error"}
@@ -56,14 +56,13 @@ def new_chat(messages: list[dict], conversation_id: str = None, stream: bool = T
     variables_url = f"/v2/application/{os.getenv("APP_ID")}/variables"
     new_conversation_url = f"/v2/application/{os.getenv("APP_ID")}/conversation"
     request_url = "/v2/application/generate_request_id"
-
     try:
         resp = client.get(variables_url)
         code = resp.json()["code"]
         if code != 200:
             raise Exception(resp.json()["message"])
         variables_list = resp.json()["data"]
-        variables_list[0]["value"] = "程序设计基础"
+        variables_list[0]["value"] = question
         
         # 如果没有会话ID，则新建会话
         if conversation_id is None:
@@ -139,9 +138,9 @@ if __name__ == "__main__":
     # 然而 ，这种调用方式无法加载知识库，所以仅作为占位，测试用
 
     # 测试新会话
-    def test_new_chat(messages):
+    def test_new_chat(question):
         print("--- test_new_chat ---")
-        resp = new_chat(messages)
+        resp = new_chat(question)
         print(f"status: {resp['status']}")
         if resp["status"] == 200:
             # 处理EventStream
@@ -164,4 +163,4 @@ if __name__ == "__main__":
             print(resp["msg"])
         print("\n\r")
 
-    test_new_chat(messages)
+    test_new_chat("面向对象")
