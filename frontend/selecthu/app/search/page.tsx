@@ -21,6 +21,7 @@ import { searchCourses } from "./actions"
 
 // 从统一的类型文件导入 Course 接口
 import { Course, TimeSlot } from "../types/course";
+import { Volunteer } from "../types/volunteer";
 
 export default function SearchPage() {
   // 管理已选择的筛选条件
@@ -224,7 +225,13 @@ export default function SearchPage() {
               onSelectCourse={setSelectedCourseId}
               selectedCourseId={selectedCourseId}
               onAddCourse={handleAddCourse} // 传递 onAddCourse
-            />
+              courseVolunteers={{}} onVolunteerDrop={function (courseId: string, volunteer: Volunteer): void {
+                throw new Error("Function not implemented.");
+              } } onVolunteerRemove={function (courseId: string, volunteerId: string): void {
+                throw new Error("Function not implemented.");
+              } } getCourseColor={function (courseId: string): string {
+                throw new Error("Function not implemented.");
+              } }            />
           </GridItem>
 
           {/* 右侧内容：选中课程信息 */}
