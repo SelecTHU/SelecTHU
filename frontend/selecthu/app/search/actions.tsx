@@ -44,3 +44,22 @@ export async function searchCourses(filters) {
 
     // return json
 }
+
+export async function addCourse(courseId) {
+    const url = process.env.BACKEND_URL + "/modify-course-condition/"
+    const session = await auth()
+    const jwt = session.user.backend_jwt
+    const res = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + jwt,
+        },
+        body: JSON.stringify({
+            "course_id": courseId,
+            "condition": "favorite",
+        }),
+    })
+
+    console.log(res)
+}

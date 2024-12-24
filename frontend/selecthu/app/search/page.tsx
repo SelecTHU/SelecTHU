@@ -17,7 +17,7 @@ import FilterSection, { Filter } from "../components/search/FilterSection";
 import SelectedFilters from "../components/search/SelectedFilters";
 import CoursesTable from "../components/search/CoursesTable";
 import SelectedCourseInfo from "../components/search/SelectedCourseInfo";
-import { searchCourses } from "./actions"
+import { searchCourses, addCourse } from "./actions"
 
 // 从统一的类型文件导入 Course 接口
 import { Course, TimeSlot } from "../types/course";
@@ -155,10 +155,9 @@ export default function SearchPage() {
   };
 
   // 处理添加课程（示例：可以将课程添加到选课列表，具体实现根据需求）
-  const handleAddCourse = (courseId: string) => {
-    console.log("添加课程ID:", courseId);
-    // 实现添加课程到选中列表的逻辑
-    // 例如，您可以维护一个选课列表状态，并在这里更新
+  const handleAddCourse = async (courseId: string) => {
+      console.log("添加课程ID:", courseId);
+      await addCourse(courseId)
   };
 
   return (
