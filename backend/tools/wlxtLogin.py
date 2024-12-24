@@ -40,8 +40,6 @@ class Login:
         }
 
         # 创建自定义SSL上下文
-
-
         self.client = requests.Session()
         self.client.headers.update(self.headers)
         self.client.mount("https://id.tsinghua.edu.cn/",  CustomSslContextHttpAdapter())
@@ -49,11 +47,9 @@ class Login:
         self.logger = logger
 
     def __del__(self):
-        self.logger.info("关闭httpx客户端")
+        self.logger.info("关闭客户端")
         if self.client is not None:
             self.client.close()
-
-        self.logger.error("解析页面失败")
         return None
     
     def login(self, retries: int = 3):

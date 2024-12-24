@@ -19,7 +19,7 @@ class Scheduler:
         filename=BASE_DIR / "logs" / "xkxt.log",
         encoding="utf-8",
     )
-    _file_handler.setLevel(logging.INFO)
+    _file_handler.setLevel(logging.DEBUG)
     _file_handler.setFormatter(
         logging.Formatter("(%(asctime)s) [%(levelname)s] %(name)s: %(message)s")
     )
