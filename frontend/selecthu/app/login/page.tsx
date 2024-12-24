@@ -23,7 +23,6 @@ import {
   ModalFooter,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
-import { handleLogin } from "./actions";
 import { signIn } from "next-auth/react"
 
 export default function LoginPage() {
@@ -33,6 +32,25 @@ export default function LoginPage() {
   const [remember, setRemember] = useState(false);
   const [agreement, setAgreement] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleLogin = () => {
+        signIn("credentials", {
+            username: account,
+            password: password,
+            redirect: false,
+        }).then((res) => {
+            console.log("res", res)
+            if (res.url != null) {
+                router.push("/main")
+            }
+            else if (res.error == "CredentialsSignin") {
+                alert(res.code)
+            }
+            else {
+                alert("未知错误")
+            }
+        })
+    }
 
   return (
     <Flex
@@ -78,6 +96,11 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              onKeyUp = {(e) => {
+                  if (e.key == "Enter") {
+                      handleLogin()
+                  }
+              }}
               placeholder="请输入密码"
             />
           </FormControl>
@@ -118,24 +141,7 @@ export default function LoginPage() {
                 // router.push("/main");
               }
             }} */
-            onClick={() => {
-                signIn("credentials", {
-                    username: account,
-                    password: password,
-                    redirect: false,
-                }).then((res) => {
-                    console.log("res", res)
-                    if (res.url != null) {
-                        router.push("/main")
-                    }
-                    else if (res.error == "CredentialsSignin") {
-                        alert(res.code)
-                    }
-                    else {
-                        alert("未知错误")
-                    }
-                })
-            }}
+            onClick={handleLogin}
             isDisabled={!agreement}
           >
             登录

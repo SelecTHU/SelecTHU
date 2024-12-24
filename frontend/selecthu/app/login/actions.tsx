@@ -5,7 +5,7 @@
 import { signIn, auth } from "@/auth"
 
 export async function handleLogin(username, password) {
-    try {
+    /* try {
         const res = await signIn("credentials", {
             // redirect: false,
             // redirectTo: "/main/",
@@ -20,5 +20,5 @@ export async function handleLogin(username, password) {
         }
         return res
     } catch {
-    }
+    } */
 }

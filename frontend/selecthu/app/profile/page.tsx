@@ -20,6 +20,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "../components/layout/Navbar";
 
+import { signOut } from "next-auth/react"
+
 interface User {
   nickname: string;
   avatar: string; // base64字符串或图片URL
@@ -103,6 +105,7 @@ export default function ProfilePage() {
   };
 
   const handleLogout = () => {
+
     // 清除localStorage中的用户信息
     localStorage.removeItem("user");
     // 跳转到登录界面
@@ -169,7 +172,7 @@ export default function ProfilePage() {
               </Button>
 
               {/* 退出登录按钮 */}
-              <Button colorScheme="red" onClick={handleLogout} width="full">
+              <Button colorScheme="red" onClick={() => signOut()} width="full">
                 退出登录
               </Button>
             </VStack>
