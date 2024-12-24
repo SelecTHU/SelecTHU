@@ -14,7 +14,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth ({
                 let user = null
 
                 try {
-                    const resp = await fetch("http://backend:8001/api/v1/login-default/", {
+                    console.log("URL is", process.env.BACKEND_URL)
+                    const url = process.env.BACKEND_URL + "/login-default/"
+                    console.log(url)
+                    const resp = await fetch(url, {
                         method: "POST",
                         // body: {},
                     })

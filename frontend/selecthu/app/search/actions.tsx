@@ -9,7 +9,8 @@ export async function searchCourses(filters) {
         const jwt = cookieStore.get("jwt-token").value
         // const res = await fetch("http://backend:8001/api/v1/courses/", {
         // var url = "http://selecthu.shyuf.cn:8000/api/v1/courses/?search_mode=fuzzy"
-        var url = "http://backend:8001/api/v1/courses/?search_mode=fuzzy"
+        // var url = "http://backend:8001/api/v1/courses/?search_mode=fuzzy"
+        var url = process.env.BACKEND_URL + "/courses/?search_mode=fuzzy"
         for (const filter of filters) {
             console.log("filter", filter)
             if (filter.type == "courseName") {

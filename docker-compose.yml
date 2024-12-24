@@ -53,6 +53,7 @@ services:
     environment:
       - AUTH_SECRET=${AUTH_SECRET}
       - AUTH_TRUST_HOST=${AUTH_TRUST_HOST}
+      - BACKEND_URL=${BACKEND_URL}
     command: "node /app/server.js"
     depends_on:
       - backend

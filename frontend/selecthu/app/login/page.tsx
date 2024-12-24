@@ -36,7 +36,8 @@ export default function LoginPage() {
   useEffect(() => {
     async function fetchTest() {
       let res = await fetch(
-        "http://selecthu.shyuf.cn:8000/api/v1/backend-db-status/"
+        // "http://selecthu.shyuf.cn:8000/api/v1/backend-db-status/"
+        process.env.BACKEND_URL + "/backend-db-status"
       );
       let data = await res.json();
       return data;
