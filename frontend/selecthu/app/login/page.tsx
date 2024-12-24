@@ -24,6 +24,7 @@ import {
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { handleLogin } from "./actions";
+import { signIn } from "next-auth/react"
 
 export default function LoginPage() {
   const router = useRouter();
@@ -109,13 +110,31 @@ export default function LoginPage() {
           </Flex>
           <Button
             colorScheme="brand"
-            onClick={async () => {
-              const res = await handleLogin();
+            /* onClick={async () => {
+              const res = await handleLogin(account, password);
               if (res?.error) {
                 console.log(res.error);
               } else {
                 // router.push("/main");
               }
+            }} */
+            onClick={() => {
+                signIn("credentials", {
+                    username: account,
+                    password: password,
+                    redirect: false,
+                }).then((res) => {
+                    console.log("res", res)
+                    if (res.url != null) {
+                        router.push("/main")
+                    }
+                    else if (res.error == "CredentialsSignin") {
+                        alert(res.code)
+                    }
+                    else {
+                        alert("未知错误")
+                    }
+                })
             }}
             isDisabled={!agreement}
           >
