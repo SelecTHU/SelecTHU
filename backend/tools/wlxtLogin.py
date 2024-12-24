@@ -1,11 +1,22 @@
 # 用于提交网络学堂登录信息的脚本
 from faker import Faker
+from requests.adapters import HTTPAdapter
+from urllib3.util.ssl_ import create_urllib3_context
 
 import bs4
-import httpx
 import re
-import ssl
+import requests
 import time
+import urllib3
+
+
+class CustomSslContextHttpAdapter(HTTPAdapter):
+    """"Transport adapter" that allows us to use a custom ssl context object with the requests."""
+    def init_poolmanager(self, connections, maxsize, block=False):
+        ctx = create_urllib3_context()
+        ctx.load_default_certs()
+        ctx.options |= 0x4  # ssl.OP_LEGACY_SERVER_CONNECT
+        self.poolmanager = urllib3.PoolManager(ssl_context=ctx)
 
 
 class Login:
@@ -17,14 +28,10 @@ class Login:
         self.username = username
         self.password = password
 
-        self.cookies = httpx.Cookies()
 
-        self.headers = httpx.Headers()
-        self.headers.update(
-            {
-                "User-Agent": Faker().user_agent(),
-            }
-        )
+        self.headers = {
+            "User-Agent": Faker().user_agent(),
+        }
 
         self.data = {
             "i_user": username,
@@ -33,19 +40,11 @@ class Login:
         }
 
         # 创建自定义SSL上下文
-        ssl_context = ssl.create_default_context()
-        ssl_context.check_hostname = False
-        ssl_context.verify_mode = ssl.CERT_NONE
 
-        self.client = httpx.Client(
-            cookies=self.cookies,
-            headers=self.headers,
-            verify=False,
-            http2=True,
-            trust_env=True,
-            transport=httpx.HTTPTransport(verify=ssl_context),
-            follow_redirects=True,
-        )
+
+        self.client = requests.Session()
+        self.client.headers.update(self.headers)
+        self.client.mount("https://id.tsinghua.edu.cn/",  CustomSslContextHttpAdapter())
 
         self.logger = logger
 
@@ -62,7 +61,7 @@ class Login:
             try:
                 self.logger.info("开始登录")
                 resp = self.client.get(f"{self.base_url}{self.login_page}")
-                self.client.cookies.update(resp.cookies)
+
                 soup = bs4.BeautifulSoup(resp.text, "html.parser")
                 login_form_url = soup.find(id="loginForm").get("action")
                 login_form_url = login_form_url if login_form_url else self.login_form_url

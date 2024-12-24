@@ -410,16 +410,3 @@ db
 1. `selection_type` 字段（原 `level` 字段）说明：<span id="selection-explain"></span>
 `selection_type` 字段表示课程的选课志愿分配，由两位字符组成，第一位表示志愿类型（包括必选、限选、任选、体育必选），第二位表示志愿等级（从 `0` 到 `3` ，数字越小，志愿等级越高，其中 `0` 志愿表示特殊优先级）。例如： `b2` 表示必选二志愿， `t1` 表示体育一志愿。具体定义见 [`const.py`](./v1/const.py) 。
 
-### 单元测试报告
-- 最后更新时间：2024-12-24
-- 报告说明：
-    1. 仅统计 `modifyDB.py` 和 `queryDB.py` 两份源代码的测试覆盖率，使用 `coverage` 工具生成（通过 `pip install coverage` 安装）。
-    2. 进行单元测试时，使用 `coverage run manage.py test --keepdb` 以保护数据库结构（如不需要可以不使用 `--keepdb` 参数）；使用 `coverage report` 生成测试报告（为整个 `db` 部分的测试覆盖率，使用  `coverage report --include="db/v1/modifyDB.py,db/v1/queryDB.py"` 以生成两份接口代码的测试报告）。
-```
-Name                Stmts   Miss  Cover
----------------------------------------
-db/v1/modifyDB.py     344    195    43%
-db/v1/queryDB.py      188     44    77%
----------------------------------------
-TOTAL                 532    239    55%
-```
