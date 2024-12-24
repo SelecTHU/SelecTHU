@@ -47,8 +47,8 @@ def login(request):
     #if not verify_password(user_id, password):
     #    return Response({"status": 401, "message": "Invalid user_id or password"}, status=status.HTTP_401_UNAUTHORIZED)
     scheduler = Scheduler()
-    status, name = scheduler.verify(user_id, password)
-    if not status:
+    status_, name = scheduler.verify(user_id, password)
+    if not status_:
         return Response({"status": 401, "message": "Invalid user_id or password"}, status=status.HTTP_401_UNAUTHORIZED)
     
     response = db_utils.get_user(user_id)
