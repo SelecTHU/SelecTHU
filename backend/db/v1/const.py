@@ -134,10 +134,10 @@ class SELECTION_TYPE:
             and len(selection) == 2
             and selection[0]
             in (
-                SELECTION_TYPE.ST_B
-                + SELECTION_TYPE.ST_X
-                + SELECTION_TYPE.ST_R
-                + SELECTION_TYPE.ST_T
+                SELECTION_TYPE.ST_B,
+                SELECTION_TYPE.ST_X,
+                SELECTION_TYPE.ST_R,
+                SELECTION_TYPE.ST_T,
             )
             and selection[1] in SELECTION_TYPE.LEVEL
         )
