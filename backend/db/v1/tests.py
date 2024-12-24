@@ -8,6 +8,13 @@ import db.v1.const as const
 
 class QueryDBTestCase(TestCase):
     def setUp(self):
+        time1 = [{
+            "type": const.TIME_WEEK.OTHER,
+            "w0": 1,
+            "w1": 16,
+            "d": 1,
+            "t0": 1,
+        }]
         res1 = add_course(
             {
                 "code": "1000016",
@@ -17,6 +24,7 @@ class QueryDBTestCase(TestCase):
                 "credit": 3,
                 "department": "霜之哀伤",
                 "course_type": "专业必修",
+                "time": time1,
                 "info": {"课程介绍": "罗伯特的计算机网络课程"},
             }
         )
@@ -163,6 +171,21 @@ class QueryDBTestCase(TestCase):
     def test_get_course_by_department(self):
         # 测试get_course函数根据开课院系检索
         response = get_course(department="火之高兴")
+        self.assertEqual(response["status"], 200)
+        self.assertIn("course", response)
+        self.assertIsInstance(response["course"], list)
+        self.assertEqual(len(response["course"]), 1)
+
+    def test_get_course_by_time(self):
+        # 测试get_course函数根据时间检索
+        test_time = {
+            "type": 0,
+            "w0": 1,
+            "w1": 0,
+            "d": 0,
+            "t0": 1,
+        }
+        response = get_course(time=test_time)
         self.assertEqual(response["status"], 200)
         self.assertIn("course", response)
         self.assertIsInstance(response["course"], list)
@@ -318,6 +341,13 @@ class QueryDBTestCase(TestCase):
 
 class ModifyDBTestCase(TestCase):
     def setUp(self):
+        time1 = [{
+            "type": const.TIME_WEEK.OTHER,
+            "w0": 1,
+            "w1": 16,
+            "d": 1,
+            "t0": 1,
+        }]
         res1 = add_course(
             {
                 "code": "1000016",
@@ -327,6 +357,7 @@ class ModifyDBTestCase(TestCase):
                 "credit": 3,
                 "department": "霜之哀伤",
                 "course_type": "专业必修",
+                "time": time1,
                 "info": {"课程介绍": "罗伯特的计算机网络课程"},
             }
         )
@@ -527,4 +558,17 @@ class ModifyDBTestCase(TestCase):
     def test_add_course_to_decided_error_input(self):
         # 测试add_course_to_decided函数在输入内容错误时的返回
         response = add_course_to_decided("valid_user", "1000016", "b5")
+        self.assertEqual(response, const.RESPONSE_400)
+
+    def test_add_course_to_favorate(self):
+        # 测试add_course_to_favorate正确输入
+        resp = get_course(name="计算机组成原理", teacher="无敌喵喵拳")
+        self.assertEqual(resp["status"], 200)
+        course_id = resp["course"][0]["course_id"]
+        response = add_course_to_favorite("valid_user", course_id)
+        self.assertEqual(response["status"], 200)
+    
+    def test_add_course_to_favorate_lack_input(self):
+        # 测试add_course_to_favorate无输入
+        response = add_course_to_favorite(None, None)
         self.assertEqual(response, const.RESPONSE_400)
