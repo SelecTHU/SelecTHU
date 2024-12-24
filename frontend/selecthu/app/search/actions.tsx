@@ -1,15 +1,16 @@
 "use server"
 
-import { cookies } from "next/headers"
+// import { cookies } from "next/headers"
+import { auth } from "@/auth"
 
 export async function searchCourses(filters) {
     try {
         console.log(filters)
-        const cookieStore = await cookies()
-        const jwt = cookieStore.get("jwt-token").value
-        // const res = await fetch("http://backend:8001/api/v1/courses/", {
-        // var url = "http://selecthu.shyuf.cn:8000/api/v1/courses/?search_mode=fuzzy"
-        // var url = "http://backend:8001/api/v1/courses/?search_mode=fuzzy"
+        const session = await auth()
+        // console.log("SESSION", session)
+        const jwt = session.user.backend_jwt
+        /* const cookieStore = await cookies()
+        const jwt = cookieStore.get("jwt-token").value */
         var url = process.env.BACKEND_URL + "/courses/?search_mode=fuzzy"
         for (const filter of filters) {
             console.log("filter", filter)

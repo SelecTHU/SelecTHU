@@ -13,7 +13,7 @@ export async function handleLogin() {
     if (!res?.error) {
         const session = await auth()
 
-        console.log(session?.user)
+        console.log("SESSION", session?.user)
     }
     return res
 }
