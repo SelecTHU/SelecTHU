@@ -33,19 +33,6 @@ export default function LoginPage() {
   const [agreement, setAgreement] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    async function fetchTest() {
-      let res = await fetch(
-        // "http://selecthu.shyuf.cn:8000/api/v1/backend-db-status/"
-        process.env.BACKEND_URL + "/backend-db-status"
-      );
-      let data = await res.json();
-      return data;
-    }
-
-    fetchTest().then((data) => console.log(data));
-  }, []);
-
   return (
     <Flex
       minHeight="100vh"
@@ -127,7 +114,7 @@ export default function LoginPage() {
               if (res?.error) {
                 console.log(res.error);
               } else {
-                router.push("/main");
+                // router.push("/main");
               }
             }}
             isDisabled={!agreement}
