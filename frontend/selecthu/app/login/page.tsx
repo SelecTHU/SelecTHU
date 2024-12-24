@@ -24,6 +24,7 @@ import {
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { handleLogin } from "./actions";
+import { signIn } from "next-auth/react"
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,19 +33,6 @@ export default function LoginPage() {
   const [remember, setRemember] = useState(false);
   const [agreement, setAgreement] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  useEffect(() => {
-    async function fetchTest() {
-      let res = await fetch(
-        // "http://selecthu.shyuf.cn:8000/api/v1/backend-db-status/"
-        process.env.BACKEND_URL + "/backend-db-status"
-      );
-      let data = await res.json();
-      return data;
-    }
-
-    fetchTest().then((data) => console.log(data));
-  }, []);
 
   return (
     <Flex
@@ -122,13 +110,31 @@ export default function LoginPage() {
           </Flex>
           <Button
             colorScheme="brand"
-            onClick={async () => {
-              const res = await handleLogin();
+            /* onClick={async () => {
+              const res = await handleLogin(account, password);
               if (res?.error) {
                 console.log(res.error);
               } else {
-                router.push("/main");
+                // router.push("/main");
               }
+            }} */
+            onClick={() => {
+                signIn("credentials", {
+                    username: account,
+                    password: password,
+                    redirect: false,
+                }).then((res) => {
+                    console.log("res", res)
+                    if (res.url != null) {
+                        router.push("/main")
+                    }
+                    else if (res.error == "CredentialsSignin") {
+                        alert(res.code)
+                    }
+                    else {
+                        alert("未知错误")
+                    }
+                })
             }}
             isDisabled={!agreement}
           >
