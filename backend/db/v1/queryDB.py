@@ -11,7 +11,7 @@ def db_status():
     """
     测试接口连接
     """
-    const.logger.info("db_status: calling", extra=const.LOGGING_TYPE.INFO)
+    const.logger.info("db_status: calling")
     return {"status": 200, "msg": "connect successfully"}
 
 
@@ -23,7 +23,7 @@ def get_curriculum(user_id: str):
     :param `user_id`: 用户id
     :return: 返回数据（在请求正确的情况下包含培养方案 `curriculum<type = list>` ）
     """
-    const.logger.info("get_curriculum: calling", extra=const.LOGGING_TYPE.INFO)
+    const.logger.info("get_curriculum: calling")
 
     # 检查输入合法性
     if isinstance(user_id, str) is False:
@@ -44,7 +44,7 @@ def get_curriculum(user_id: str):
         # 返回结果
         return {"status": 200, "curriculum": curriculum}
     except Exception as e:
-        const.logger.error("get_curriculum: %s", e, extra=const.LOGGING_TYPE.ERROR)
+        const.logger.error("get_curriculum: %s", e)
         return const.RESPONSE_500
 
 
@@ -57,7 +57,7 @@ def get_curriculum_existance(curriculum: dict):
     :return: 返回数据（在请求正确的情况下包含布尔值 `value<type = bool>` ）
     """
     const.logger.info(
-        "get_curriculum_existance: calling", extra=const.LOGGING_TYPE.INFO
+        "get_curriculum_existance: calling"
     )
 
     # 检查输入合法性
@@ -74,7 +74,7 @@ def get_curriculum_existance(curriculum: dict):
         return {"status": 200, "value": curriculum}
     except Exception as e:
         const.logger.error(
-            "get_curriculum_existance: %s", e, extra=const.LOGGING_TYPE.ERROR
+            "get_curriculum_existance: %s", e
         )
         return const.RESPONSE_500
 
@@ -94,7 +94,7 @@ def get_user(user_id: str):
     `curriculum<type = list>`
     ）
     """
-    const.logger.info("get_user: calling", extra=const.LOGGING_TYPE.INFO)
+    const.logger.info("get_user: calling")
 
     # 检查输入合法性
     if isinstance(user_id, str) is False:
@@ -125,7 +125,7 @@ def get_user(user_id: str):
             "curriculum": curriculum,
         }
     except Exception as e:
-        const.logger.error("get_user: %s", e, extra=const.LOGGING_TYPE.ERROR)
+        const.logger.error("get_user: %s", e)
         return const.RESPONSE_500
 
 
@@ -138,7 +138,7 @@ def get_courses(index: int = 0, count: int = -1):
     :param `count`: 查询数量（默认为-1，即全部查询）
     :return: 返回数据（在请求正确的情况下包含字典列表 `courses<type = list[dict]>` ）
     """
-    const.logger.info("get_courses: calling", extra=const.LOGGING_TYPE.INFO)
+    const.logger.info("get_courses: calling")
 
     if isinstance(index, int) is False or isinstance(count, int) is False:
         return const.RESPONSE_400
@@ -176,7 +176,7 @@ def get_courses(index: int = 0, count: int = -1):
         # 返回结果
         return {"status": 200, "courses": list(courses)}
     except Exception as e:
-        const.logger.error("get_courses: %s", e, extra=const.LOGGING_TYPE.ERROR)
+        const.logger.error("get_courses: %s", e)
         return const.RESPONSE_500
 
 
@@ -217,7 +217,7 @@ def get_course(
 
     :return: 返回数据（包含字典 `course<type = list[dict]>` ）
     """
-    const.logger.info("get_course: calling", extra=const.LOGGING_TYPE.INFO)
+    const.logger.info("get_course: calling")
 
     if search_mode not in const.SEARCH_MODE:
         return const.RESPONSE_400
@@ -319,28 +319,27 @@ def get_course(
         # 手动筛选time字段
         if time is not None:
             assert isinstance(time, dict)
-            for index in range(len(course_list)):
+            for index in range(-1, len(course_list) - 1):
                 current_time = course_list[index]["time"]
                 conform = False  # 是否符合筛选条件
                 for period in current_time:
-                    if (not time["type"] == const.TIME_WEEK.NONE) or time[
+                    if (time["type"] == const.TIME_WEEK.NONE) or time[
                         "type"
                     ] == period["type"]:
                         if (
-                            ((not (time["w0"] == 0)) or time["w0"] == period["w0"])
-                            and ((not (time["w1"] == 0)) or time["w1"] == period["w1"])
-                            and ((not (time["d"] == 0)) or time["d"] == period["d"])
-                            and ((not (time["t0"] == 0)) or time["t0"] == period["t0"])
+                            (time["w0"] == 0 or time["w0"] == period["w0"])
+                            and (time["w1"] == 0 or time["w1"] == period["w1"])
+                            and (time["d"] == 0 or time["d"] == period["d"])
+                            and (time["t0"] == 0 or time["t0"] == period["t0"])
                         ):
                             conform = True
                             break
-
                 if not conform:
                     course_list.pop(index)
 
         return {"status": 200, "course": course_list}
     except Exception as e:
-        const.logger.error("get_course: %s", e, extra=const.LOGGING_TYPE.ERROR)
+        const.logger.error("get_course: %s", e)
         return const.RESPONSE_500
 
 
@@ -357,7 +356,7 @@ def get_course_detail_by_info(code: str, number: str, name: str, teacher: str):
     :return: 返回数据（包含 详细信息 `details<type = dict>` ）
     """
     const.logger.info(
-        "get_course_detail_by_info: calling", extra=const.LOGGING_TYPE.INFO
+        "get_course_detail_by_info: calling"
     )
 
     if code is None or name is None or teacher is None:
@@ -383,7 +382,7 @@ def get_course_detail_by_info(code: str, number: str, name: str, teacher: str):
         return {"status": 200, "details": details}
     except Exception as e:
         const.logger.error(
-            "get_course_detail_by_info: %s", e, extra=const.LOGGING_TYPE.ERROR
+            "get_course_detail_by_info: %s", e
         )
         return const.RESPONSE_500
 
@@ -396,7 +395,7 @@ def get_course_detail_by_id(course_id: str):
     :param `course_id`: 课程id
     :return: 返回数据（包含 详细信息 `details<type = dict>` ）
     """
-    const.logger.info("get_course_detail_by_id: calling", extra=const.LOGGING_TYPE.INFO)
+    const.logger.info("get_course_detail_by_id: calling")
 
     if course_id is None:
         return const.RESPONSE_400
@@ -420,6 +419,6 @@ def get_course_detail_by_id(course_id: str):
         return {"status": 200, "details": details}
     except Exception as e:
         const.logger.error(
-            "get_course_detail_by_id: %s", e, extra=const.LOGGING_TYPE.ERROR
+            "get_course_detail_by_id: %s", e
         )
         return const.RESPONSE_500
