@@ -564,11 +564,85 @@ class ModifyDBTestCase(TestCase):
         # 测试add_course_to_favorate正确输入
         resp = get_course(name="计算机组成原理", teacher="无敌喵喵拳")
         self.assertEqual(resp["status"], 200)
+        self.assertGreaterEqual(len(resp["course"]), 1)
         course_id = resp["course"][0]["course_id"]
+
         response = add_course_to_favorite("valid_user", course_id)
         self.assertEqual(response["status"], 200)
+
+        response = get_user("valid_user")
+        self.assertEqual(response["status"], 200)
+        self.assertIsInstance(response["favorite"], list)
+        self.assertIn(course_id, response["favorite"])
     
     def test_add_course_to_favorate_lack_input(self):
         # 测试add_course_to_favorate无输入
         response = add_course_to_favorite(None, None)
         self.assertEqual(response, const.RESPONSE_400)
+
+    def test_add_course_to_favorate_invalid_user(self):
+        # 测试add_course_to_favorate无效用户
+        response = add_course_to_favorite("invalid_user", "1000016")
+        self.assertEqual(response, const.RESPONSE_404)
+
+    def test_add_course_to_favorite_invalid_course(self):
+        # 测试add_course_to_favorite无效课程
+        response = add_course_to_favorite("valid_user", "1000018")
+        self.assertEqual(response, const.RESPONSE_404)
+
+    def test_add_course_to_favorite_course_conflict(self):
+        # 测试add_course_to_favorite课程冲突
+        resp = get_course(name="计算机组成原理", teacher="无敌喵喵拳")
+        self.assertEqual(resp["status"], 200)
+        self.assertGreaterEqual(len(resp["course"]), 1)
+        course_id = resp["course"][0]["course_id"]
+
+        response = add_course_to_favorite("valid_user", course_id)
+        response = add_course_to_favorite("valid_user", course_id)
+        self.assertEqual(response, const.RESPONSE_409)
+
+    def test_add_course_comment(self):
+        # 测试add_course_comment正确输入
+        resp = get_course(name="计算机组成原理", teacher="无敌喵喵拳")
+        self.assertEqual(resp["status"], 200)
+        self.assertGreaterEqual(len(resp["course"]), 1)
+        course_id = resp["course"][0]["course_id"]
+    
+        comment: dict = {
+            "comment_time": "2021-06-01 12:00:00",
+            "comment_score": 3,
+            "comment": "Ciallo～(∠・ω< )⌒☆"
+        }
+        response = add_course_comment(course_id, comment)
+        self.assertEqual(response["status"], 200)
+
+        resp = get_course_detail_by_id(course_id)
+
+    def test_add_course_comment_more(self):
+        # 测试add_course_comment多次评论
+        resp = get_course(name="计算机组成原理", teacher="无敌喵喵拳")
+        self.assertEqual(resp["status"], 200)
+        self.assertGreaterEqual(len(resp["course"]), 1)
+        course_id = resp["course"][0]["course_id"]
+
+        comment1: dict = {
+            "comment_time": "2021-06-01 12:00:00",
+            "comment_score": 3,
+            "comment": "Ciallo～(∠・ω< )⌒☆"
+        }
+        comment2: dict = {
+            "comment_time": "2021-06-02 12:00:00",
+            "comment_score": 4,
+            "comment": "欸嘿"
+        }
+        response = add_course_comment(course_id, comment1)
+        self.assertEqual(response["status"], 200)
+
+        response = add_course_comment(course_id, comment2)
+        self.assertEqual(response["status"], 200)
+
+        resp = get_course_detail_by_id(course_id)
+        self.assertEqual(resp["status"], 200)
+        details = resp["details"]
+        self.assertEqual(details["score"], 3.5)
+        self.assertEqual(len(details["comments"]), 2)

@@ -47,17 +47,19 @@ def login(request):
     #if not verify_password(user_id, password):
     #    return Response({"status": 401, "message": "Invalid user_id or password"}, status=status.HTTP_401_UNAUTHORIZED)
     scheduler = Scheduler()
-    if not scheduler.login(user_id, password):
+    status, name = scheduler.verify(user_id, password)
+    if not status:
         return Response({"status": 401, "message": "Invalid user_id or password"}, status=status.HTTP_401_UNAUTHORIZED)
     
     response = db_utils.get_user(user_id)
     if response["status"] == 404:
-        curriculum = scheduler.get_curriculum()
-        db_utils.add_user(user_id, curriculum)
+        # curriculum = scheduler.get_curriculum()
+        # db_utils.add_user(user_id, curriculum)
+        db_utils.add_user(user_id)
 
     payload = {"user_id": user_id}
     token = generate_jwt(payload)
-    return Response({"status": 200, "jwt": token}, status=status.HTTP_200_OK)
+    return Response({"status": 200, "jwt": token, "name": name}, status=status.HTTP_200_OK)
 
 @api_view(["POST"])
 @login_required
