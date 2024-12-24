@@ -1,13 +1,24 @@
 import NextAuth, { type DefaultSession, CredentialsSignin } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
+import { JWT } from "next-auth/jwt"
 
 // import { cookies } from "next/headers"
 
 declare module "next-auth" {
+    interface User {
+        backend_jwt: string
+    }
     interface Session {
-        user: {
+        user: User
+        /* user: {
             backend_jwt: string
-        } & DefaultSession["user"]
+        } & DefaultSession["user"] */
+    }
+}
+
+declare module "next-auth/jwt" {
+    interface JWT {
+        backend_jwt: string
     }
 }
 
