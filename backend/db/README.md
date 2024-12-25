@@ -7,7 +7,9 @@
 db
 ├── v1
 |    ├── migrations
-|    |    └── __init__.py
+|    |    ├── __init__.py
+|    |    ├── 0001_initial.py
+|    |    └── ...
 │    ├── __init__.py
 │    ├── apps.py
 │    ├── const.py
@@ -26,14 +28,14 @@ db
 
 1. `User` 用户表
     - `user_id <CharField>` : 用户ID（学号）
-    - `nickname <CharField>` : 用户昵称
-    - `avatar <ImageField>` : 用户头像
-    - `favorite <JSONField>` : 用户备选课程
-    - `decided <JSONField>` : 用户已选课程
-    - `curriculum <CharField>` : 用户培养方案（对应培养方案ID）
+    - `user_nickname <CharField>` : 用户昵称
+    - `user_avatar <ImageField>` : 用户头像
+    - `user_favorite <JSONField>` : 用户备选课程
+    - `user_decided <JSONField>` : 用户已选课程
+    - `user_curriculum <CharField>` : 用户培养方案（对应培养方案ID）
 2. `Curriculum` 培养方案表
     - `curriculum_id <CharField>` : 培养方案ID
-    - `curriculum <JSONField>` : 培养方案内容
+    - `courses <JSONField>` : 培养方案内容
 3. `MainCourses` 课程表
     - `course_id <CharField>` : 课程识别码
     - `code <CharField>` : 课程号
@@ -56,7 +58,7 @@ db
     - `course_id <CharField>` : 课程识别码
     - `info <JSONField>` : 课程详细信息
     - `score <JSONField>` : 课程评分
-    - `comment <JSONField>` : 课程评价
+    - `comments <JSONField>` : 课程评价
 
 ### 接口列表
 - 使用方法：导入包 `import db.v1.utils as db_utils`
