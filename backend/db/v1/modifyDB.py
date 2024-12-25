@@ -387,8 +387,9 @@ def change_user_info(user_id: str, nickname: str = None, avatar: ImageFile = Non
     const.logger.info("change_user_info: calling")
 
     # 检查输入合法性
-    if isinstance(user_id, str) is False or (
-        (isinstance(nickname, str) and nickname) or avatar is False
+    if (isinstance(user_id, str) is False or 
+        ((not (isinstance(nickname, str) and nickname != ""))
+        and (avatar is None))
     ):
         return const.RESPONSE_400
 
@@ -659,11 +660,12 @@ def remove_course(course_id: str):
 
     try:
         # 检查是否存在
-        if not models.MainCourses.objects.filter(course_id=course_id).exists():
+        if not models.CoursesDetails.objects.filter(course_id=course_id).exists():
             return const.RESPONSE_404
 
         # 删除
-        models.MainCourses.objects.filter(course_id=course_id).delete()
+        course = models.CoursesDetails.objects.get(course_id=course_id)
+        course.delete()
 
         # 返回结果
         return {"status": 200, "msg": "remove course successfully"}
@@ -744,7 +746,7 @@ def remove_all_course():
     const.logger.info("remove_all_course: calling")
     try:
         # 删除
-        models.MainCourses.objects.all().delete()
+        models.CoursesDetails.objects.all().delete()
 
         # 返回结果
         return {"status": 200, "msg": "remove all course successfully"}
@@ -775,7 +777,7 @@ def remove_all_course_comment(course_id: str):
 
         # 删除
         details = models.CoursesDetails.objects.get(course_id=course_id)
-        details.score = -1
+        details.score = 0
         details.comments = []
         details.save()
 
