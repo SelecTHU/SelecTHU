@@ -51,6 +51,14 @@ const ProgressBar: React.FC<{ course: Course }> = ({ course }) => {
     return baseColors[type][priority - 1] || baseColors[type][0];
   };
 
+  const getVolunteerOrder = (volType) => {
+      switch (volType) {
+          case "required": return 1
+          case "limited": return 2
+          case "optional": return 3
+      }
+  }
+
   const renderSelectionBars = () => {
     const { selection, capacity } = course;
     if (!selection || !capacity) return null;
@@ -58,20 +66,15 @@ const ProgressBar: React.FC<{ course: Course }> = ({ course }) => {
     const getCurrentVolunteerTotal = () => {
       let total = 0;
       const currentType = course.volType;
-      // TODO:有报错
-      const maxPriority = course.currentVolunteer || 0;
+      const maxPriority = 3;
 
-      ['b', 'x', 't'].forEach(type => {
-        for (let priority = 1; priority <= maxPriority; priority++) {
-          total += selection[type][priority] || 0;
-        }
+      (['b', 'x', 't']).forEach(type => {
+          if (getVolunteerOrder(type) <= getVolunteerOrder(currentType)) {
+              for (let priority = 0; priority <= maxPriority; priority++) {
+                  total += selection[type][priority] || 0;
+              }
+          }
       });
-
-      if (currentType === 'optional') {
-        for (let priority = 0; priority <= maxPriority; priority++) {
-          total += selection.r[priority] || 0;
-        }
-      }
 
       return total;
     };
