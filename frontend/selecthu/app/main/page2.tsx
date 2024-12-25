@@ -357,48 +357,104 @@ const exportToXLSX = () => {
 };
 
 // 导出为PNG图片
+// 导出为PNG图片
 const exportToPNG = async () => {
   setIsExporting(true);
-  const courseTableElement = document.querySelector('.course-table');
-  
-  if (!courseTableElement) {
-    toast({
-      title: "导出失败",
-      description: "未找到课程表元素",
-      status: "error",
-      duration: 3000,
-      isClosable: true,
-    });
-    setIsExporting(false);
-    return;
-  }
 
   try {
-    // 创建一个包装元素来确保完整捕获
-    const wrapper = document.createElement('div');
-    wrapper.style.padding = '20px';
-    wrapper.style.background = 'white';
-    wrapper.appendChild(courseTableElement.cloneNode(true));
-    document.body.appendChild(wrapper);
-
-    const canvas = await html2canvas(wrapper, {
-      scale: 2, // 提高清晰度
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      logging: false,
-      allowTaint: true,
-      foreignObjectRendering: true,
-      // 设置更大的渲染范围以确保捕获完整内容
-      width: wrapper.offsetWidth,
-      height: wrapper.offsetHeight,
-      windowWidth: wrapper.offsetWidth,
-      windowHeight: wrapper.offsetHeight
+    // 创建一个临时表格元素
+    const tempTable = document.createElement('div');
+    tempTable.style.padding = '20px';
+    tempTable.style.background = 'white';
+    tempTable.style.width = '800px'; // 设置固定宽度
+    
+    // 创建表格标题
+    const title = document.createElement('h2');
+    title.textContent = '课程表';
+    title.style.textAlign = 'center';
+    title.style.marginBottom = '20px';
+    tempTable.appendChild(title);
+    
+    // 创建表格
+    const table = document.createElement('table');
+    table.style.width = '100%';
+    table.style.borderCollapse = 'collapse';
+    
+    // 创建表头
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    ['节次', '周一', '周二', '周三', '周四', '周五'].forEach(text => {
+      const th = document.createElement('th');
+      th.textContent = text;
+      th.style.border = '1px solid #ccc';
+      th.style.padding = '8px';
+      th.style.backgroundColor = '#f0f0f0';
+      headerRow.appendChild(th);
     });
-
-    // 清理临时元素
-    document.body.removeChild(wrapper);
-
-    // 创建下载链接
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+    
+    // 创建表格内容
+    const tbody = document.createElement('tbody');
+    for (let slot = 1; slot <= 12; slot++) {
+      const row = document.createElement('tr');
+      
+      // 添加节次
+      const slotCell = document.createElement('td');
+      slotCell.textContent = `第${slot}节`;
+      slotCell.style.border = '1px solid #ccc';
+      slotCell.style.padding = '8px';
+      slotCell.style.backgroundColor = '#f0f0f0';
+      row.appendChild(slotCell);
+      
+      // 添加每天的课程
+      for (let day = 1; day <= 5; day++) {
+        const cell = document.createElement('td');
+        cell.style.border = '1px solid #ccc';
+        cell.style.padding = '8px';
+        
+        // 查找该时间段的课程
+        const coursesInSlot = selectedCourses.filter(course =>
+          course.timeSlots.some(timeSlot =>
+            timeSlot.day === day &&
+            slot >= timeSlot.start &&
+            slot < timeSlot.start + timeSlot.duration
+          )
+        );
+        
+        // 添加课程信息
+        if (coursesInSlot.length > 0) {
+          cell.innerHTML = coursesInSlot.map(course => `
+            <div style="margin-bottom: 4px;">
+              <div style="font-weight: bold;">${course.name}</div>
+              <div style="font-size: 0.9em;">${course.teacher}</div>
+              <div style="font-size: 0.8em;">${course.classroom}</div>
+            </div>
+          `).join('');
+        }
+        
+        row.appendChild(cell);
+      }
+      
+      tbody.appendChild(row);
+    }
+    table.appendChild(tbody);
+    tempTable.appendChild(table);
+    
+    // 添加到文档中
+    document.body.appendChild(tempTable);
+    
+    // 使用html2canvas转换为图片
+    const canvas = await html2canvas(tempTable, {
+      scale: 2,
+      backgroundColor: '#ffffff',
+      logging: false
+    });
+    
+    // 移除临时元素
+    document.body.removeChild(tempTable);
+    
+    // 下载图片
     const link = document.createElement('a');
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     link.download = `课程表_${timestamp}.png`;
