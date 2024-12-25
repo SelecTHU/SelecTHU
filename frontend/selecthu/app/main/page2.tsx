@@ -579,19 +579,27 @@ const exportToPNG = async () => {
               )}
             </GridItem>
 
-            {/* 右侧面板 */}
-            <GridItem colSpan={4}>
-              <Grid gap={4}>
-                <TeachingPlan curriculum={curriculum} />
-                <CourseList
-                  availableCourses={availableCourses}
-                  addCourseToTable={addCourseToTable}
-                  deleteCourse={deleteCourse}
-                  moveCourseToAvailable={moveCourseToAvailable}
-                  getCourseColor={getCourseColor} // 传递 getCourseColor 函数
-                />
-              </Grid>
-            </GridItem>
+{/* 右侧面板 */}
+<GridItem colSpan={4}>
+  <Grid gap={4} templateRows="auto 1fr">  {/* 添加 templateRows */}
+    <GridItem>
+      <TeachingPlan 
+        curriculum={curriculum} 
+        maxH="300px"  // 添加固定高度
+        overflow="auto"  // 添加滚动条
+      />
+    </GridItem>
+    <GridItem>
+      <CourseList
+        availableCourses={availableCourses}
+        addCourseToTable={addCourseToTable}
+        deleteCourse={deleteCourse}
+        moveCourseToAvailable={moveCourseToAvailable}
+        getCourseColor={getCourseColor}
+      />
+    </GridItem>
+  </Grid>
+</GridItem>
           </Grid>
         </Box>
       </Box>

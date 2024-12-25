@@ -219,7 +219,9 @@ export default function CourseBlock({
       maxPriority = 3;
     }
 
-    maxPriority = volunteers[0]["priority"]
+    /* if (volunteers !== []) {
+      maxPriority = volunteers[0]["priority"]
+    } */
 
     return {
       text: `${getTypeText(type)}${maxPriority > 0 ? maxPriority + '志愿' : ''}`,
