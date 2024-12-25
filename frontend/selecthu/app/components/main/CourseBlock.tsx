@@ -131,7 +131,7 @@ export default function CourseBlock({
           {course.name}
         </Text>
         <Text fontSize="xs">{course.teacher}</Text>
-        <Text fontSize="xs">{course.classroom}</Text>
+        {/* <Text fontSize="xs">{course.classroom}</Text> */}
       </Box>
 
       {/* 底部课程编号区域 */}

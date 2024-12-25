@@ -66,7 +66,7 @@ export default function CourseRow({
         </Badge>
       </Td>
       <Td>{course.teacher}</Td>
-      <Td>{course.type}</Td>
+      <Td>{course.volType}</Td>
       <Td isNumeric>{course.credits}</Td>
       <Td>{formatTimeSlots(course.timeSlots)}</Td>
       <Td>
