@@ -138,7 +138,9 @@ export async function getFavCourses() {
 
     console.log(json)
 
-    const courses = convertCourseList(listData)
+    const curriculum = await getCurriculum()
+
+    const courses = convertCourseList(listData, curriculum)
     return courses
 }
 
