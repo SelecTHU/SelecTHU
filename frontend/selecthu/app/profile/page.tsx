@@ -172,7 +172,7 @@ export default function ProfilePage() {
               </Button>
 
               {/* 退出登录按钮 */}
-              <Button colorScheme="red" onClick={() => signOut()} width="full">
+              <Button colorScheme="red" onClick={() => { signOut() router.push("/login") } } width="full">
                 退出登录
               </Button>
             </VStack>
