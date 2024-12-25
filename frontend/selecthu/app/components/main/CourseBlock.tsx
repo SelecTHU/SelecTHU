@@ -90,7 +90,7 @@ export default function CourseBlock({
   // 获取显示的志愿文本和颜色
   const getVolunteerInfo = () => {
     const selection = course.selection;
-    if (!selection) {
+    if (!selection || Object.keys(selection).length === 0) {
       return {
         text: `${getTypeText(course.type)}`,
         colorScheme: useColorModeValue(
@@ -116,7 +116,7 @@ export default function CourseBlock({
     });
 
     return {
-      text: `${getTypeText(selectedType)}${maxPriority}志愿`,
+      text: `${getTypeText(selectedType)}${maxPriority > 0 ? maxPriority + '志愿' : ''}`,
       colorScheme: useColorModeValue(
         volunteerBgColors[selectedType][maxPriority], 
         volunteerDarkBgColors[selectedType][maxPriority]
@@ -171,7 +171,7 @@ export default function CourseBlock({
           {course.name}
         </Text>
         <Text fontSize="xs">{course.teacher}</Text>
-        <Text fontSize="xs">{course.classroom}</Text>
+        {/* <Text fontSize="xs">{course.classroom}</Text> */}
       </Box>
 
       {/* 底部课程编号区域 */}
