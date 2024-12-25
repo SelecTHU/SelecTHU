@@ -3,8 +3,10 @@ from zhipuai.types.assistant.assistant_create_params import (
     ConversationMessage,
     MessageContent,
 )
-import os
 
+import os
+import re
+import json
 
 def chat(messages: list[dict], stream: bool = False) -> dict:
     """
@@ -99,6 +101,35 @@ def new_chat(question: str, conversation_id: str = None, stream: bool = True):
         return {"status": 500, "msg": str(e)}
 
 
+def run(question: str):
+    try:
+        if isinstance(question, str) is False:
+            raise Exception("argument error")
+    
+        resp = new_chat(question)
+
+        if resp["status"] != 200:
+            raise Exception(resp["msg"])
+        
+        # 处理EventStream
+        stream = resp["resp"]
+        events = stream.text.split("\n\n")
+        response = ""
+        for event in events:
+            if event:
+                data_regex = re.compile(r"data: ?(.+)")
+                data = data_regex.search(event)
+                if data is None:
+                    continue
+                data = json.loads(data.group(1))
+                if "msg" in data.keys():
+                    response += data["msg"]
+        
+        return {"status": 200, "response": response}
+    except Exception as e:
+        return {"status": 500, "msg": str(e)}
+    
+        
 if __name__ == "__main__":
     # 测试
     from dotenv import load_dotenv
@@ -163,4 +194,4 @@ if __name__ == "__main__":
             print(resp["msg"])
         print("\n\r")
 
-    test_new_chat("面向对象")
+    print(run("面向对象"))
