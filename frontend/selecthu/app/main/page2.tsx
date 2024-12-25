@@ -634,7 +634,6 @@ const exportToPNG = async () => {
               <Grid gap={4}>
                 <TeachingPlan />
                 <CourseList
-                  onCreate = {() => {console.log("hi")}}
                   availableCourses={availableCourses}
                   addCourseToTable={addCourseToTable}
                   deleteCourse={deleteCourse}

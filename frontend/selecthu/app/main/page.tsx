@@ -15,7 +15,7 @@ export default async function MainPage() {
 
     console.log(json)
 
-    const courses = listData.map((data): Course => {
+    const courses = listData.map((data) => {
         return {
               id: data.course_id,
               courseNumber: data.code,
