@@ -13,35 +13,59 @@ function convertSelection(data) {
     }
 }
 
-function convertCourse(data) {
-      return {
-          id: data.course_id,
-          courseNumber: data.code,
-          sequenceNumber: data.number,
-          name: data.name,
-          teacher: data.teacher,
-          credits: data.credit,
-          department: data.department,
-          capacity: data.capacity,
-          time: "tbd",
-          classroom: "not known",
-          type: "not known",
-          timeSlots: data.time.map((time) => {
-              return {
-                  day: time.d,
-                  start: [0, 1, 3, 6, 8, 10, 13][time.t0],
-                  duration: 2,
-              }
-          }),
-          teachingInfo: "none",
-          teacherInfo: "none",
-          comments: [],
-          selection: convertSelection(data.selection),
-      }
+function convertCourse(data, curriculum) {
+    return {
+        id: data.course_id,
+        courseNumber: data.code,
+        sequenceNumber: data.number,
+        name: data.name,
+        teacher: data.teacher,
+        credits: data.credit,
+        department: data.department,
+        capacity: data.capacity,
+        time: "tbd",
+        classroom: "not known",
+        type: "not known",
+        timeSlots: data.time.map((time) => {
+            return {
+                day: time.d,
+                start: [0, 1, 3, 6, 8, 10, 13][time.t0],
+                duration: 2,
+            }
+        }),
+        teachingInfo: "none",
+        teacherInfo: "none",
+        comments: [],
+        selection: convertSelection(data.selection),
+        volType: ((curriculumCourse) => {
+            if (curriculumCourse) {
+                const attr = curriculumCourse.attr
+                if (attr == "必修") {
+                    return "required"
+                }
+                else if (attr == "限选") {
+                    return "limited"
+                }
+                else return "optional"
+            }
+            else return "optional"
+        })(lookupCurriculum(data.code, curriculum)),
+    }
 }
 
-function convertCourseList(listData) {
-    return listData.map(convertCourse)
+function convertCourseList(listData, curriculum) {
+    return listData.map((course) => convertCourse(course, curriculum))
+}
+
+function lookupCurriculum(courseNumber, curriculum) {
+    for (let key in curriculum) {
+        for (let item of curriculum[key]) {
+            if (item.code == courseNumber) {
+                return item
+            }
+        }
+    }
+    return null
 }
 
 export async function searchCourses(filters) {
@@ -77,13 +101,9 @@ export async function searchCourses(filters) {
         const json = await res.json()
         console.log(json["courses-main"])
 
-        await fetch(process.env.BACKEND_URL + "/curriculum/", {
-            headers: {
-                "Authorization": "Bearer " + jwt,
-            },
-        }).then((res) => res.json()).then((json) => { console.log(json["curriculum"]["courses"]) })
+        const curriculum = await getCurriculum()
 
-        return convertCourseList(json["courses-main"])
+        return convertCourseList(json["courses-main"], curriculum)
     } catch (error) {
         console.log(error.message)
         return error.message
@@ -91,6 +111,17 @@ export async function searchCourses(filters) {
     // const json = await res.json()
 
     // return json
+}
+
+export async function getCurriculum() {
+    const session = await auth()
+    const jwt = session.user.backend_jwt
+    const courses = await fetch(process.env.BACKEND_URL + "/curriculum/", {
+        headers: {
+            "Authorization": "Bearer " + jwt,
+        },
+    }).then((res) => res.json()).then((json) => json["curriculum"]["courses"])
+    return courses
 }
 
 export async function getFavCourses() {

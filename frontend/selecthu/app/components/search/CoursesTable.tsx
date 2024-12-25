@@ -220,7 +220,7 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
                 {course.time}
               </Td>
               <Td borderRight="1px solid" borderColor={borderCol}>
-                {renderVolunteers(course)}
+                {course.volType}
               </Td>
               <Td>
                 <ProgressBar course={course} />
