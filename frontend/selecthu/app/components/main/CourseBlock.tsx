@@ -7,7 +7,7 @@ import {
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { Course } from "@/app/types/course";
+import { Course, courseTypeMapping } from "@/app/types/course";
 import { Volunteer } from "@/app/types/volunteer";
 import { useDrag, useDrop } from "react-dnd";
 import { ItemTypes } from "./constants";
@@ -59,11 +59,11 @@ export default function CourseBlock({
   const [{ isOver }, drop] = useDrop(() => ({
     accept: ItemTypes.VOLUNTEER,
     drop: (volunteer: Volunteer) => {
-      if (volunteer.type === course.type) {
+      if (volunteer.type === courseTypeMapping[course.volType]) {
         onVolunteerDrop?.(course.id, volunteer);
       }
     },
-    canDrop: (volunteer: Volunteer) => volunteer.type === course.type,
+    canDrop: (volunteer: Volunteer) => volunteer.type === courseTypeMapping[course.volType],
     collect: monitor => ({
       isOver: monitor.canDrop() && monitor.isOver(),
     }),
@@ -90,36 +90,33 @@ export default function CourseBlock({
   // 获取显示的志愿文本和颜色
   const getVolunteerInfo = () => {
     const selection = course.selection;
-    if (!selection || Object.keys(selection).length === 0) {
+    const type = courseTypeMapping[course.volType];
+
+    if (!selection || !selection[type] || selection[type].length === 0) {
       return {
-        text: `${getTypeText(course.type)}`,
+        text: `${getTypeText(type)}`,
         colorScheme: useColorModeValue(
-          volunteerBgColors[course.type][0], 
-          volunteerDarkBgColors[course.type][0]
+          volunteerBgColors[type][0], 
+          volunteerDarkBgColors[type][0]
         )
       };
     }
 
-    // 根据selection中的数据确定显示内容
-    let maxPriority = 0;
-    let maxCount = 0;
-    let selectedType = course.type;
+    // 根据当前课程类型来确定志愿显示
+    let priorities = selection[type];
+    let maxVol = Math.max(...priorities);
+    let maxPriority = priorities.indexOf(maxVol);
 
-    Object.entries(selection).forEach(([type, priorities]) => {
-      Object.entries(priorities).forEach(([priority, count]) => {
-        if (Number(count) > maxCount) {
-          maxCount = Number(count);
-          maxPriority = parseInt(priority);
-          selectedType = type;
-        }
-      });
-    });
+    // 如果是任选课，固定显示为3志愿
+    if (course.volType === 'optional') {
+      maxPriority = 3;
+    }
 
     return {
-      text: `${getTypeText(selectedType)}${maxPriority > 0 ? maxPriority + '志愿' : ''}`,
+      text: `${getTypeText(type)}${maxPriority > 0 ? maxPriority + '志愿' : ''}`,
       colorScheme: useColorModeValue(
-        volunteerBgColors[selectedType][maxPriority], 
-        volunteerDarkBgColors[selectedType][maxPriority]
+        volunteerBgColors[type][maxPriority], 
+        volunteerDarkBgColors[type][maxPriority]
       )
     };
   };
