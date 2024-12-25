@@ -34,7 +34,7 @@ class Fetcher:
         self.logger = logger
 
     def __del__(self):
-        self.logger.info("关闭httpx客户端")
+        self.logger.info("关闭客户端")
         if self.client is not None:
             self.client.close()
 

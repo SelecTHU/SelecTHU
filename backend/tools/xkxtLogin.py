@@ -40,7 +40,8 @@ class Login:
 
         # 创建httpx客户端
         self.client = httpx.Client(
-            cookies=self.cookies, headers=self.headers, base_url=self.base_url
+            cookies=self.cookies, headers=self.headers, base_url=self.base_url,
+            proxy="http://host.docker.internal:7890"
         )
 
         self.logger = logger
@@ -95,9 +96,12 @@ class Login:
                     login_resp = self.client.get(redr_url)
                     time.sleep(0.5)
 
+                print("login_resp.url =", login_resp.url)
                 if (
                     login_resp.url == f"{self.base_url}/xsxk_index.jsp"
                     or login_resp.url == f"{self.base_url}/xklogin.do"
+                    or login_resp.url == "http://zhjwxk.cic.tsinghua.edu.cn/xklogin.do?login_error=error"
+                    or login_resp.url == "http://zhjwxk.cic.tsinghua.edu.cn/xklogin.do?login_error=code_error"
                 ):
                     raise Exception("登录失败")
 

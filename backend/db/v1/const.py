@@ -18,7 +18,7 @@ _file_handler: Final[logging.FileHandler] = logging.FileHandler(
     filename=BASE_DIR / "logs" / "db.log",
     encoding="utf-8",
 )
-_file_handler.setLevel(logging.INFO)
+_file_handler.setLevel(logging.DEBUG)
 _file_handler.setFormatter(
     logging.Formatter("(%(asctime)s) [%(levelname)s] %(name)s: %(message)s")
 )
