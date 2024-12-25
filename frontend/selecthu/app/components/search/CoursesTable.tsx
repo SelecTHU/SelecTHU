@@ -19,13 +19,7 @@ import {
 import { AddIcon } from "@chakra-ui/icons";
 import { useState } from "react";
 import { Course } from '../../types/course';
-
-// 添加 Volunteer 接口
-interface Volunteer {
-  id: string;
-  type: string;
-  priority: number;
-}
+import { Volunteer } from "@/app/types/volunteer"
 
 interface CoursesTableProps {
   courses: Course[];
@@ -69,7 +63,7 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
   };
 
   // 新增：渲染志愿标签
-  const renderVolunteers = (courseId: string) => {
+  /* const renderVolunteers = (courseId: string) => {
     const volunteers = courseVolunteers && courseVolunteers[courseId] ? courseVolunteers[courseId] : [];
     return (
       <Stack direction="row" spacing={1}>
@@ -87,7 +81,11 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
         ))}
       </Stack>
     );
-  };
+  }; */
+  const renderVolunteers = (course: Course) => {
+    const selection = course.selection
+    return JSON.stringify(selection)
+  }
 
   return (
     <Box
@@ -154,7 +152,7 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
                 {course.time}
               </Td>
               <Td borderRight="1px solid" borderColor={borderCol}>
-                {renderVolunteers(course.id)}
+                {renderVolunteers(course)}
               </Td>
               <Td>
                 <Box w="100px" h="8px" bg="green.400" borderRadius="md" />

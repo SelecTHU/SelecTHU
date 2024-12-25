@@ -32,50 +32,6 @@ const colors = [
 
 // 教学计划示例数据
 const samplePlanCourses: Course[] = [
-  {
-    id: "1",
-    name: "高等数学",
-    teacher: "张教授",
-    classroom: "教学楼A101",
-    type: "必修",
-    credits: 4,
-    timeSlots: [
-      { day: 1, start: 1, duration: 2 }, // 周一1-2节
-      { day: 3, start: 3, duration: 3 }, // 周三3-5节
-    ],
-    department: "数学与统计学院",
-    time: "周一 08:00-10:00",
-    teachingInfo: "教室：教学楼A101",
-    teacherInfo: "电子邮箱：zhang@example.com",
-    comments: [
-      "课程内容深入，适合打好数学基础。",
-      "老师讲解详细，有助于理解复杂概念。",
-    ],
-    courseNumber: "MATH101",
-    sequenceNumber: "001",
-  },
-  {
-    id: "2",
-    name: "线性代数",
-    teacher: "李教授",
-    classroom: "教学楼B202",
-    type: "必修",
-    credits: 3,
-    timeSlots: [
-      { day: 2, start: 4, duration: 2 }, // 周二4-5节
-      { day: 4, start: 1, duration: 1 }, // 周四1节
-    ],
-    department: "数学与统计学院",
-    time: "周二 14:00-15:00",
-    teachingInfo: "教室：教学楼B202",
-    teacherInfo: "电子邮箱：li@example.com",
-    comments: [
-      "逻辑严谨，理论与实践结合紧密。",
-      "适合希望深入理解数学原理的学生。",
-    ],
-    courseNumber: "MATH102",
-    sequenceNumber: "002",
-  },
   // 可以添加更多课程
 ];
 
