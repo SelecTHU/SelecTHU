@@ -34,4 +34,5 @@ export interface Course {
   sequenceNumber: string;
 
   selection: Selection;
+  volType: "required" | "limited" | "optional" | "sports";
 }
