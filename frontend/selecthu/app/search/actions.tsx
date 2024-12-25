@@ -3,6 +3,46 @@
 // import { cookies } from "next/headers"
 import { auth } from "@/auth"
 
+function convertSelection(data) {
+    return {
+        b: [0, data.b1, data.b2, data.b3],
+        x: [0, data.x1, data.x2, data.x3],
+        r: [data.r0, data.r1, data.r2, data.r3],
+        t: [0, data.t1, data.t2, data.t3],
+        total: data.total,
+    }
+}
+
+function convertCourse(data) {
+      return {
+          id: data.course_id,
+          courseNumber: data.code,
+          sequenceNumber: data.number,
+          name: data.name,
+          teacher: data.teacher,
+          credits: data.credit,
+          department: data.department,
+          time: "tbd",
+          classroom: "not known",
+          type: "not known",
+          timeSlots: data.time.map((time) => {
+              return {
+                  day: time.d,
+                  start: time.t0,
+                  duration: 2
+              }
+          }),
+          teachingInfo: "none",
+          teacherInfo: "none",
+          comments: [],
+          selection: convertSelection(data.selection),
+      }
+}
+
+function convertCourseList(listData) {
+    return listData.map(convertCourse)
+}
+
 export async function searchCourses(filters) {
     try {
         console.log(filters)
@@ -34,8 +74,8 @@ export async function searchCourses(filters) {
             },
         })
         const json = await res.json()
-        console.log(json)
-        return json["courses-main"]
+        console.log(json["courses-main"])
+        return convertCourseList(json["courses-main"])
     } catch (error) {
         console.log(error.message)
         return error.message
@@ -43,6 +83,24 @@ export async function searchCourses(filters) {
     // const json = await res.json()
 
     // return json
+}
+
+export async function getFavCourses() {
+    const session = await auth()
+    const jwt = session.user.backend_jwt
+    const list = await fetch(process.env.BACKEND_URL + "/courses-favorite", {
+        headers: {
+            "Authorization": "Bearer " + jwt,
+        },
+    })
+
+    const json = await list.json()
+    const listData = json["courses-favorite"]
+
+    console.log(json)
+
+    const courses = convertCourseList(listData)
+    return courses
 }
 
 export async function setCourseStatus(courseId, status) {

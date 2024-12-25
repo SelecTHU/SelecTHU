@@ -6,6 +6,14 @@ export interface TimeSlot {
   duration: number; // 持续节次数
 }
 
+export interface Selection {
+    b: number[],
+    x: number[],
+    r: number[],
+    t: number[],
+    total: number,
+}
+
 export interface Course {
   id: string;
   name: string;
@@ -23,4 +31,6 @@ export interface Course {
   comments: string[];
   courseNumber: string;
   sequenceNumber: string;
+
+  selection: Selection;
 }
