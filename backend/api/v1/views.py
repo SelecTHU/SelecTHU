@@ -371,4 +371,6 @@ def chatbot_reply(request):
     """
     input = request.data.get("user-input")
     response = run(input)
-    return response
+    if response["status"] == 200:
+        return Response({"status": 200, "response": response}, status=status.HTTP_200_OK)
+    return Response({"status": 500, "message": "Server error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
