@@ -38,6 +38,8 @@ export default function CourseList({
   const borderColor = useColorModeValue("gray.200", "gray.700");
   const tableBgColor = useColorModeValue("white", "gray.800");
 
+  console.log("availableCourses", availableCourses)
+
   // 使用 useRef 创建一个引用
   const boxRef = useRef<HTMLDivElement>(null);
 
