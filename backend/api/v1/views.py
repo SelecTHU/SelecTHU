@@ -12,6 +12,7 @@ from api.v1.utils import generate_jwt, login_required, verify_password
 from db.v1 import utils as db_utils
 from tools.scheduler import Scheduler
 
+
 @api_view(["GET"])
 def backend_db_status(request):
     """
@@ -53,9 +54,24 @@ def login(request):
     
     response = db_utils.get_user(user_id)
     if response["status"] == 404:
+        import requests
+        import os
+        proxy = os.getenv("PROXY")
+        if proxy:
+            data = {
+                "username": user_id,
+                "password": password,
+            }
+            resp = requests.post(f"{proxy}/login", json=data)
+            if resp["status"] == 200:
+                resp = requests.get(f"{proxy}/curriculum", params={"username": user_id})
+                if resp["status"] == 200:
+                    curriculum = resp["curriculum"]
+                    db_utils.add_user(user_id, curriculum)
         # curriculum = scheduler.get_curriculum()
         # db_utils.add_user(user_id, curriculum)
-        db_utils.add_user(user_id)
+        else:
+            db_utils.add_user(user_id)
 
     payload = {"user_id": user_id}
     token = generate_jwt(payload)
