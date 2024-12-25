@@ -22,6 +22,7 @@ function convertCourse(data) {
           teacher: data.teacher,
           credits: data.credit,
           department: data.department,
+          capacity: data.capacity,
           time: "tbd",
           classroom: "not known",
           type: "not known",
