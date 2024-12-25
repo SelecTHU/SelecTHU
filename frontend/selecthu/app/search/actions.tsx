@@ -28,8 +28,8 @@ function convertCourse(data) {
           timeSlots: data.time.map((time) => {
               return {
                   day: time.d,
-                  start: time.t0,
-                  duration: 2
+                  start: [0, 1, 3, 6, 8, 10, 13][time.t0],
+                  duration: 2,
               }
           }),
           teachingInfo: "none",
@@ -75,6 +75,13 @@ export async function searchCourses(filters) {
         })
         const json = await res.json()
         console.log(json["courses-main"])
+
+        await fetch(process.env.BACKEND_URL + "/curriculum/", {
+            headers: {
+                "Authorization": "Bearer " + jwt,
+            },
+        }).then((res) => res.json()).then((json) => { console.log(json["curriculum"]["courses"]) })
+
         return convertCourseList(json["courses-main"])
     } catch (error) {
         console.log(error.message)
