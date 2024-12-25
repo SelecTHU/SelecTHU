@@ -76,6 +76,7 @@ class Scheduler:
             return True
         except Exception as e:
             self.logger.error(f"出现异常: {e}")
+            return False
 
     def get_curriculum(self, p_xnxq: str = None, cookies=None, format: bool = True):
         """

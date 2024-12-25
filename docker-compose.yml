@@ -30,6 +30,8 @@ services:
       - ./media:/backend/media
     expose:
       - "8001"
+    extra_hosts:
+      host.docker.internal: host-gateway
     depends_on:
       db:
         condition: service_healthy
