@@ -114,7 +114,6 @@ export default function MainPage({favoriteCourses, selCourses, curriculum}) {
   const toast = useToast();
 
 
-
   const handleVolunteerDrop = (courseId: string, volunteer: VolunteerWithCount) => {
     console.log("CALL")
     const course = selectedCourses.find(c => c.id === courseId);
@@ -268,7 +267,17 @@ const colors = [
 
   // 添加课程到课程表的方法
   const addCourseToTable = async (course: Course) => {
-
+    // 检查时间冲突
+    if (checkTimeConflict(course, selectedCourses)) {
+      toast({
+        title: "时间冲突",
+        description: "选课失败：该课程与已选课程时间冲突",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
     await selectCourse(course.id)
     setSelectedCourses((prevSelectedCourses) => {
       const newCourse = {
@@ -484,6 +493,31 @@ const exportToPNG = async () => {
   }
 };
 
+// 检查时间冲突的辅助函数
+const checkTimeConflict = (course: Course, selectedCourses: Course[]): boolean => {
+  for (const selectedCourse of selectedCourses) {
+    for (const newSlot of course.timeSlots) {
+      for (const existingSlot of selectedCourse.timeSlots) {
+        if (newSlot.day === existingSlot.day) {
+          const newStart = newSlot.start;
+          const newEnd = newSlot.start + newSlot.duration;
+          const existingStart = existingSlot.start;
+          const existingEnd = existingSlot.start + existingSlot.duration;
+
+          // 检查时间段是否重叠
+          if (
+            (newStart >= existingStart && newStart < existingEnd) ||
+            (existingStart >= newStart && existingStart < newEnd)
+          ) {
+            return true; // 存在冲突
+          }
+        }
+      }
+    }
+  }
+  return false; // 无冲突
+};
+
   // 定义统一的高度
   const cardHeight = "150px"; // 调整高度以匹配按钮区域的高度
 
@@ -556,8 +590,25 @@ const exportToPNG = async () => {
               </Box>
             </GridItem>
 
-            {/* 右侧区域占位 */}
-            <GridItem colSpan={4} />
+            {/* 使用教程卡片 */}
+            <GridItem colSpan={4}>
+              <Box
+                bg={useColorModeValue("white", "gray.700")}
+                rounded="md"
+                p={4}
+                shadow="sm"
+                height={cardHeight}
+              >
+                <Box>
+                  <Box fontWeight="bold" mb={2}>使用教程：</Box>
+                  <Box fontSize="sm">
+                    <Box mb={1}>1. 在搜索课程界面进行选课，添加的课程会进入备选清单</Box>
+                    <Box mb={1}>2. 点击加号或拖拽课程从备选清单进入课表，或拖拽课程从课表回到备选清单</Box>
+                    <Box>3. 拖动志愿将志愿分配给对应的课程</Box>
+                  </Box>
+                </Box>
+              </Box>
+            </GridItem>
 
             {/* 课程表区域 */}
             <GridItem colSpan={8}>
@@ -575,31 +626,32 @@ const exportToPNG = async () => {
                   courseVolunteers={courseVolunteers}
                   onVolunteerDrop={handleVolunteerDrop}
                   onVolunteerRemove={handleVolunteerRemove}
+
                 />
               )}
             </GridItem>
 
-{/* 右侧面板 */}
-<GridItem colSpan={4}>
-  <Grid gap={4} templateRows="auto 1fr">  {/* 添加 templateRows */}
-    <GridItem>
-      <TeachingPlan 
-        curriculum={curriculum} 
-        maxH="300px"  // 添加固定高度
-        overflow="auto"  // 添加滚动条
-      />
-    </GridItem>
-    <GridItem>
-      <CourseList
-        availableCourses={availableCourses}
-        addCourseToTable={addCourseToTable}
-        deleteCourse={deleteCourse}
-        moveCourseToAvailable={moveCourseToAvailable}
-        getCourseColor={getCourseColor}
-      />
-    </GridItem>
-  </Grid>
-</GridItem>
+          {/* 右侧面板 */}
+          <GridItem colSpan={4}>
+            <Grid gap={4} templateRows="auto 1fr">  {/* 添加 templateRows */}
+              <GridItem>
+                <TeachingPlan 
+                  curriculum={curriculum} 
+                  maxH="300px"  // 添加固定高度
+                  overflow="auto"  // 添加滚动条
+                />
+              </GridItem>
+              <GridItem>
+                <CourseList
+                  availableCourses={availableCourses}
+                  addCourseToTable={addCourseToTable}
+                  deleteCourse={deleteCourse}
+                  moveCourseToAvailable={moveCourseToAvailable}
+                  getCourseColor={getCourseColor}
+                />
+              </GridItem>
+            </Grid>
+          </GridItem>
           </Grid>
         </Box>
       </Box>
