@@ -54,9 +54,8 @@ const sampleCourses: Course[] = [
 
 // Removed redundant Volunteer declaration
 
-export default function MainPage({favoriteCourses}) {
+export default function MainPage({favoriteCourses, curriculum}) {
   // 管理可用课程列表（备选清单）
-  console.log("fav=", favoriteCourses)
   const [availableCourses, setAvailableCourses] = useState<Course[]>(favoriteCourses);
 
   // 管理已选课程列表（课程表中的课程）
@@ -526,7 +525,7 @@ const exportToPNG = async () => {
             {/* 右侧面板 */}
             <GridItem colSpan={4}>
               <Grid gap={4}>
-                <TeachingPlan />
+                <TeachingPlan curriculum={curriculum} />
                 <CourseList
                   availableCourses={availableCourses}
                   addCourseToTable={addCourseToTable}

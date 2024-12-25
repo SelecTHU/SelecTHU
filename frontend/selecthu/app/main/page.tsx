@@ -1,15 +1,16 @@
 import ClientPage from "./page2"
 import { auth } from "@/auth"
 
-import { getFavCourses } from "@/app/search/actions"
+import { getFavCourses, getCurriculum } from "@/app/search/actions"
 
 export default async function MainPage() {
 
     const courses = await getFavCourses()
 
-    console.log(courses)
+    const curriculum = await getCurriculum()
+
 
     return (
-        <ClientPage favoriteCourses={courses}/>
+        <ClientPage favoriteCourses={courses} curriculum={curriculum} />
     )
 }
