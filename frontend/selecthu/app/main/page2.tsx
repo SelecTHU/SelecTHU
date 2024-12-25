@@ -511,7 +511,7 @@ const exportToPNG = async () => {
             <GridItem colSpan={3}>
               <StatusCard
                 title="选课阶段"
-                content="预选阶段：2024-02-20 ~ 2024-02-25"
+                content="当前非选课阶段！"
                 height={cardHeight} // 使用height属性
               />
             </GridItem>
