@@ -36,3 +36,17 @@ export interface Course {
   selection: Selection;
   volType: "required" | "limited" | "optional" | "sports";
 }
+
+export const courseTypeMapping = {
+  'required': 'b',
+  'limited': 'x',
+  'optional': 'r',
+  'sports': 't'
+};
+
+export const reverseCourseTypeMapping = {
+  'b': 'required',
+  'x': 'limited',
+  'r': 'optional',
+  't': 'sports'
+};

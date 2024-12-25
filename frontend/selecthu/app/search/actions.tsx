@@ -14,7 +14,7 @@ function convertSelection(data) {
 }
 
 function convertCourse(data, curriculum) {
-    return {
+    const ret = {
         id: data.course_id,
         courseNumber: data.code,
         sequenceNumber: data.number,
@@ -51,6 +51,9 @@ function convertCourse(data, curriculum) {
             else return "optional"
         })(lookupCurriculum(data.code, curriculum)),
     }
+
+    ret.type = ret.volType
+    return ret
 }
 
 function convertCourseList(listData, curriculum) {

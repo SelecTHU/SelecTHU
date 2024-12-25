@@ -78,7 +78,7 @@ export default function TeachingPlan({ curriculum }) {
       </Flex>
 
       <Text fontSize="sm" mb={4}>
-        计算机科学与技术 2023级 第二学期
+        软件工程 2022级 三年级 第二学期
       </Text>
 
       <Table size="sm" variant="simple">
