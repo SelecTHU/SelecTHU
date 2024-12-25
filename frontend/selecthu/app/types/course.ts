@@ -22,6 +22,7 @@ export interface Course {
   type: string;             // 原有属性
   credits: number;          // 原有属性
   timeSlots: TimeSlot[];    // 原有属性
+  capacity: number;         // 新增属性
 
   // 新增属性
   department: string;

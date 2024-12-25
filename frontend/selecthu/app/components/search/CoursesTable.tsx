@@ -26,7 +26,6 @@ interface CoursesTableProps {
   onSelectCourse: (courseId: string) => void;
   selectedCourseId: string | null;
   onAddCourse: (courseId: string) => void;
-  // 新增的属性
   courseVolunteers: {
     [courseId: string]: Volunteer[];
   };
@@ -34,6 +33,95 @@ interface CoursesTableProps {
   onVolunteerRemove: (courseId: string, volunteerId: string) => void;
   getCourseColor: (courseId: string) => string;
 }
+
+const ProgressBar: React.FC<{ course: Course }> = ({ course }) => {
+  const getColorForType = (type: string, priority: number) => {
+    const baseColors = {
+      'b': ['#FF0000', '#FF3333', '#FF6666'], // 红色系 - 必修
+      'x': ['#FFD700', '#FFE44D', '#FFEB80'], // 黄色系 - 限选
+      'r': ['#00CC00', '#33FF33', '#66FF66', '#99FF99'], // 绿色系 - 任选（4个层次）
+      't': ['#0000FF', '#3333FF', '#6666FF']  // 蓝色系 - 体育
+    };
+    
+    if (type === 'r') {
+      return baseColors[type][priority] || baseColors[type][0]; // 任选使用0-3
+    }
+    return baseColors[type][priority - 1] || baseColors[type][0]; // 其他使用1-3
+  };
+
+  const renderSelectionBars = () => {
+    const { selection, capacity } = course;
+    if (!selection || !capacity) return null;
+
+    const segments: { width: number; color: string }[] = [];
+    
+    // 处理必修、限选和体育课（优先级1-3）
+    ['b', 'x', 't'].forEach(type => {
+      for (let priority = 1; priority <= 3; priority++) {
+        const count = selection[type][priority] || 0;
+        if (count > 0) {
+          const width = (count / capacity) * 100;
+          segments.push({
+            width: Math.min(width, 100 - segments.reduce((acc, seg) => acc + seg.width, 0)),
+            color: getColorForType(type, priority)
+          });
+        }
+      }
+    });
+
+    // 特殊处理任选课（优先级0-3）
+    for (let priority = 0; priority <= 3; priority++) {
+      const count = selection.r[priority] || 0;
+      if (count > 0) {
+        const width = (count / capacity) * 100;
+        segments.push({
+          width: Math.min(width, 100 - segments.reduce((acc, seg) => acc + seg.width, 0)),
+          color: getColorForType('r', priority)
+        });
+      }
+    }
+
+    return (
+      <Box position="relative" w="100%" h="12px">
+        <Flex 
+          w="100%" 
+          h="100%" 
+          borderRadius="md" 
+          overflow="hidden"
+          border="1px solid"
+          borderColor="gray.200"
+        >
+          {segments.map((segment, index) => (
+            <Box
+              key={index}
+              w={`${segment.width}%`}
+              h="100%"
+              bg={segment.color}
+            />
+          ))}
+        </Flex>
+        {selection.total > capacity && (
+          <Box
+            position="absolute"
+            right="-20px"
+            top="50%"
+            transform="translateY(-50%)"
+            color="red.500"
+            fontSize="xs"
+          >
+            {/* 溢出 */}
+          </Box>
+        )}
+      </Box>
+    );
+  };
+
+  return (
+    <Box w="200px">
+      {renderSelectionBars()}
+    </Box>
+  );
+};
 
 const CoursesTable: React.FC<CoursesTableProps> = ({
   courses,
@@ -62,26 +150,6 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
     onAddCourse(courseId);
   };
 
-  // 新增：渲染志愿标签
-  /* const renderVolunteers = (courseId: string) => {
-    const volunteers = courseVolunteers && courseVolunteers[courseId] ? courseVolunteers[courseId] : [];
-    return (
-      <Stack direction="row" spacing={1}>
-        {volunteers.map((volunteer, index) => (
-          <Box
-            key={index}
-            bg={`${volunteer.type}.100`}
-            px={1}
-            py={0.5}
-            borderRadius="sm"
-            fontSize="xs"
-          >
-            {`${volunteer.priority}志愿`}
-          </Box>
-        ))}
-      </Stack>
-    );
-  }; */
   const renderVolunteers = (course: Course) => {
     const selection = course.selection
     return JSON.stringify(selection)
@@ -155,7 +223,7 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
                 {renderVolunteers(course)}
               </Td>
               <Td>
-                <Box w="100px" h="8px" bg="green.400" borderRadius="md" />
+                <ProgressBar course={course} />
               </Td>
             </Tr>
           ))}
