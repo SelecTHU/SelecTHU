@@ -124,13 +124,15 @@ export default function MainPage({favoriteCourses}) {
 
 
   const handleVolunteerDrop = (courseId: string, volunteer: VolunteerWithCount) => {
+    console.log("CALL")
     const course = selectedCourses.find(c => c.id === courseId);
     if (!course) return;
     // 添加类型转换
-    const courseType = reverseCourseTypeMapping[course.type];
+    const courseType = course.volType;
     if (courseType !== volunteer.type) return;
     // 获取当前状态的快照
     const currentVolunteers = courseVolunteers[courseId] || [];
+    console.log("courseVOlunteers", currentVolunteers)
     const existingVolunteer = currentVolunteers[0];
   
     Promise.resolve().then(() => {

@@ -38,15 +38,15 @@ export interface Course {
 }
 
 export const courseTypeMapping = {
-  required: 'b',
-  limited: 'x',
-  optional: 'r',
-  sports: 't'
+  'required': 'b',
+  'limited': 'x',
+  'optional': 'r',
+  'sports': 't'
 };
 
 export const reverseCourseTypeMapping = {
-  b: 'required',
-  x: 'limited',
-  r: 'optional',
-  t: 'sports'
+  'b': 'required',
+  'x': 'limited',
+  'r': 'optional',
+  't': 'sports'
 };

@@ -68,7 +68,7 @@ export default function CourseList({
       mt="0vh"
       mb={8}
     >
-      <chakra.h2 fontSize="lg" mb={2}>
+      <chakra.h2 fontSize="lg" fontWeight="bold" mb={2}>
         备选清单
       </chakra.h2>
       <Table size="sm" variant="simple">
