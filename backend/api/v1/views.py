@@ -11,6 +11,7 @@ from django.core.files.storage import default_storage
 from api.v1.utils import generate_jwt, login_required, verify_password
 from db.v1 import utils as db_utils
 from tools.scheduler import Scheduler
+from tools.chatai import run
 
 
 @api_view(["GET"])
@@ -361,3 +362,13 @@ def modify_course_selection_type(request, user_id):
     success = db_utils.change_course_level(user_id, course_id, selection_type)
     if not success:
         return Response({"status": 404, "message": "Course not found or error in selection type change"}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(["POST"])
+@login_required
+def chatbot_reply(request):
+    """
+    聊天机器人回复
+    """
+    input = request.data.get("user-input")
+    response = run(input)
+    return response
