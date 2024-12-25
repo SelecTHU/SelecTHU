@@ -55,24 +55,27 @@ def login(request):
     
     response = db_utils.get_user(user_id)
     if response["status"] == 404:
-        import requests
-        import os
-        proxy = os.getenv("PROXY")
-        if proxy:
-            data = {
-                "username": user_id,
-                "password": password,
-            }
-            resp = requests.post(f"{proxy}/login", json=data)
-            if resp["status"] == 200:
-                resp = requests.get(f"{proxy}/curriculum", params={"username": user_id})
-                if resp["status"] == 200:
-                    curriculum = resp["curriculum"]
-                    db_utils.add_user(user_id, curriculum)
-        # curriculum = scheduler.get_curriculum()
-        # db_utils.add_user(user_id, curriculum)
-        else:
-            db_utils.add_user(user_id)
+        # import requests
+        # import os
+        # proxy = os.getenv("PROXY")
+        # if proxy:
+        #     data = {
+        #         "username": user_id,
+        #         "password": password,
+        #     }
+        #     resp = requests.post(f"{proxy}/login", json=data)
+        #     if resp["status"] == 200:
+        #         resp = requests.get(f"{proxy}/curriculum", params={"username": user_id})
+        #         if resp["status"] == 200:
+        #             curriculum = resp["curriculum"]
+        #             db_utils.add_user(user_id, curriculum)
+        curriculum = scheduler.get_curriculum()
+        db_utils.add_user(user_id, curriculum)
+    else:
+        curr_curriculum = response["curriculum"]
+        if not curr_curriculum:
+            curriculum = scheduler.get_curriculum()
+            db_utils.change_user_curriculum(user_id, curriculum)
 
     payload = {"user_id": user_id}
     token = generate_jwt(payload)

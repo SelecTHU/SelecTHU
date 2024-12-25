@@ -35,7 +35,8 @@ class Curriculum:
 
         # 创建httpx客户端
         self.client = httpx.Client(
-            cookies=self.cookies, headers=self.headers, base_url=self.base_url
+            cookies=self.cookies, headers=self.headers, base_url=self.base_url,
+            proxy="http://host.docker.internal:7890"
         )
 
         self.logger = logger
