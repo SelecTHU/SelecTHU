@@ -11,7 +11,7 @@ export async function searchCourses(filters) {
         const jwt = session.user.backend_jwt
         /* const cookieStore = await cookies()
         const jwt = cookieStore.get("jwt-token").value */
-        var url = process.env.BACKEND_URL + "/courses/?search_mode=fuzzy"
+        var url = process.env.BACKEND_URL + "/courses/?search-mode=fuzzy"
         for (const filter of filters) {
             console.log("filter", filter)
             if (filter.type == "courseName") {
@@ -45,7 +45,7 @@ export async function searchCourses(filters) {
     // return json
 }
 
-export async function addCourse(courseId) {
+export async function setCourseStatus(courseId, status) {
     const url = process.env.BACKEND_URL + "/modify-course-condition/"
     const session = await auth()
     const jwt = session.user.backend_jwt
@@ -57,9 +57,17 @@ export async function addCourse(courseId) {
         },
         body: JSON.stringify({
             "course_id": courseId,
-            "condition": "favorite",
+            "condition": status,
         }),
     })
 
     console.log(res)
+}
+
+export async function addCourse(courseId) {
+    setCourseStatus(courseId, "favorite")
+}
+
+export async function removeCourse(courseId) {
+    setCourseStatus(courseId, "dismiss")
 }

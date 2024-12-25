@@ -45,6 +45,7 @@ import {
 import * as XLSX from 'xlsx';
 import html2canvas from 'html2canvas';
 import CourseListView from "../components/main/CourseListView";
+import { removeCourse } from "@/app/search/actions"
 
 
 // 示例课程数据
@@ -400,10 +401,11 @@ export default function MainPage({favoriteCourses}) {
   };
 
   // 从备选清单中删除课程的方法（用于删除按钮）
-  const deleteCourse = (courseId: string) => {
+  const deleteCourse = async (courseId: string) => {
     setAvailableCourses((prevAvailableCourses) =>
       prevAvailableCourses.filter((c) => c.id !== courseId)
-    );
+    )
+    removeCourse(courseId)
   };
 
   // 将课程从已选课程移动到备选清单
