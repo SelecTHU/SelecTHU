@@ -147,10 +147,30 @@ export async function getFavCourses() {
     return courses
 }
 
+export async function getSelectedCourses() {
+    const session = await auth()
+    const jwt = session.user.backend_jwt
+    const list = await fetch(process.env.BACKEND_URL + "/courses-decided", {
+        headers: {
+            "Authorization": "Bearer " + jwt,
+        },
+    })
+
+    const json = await list.json()
+    const listData = json["courses-decided"]
+
+    const curriculum = await getCurriculum()
+
+    const courses = convertCourseList(listData, curriculum)
+    return courses
+}
+
 export async function setCourseStatus(courseId, status) {
     const url = process.env.BACKEND_URL + "/modify-course-condition/"
     const session = await auth()
     const jwt = session.user.backend_jwt
+
+    console.log(courseId, status)
     const res = await fetch(url, {
         method: "POST",
         headers: {
@@ -172,4 +192,12 @@ export async function addCourse(courseId) {
 
 export async function removeCourse(courseId) {
     setCourseStatus(courseId, "dismiss")
+}
+
+export async function selectCourse(courseId) {
+    setCourseStatus(courseId, "decided")
+}
+
+export async function disSelectCourse(courseId) {
+    setCourseStatus(courseId, "favorite")
 }

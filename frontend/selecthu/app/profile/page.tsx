@@ -109,7 +109,6 @@ export default function ProfilePage() {
   return (
     <Box minH="100vh" bg={useColorModeValue("gray.50", "gray.900")}>
       <Navbar />
-      
       <Container maxW="md" py={8}>
         <VStack
           spacing={8}
@@ -195,7 +194,7 @@ export default function ProfilePage() {
             </Button>
             <Button
               colorScheme="red"
-              onClick={() => signOut()}
+              onClick={() => { signOut(); router.push("/main") } }
               width="full"
               size="lg"
               borderRadius="md"

@@ -45,22 +45,14 @@ import {
 import * as XLSX from 'xlsx';
 import html2canvas from 'html2canvas';
 import CourseListView from "../components/main/CourseListView";
-import { removeCourse } from "@/app/search/actions"
+import { removeCourse, selectCourse, disSelectCourse } from "@/app/search/actions"
 
-
-// 示例课程数据
-const sampleCourses: Course[] = [
-];
-
-// Removed redundant Volunteer declaration
-
-export default function MainPage({favoriteCourses}) {
+export default function MainPage({favoriteCourses, selCourses, curriculum}) {
   // 管理可用课程列表（备选清单）
-  console.log("fav=", favoriteCourses)
   const [availableCourses, setAvailableCourses] = useState<Course[]>(favoriteCourses);
 
   // 管理已选课程列表（课程表中的课程）
-  const [selectedCourses, setSelectedCourses] = useState<Course[]>([]);
+  const [selectedCourses, setSelectedCourses] = useState<Course[]>(selCourses);
 
   const [isListView, setIsListView] = useState(false);
 
@@ -275,7 +267,9 @@ const colors = [
   };
 
   // 添加课程到课程表的方法
-  const addCourseToTable = (course: Course) => {
+  const addCourseToTable = async (course: Course) => {
+
+    await selectCourse(course.id)
     setSelectedCourses((prevSelectedCourses) => {
       const newCourse = {
         ...course,
@@ -291,7 +285,7 @@ const colors = [
     });
 
     // 从备选清单中删除该课程
-    setAvailableCourses((prevAvailableCourses) =>
+    setAvailableCourses((prevAvailableCourses) => 
       prevAvailableCourses.filter((c) => c.id !== course.id)
     );
   };
@@ -305,8 +299,10 @@ const colors = [
   };
 
   // 将课程从已选课程移动到备选清单
-  const moveCourseToAvailable = (course: Course) => {
+  const moveCourseToAvailable = async (course: Course) => {
     const volunteers = courseVolunteers[course.id] || [];
+    
+    await disSelectCourse(course.id)
     
     setAvailableVolunteers(prev => {
       const newVolunteers = volunteers.map(v => ({
@@ -586,7 +582,7 @@ const exportToPNG = async () => {
             {/* 右侧面板 */}
             <GridItem colSpan={4}>
               <Grid gap={4}>
-                <TeachingPlan />
+                <TeachingPlan curriculum={curriculum} />
                 <CourseList
                   availableCourses={availableCourses}
                   addCourseToTable={addCourseToTable}

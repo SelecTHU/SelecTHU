@@ -410,3 +410,15 @@ db
 1. `selection_type` 字段（原 `level` 字段）说明：<span id="selection-explain"></span>
 `selection_type` 字段表示课程的选课志愿分配，由两位字符组成，第一位表示志愿类型（包括必选、限选、任选、体育必选），第二位表示志愿等级（从 `0` 到 `3` ，数字越小，志愿等级越高，其中 `0` 志愿表示特殊优先级）。例如： `b2` 表示必选二志愿， `t1` 表示体育一志愿。具体定义见 [`const.py`](./v1/const.py) 。
 
+### 单元测试
+使用Django 的内置测试工具TestCase测试，使用coverage获取覆盖率报告。
+对 `dbBasic`, `queryDB` 和 `modifyDB` 进行测试，测试报告如下：
+```bash
+Name                Stmts   Miss  Cover
+---------------------------------------
+db/v1/dbBasic.py       39      6    85%
+db/v1/modifyDB.py     345     60    83%
+db/v1/queryDB.py      188     37    80%
+---------------------------------------
+TOTAL                 572    103    82%
+```
