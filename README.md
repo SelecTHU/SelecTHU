@@ -1,6 +1,6 @@
 # SelecTHU 清华选课助手
 
-![2](https://raw.githubusercontent.com/ShYuF/myPic/refs/heads/main/3plus.jpg)
+<img src="https://raw.githubusercontent.com/ShYuF/myPic/refs/heads/main/3plus.jpg">
 
 <p align="center">
 <a href="https://github.com/SelecTHU/SelecTHU">
