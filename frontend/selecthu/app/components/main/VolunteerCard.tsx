@@ -31,10 +31,10 @@ export default function VolunteerCard({
 }: VolunteerCardProps) {
   const bgColor = useColorModeValue('white', 'gray.700');
   const volunteerBgColors = {
-    required: useColorModeValue('red.100', 'red.700'),
-    limited: useColorModeValue('blue.100', 'blue.700'),
-    optional: useColorModeValue('green.100', 'green.700'),
-    sports: useColorModeValue('purple.100', 'purple.700'),
+    required: useColorModeValue('red.100', 'red.700'),  // 红色系
+    limited: useColorModeValue('yellow.100', 'yellow.700'),  // 黄色系
+    optional: useColorModeValue('green.100', 'green.700'),  // 绿色系  
+    sports: useColorModeValue('blue.100', 'blue.700'), // 蓝色系
   };
 
     // 在 VolunteerCard 组件中添加
