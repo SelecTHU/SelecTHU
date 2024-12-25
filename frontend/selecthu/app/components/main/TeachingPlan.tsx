@@ -35,12 +35,20 @@ const samplePlanCourses: Course[] = [
   // 可以添加更多课程
 ];
 
+interface PlanCourse {
+    code?: string,
+    attr?: string,
+    group?: string,
+    credit?: string,
+    name?: string,
+}
+
 export default function TeachingPlan({ curriculum }) {
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.700");
 
   console.log(curriculum)
-  const curriculumCourses = Object.values(curriculum).flat()
+  const curriculumCourses: PlanCourse[] = Object.values(curriculum).flat()
 
   // 创建颜色映射
   const courseColorMap = useMemo(() => {
