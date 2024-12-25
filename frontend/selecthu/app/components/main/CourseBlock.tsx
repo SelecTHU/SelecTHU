@@ -1,17 +1,16 @@
 // components/main/CourseBlock.tsx
+"use client";
 
-import React, { useRef, useEffect, useCallback } from "react";
+import React, { useRef, useEffect } from "react";
 import {
   Box,
   Text,
-  Stack,
   useColorModeValue,
 } from "@chakra-ui/react";
 import { Course } from "@/app/types/course";
 import { Volunteer } from "@/app/types/volunteer";
 import { useDrag, useDrop } from "react-dnd";
 import { ItemTypes } from "./constants";
-import { getEmptyImage } from "react-dnd-html5-backend";
 
 interface CourseBlockProps {
   course: Course;
@@ -22,6 +21,20 @@ interface CourseBlockProps {
   onVolunteerDrop?: (courseId: string, volunteer: Volunteer) => void;
   onVolunteerRemove?: (courseId: string, volunteerId: string) => void;
 }
+
+const volunteerBgColors = {
+  b: ['red.50', 'red.100', 'red.200'],      // 必修
+  x: ['yellow.50', 'yellow.100', 'yellow.200'],  // 限选
+  r: ['green.50', 'green.100', 'green.200', 'green.300'],  // 任选（4个等级）
+  t: ['blue.50', 'blue.100', 'blue.200'],   // 体育
+};
+
+const volunteerDarkBgColors = {
+  b: ['red.900', 'red.800', 'red.700'],     // 必修
+  x: ['yellow.900', 'yellow.800', 'yellow.700'], // 限选
+  r: ['green.900', 'green.800', 'green.700', 'green.600'], // 任选（4个等级）
+  t: ['blue.900', 'blue.800', 'blue.700'],  // 体育
+};
 
 export default function CourseBlock({
   course,
@@ -35,56 +48,83 @@ export default function CourseBlock({
   const courseRef = useRef<HTMLDivElement>(null);
   const borderColor = useColorModeValue("gray.200", "gray.600");
 
+  const [{ isDragging }, drag, preview] = useDrag(() => ({
+    type: ItemTypes.COURSE,
+    item: { course },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  }));
 
-    // 添加拖放相关的 hooks
-    const [{ isDragging }, drag, preview] = useDrag(() => ({
-      type: ItemTypes.COURSE,
-      item: { course },
-      collect: (monitor) => ({
-        isDragging: monitor.isDragging(),
-      }),
-    }));
-  
-    const [{ isOver }, drop] = useDrop(() => ({
-      accept: ItemTypes.VOLUNTEER,
-      drop: (volunteer: Volunteer) => {
-        if (volunteer.type === course.type) {
-          onVolunteerDrop?.(course.id, volunteer);
-        }
-      },
-      canDrop: (volunteer: Volunteer) => volunteer.type === course.type,
-      collect: monitor => ({
-        isOver: monitor.canDrop() && monitor.isOver(),
-      }),
-    }));
-  
-    // 合并 refs
-    useEffect(() => {
-      if (courseRef.current) {
-        drag(courseRef.current);
-        drop(courseRef.current);
+  const [{ isOver }, drop] = useDrop(() => ({
+    accept: ItemTypes.VOLUNTEER,
+    drop: (volunteer: Volunteer) => {
+      if (volunteer.type === course.type) {
+        onVolunteerDrop?.(course.id, volunteer);
       }
-    }, [drag, drop]);
-  
+    },
+    canDrop: (volunteer: Volunteer) => volunteer.type === course.type,
+    collect: monitor => ({
+      isOver: monitor.canDrop() && monitor.isOver(),
+    }),
+  }));
+
+  useEffect(() => {
+    if (courseRef.current) {
+      drag(courseRef.current);
+      drop(courseRef.current);
+    }
+  }, [drag, drop]);
+
   // 获取志愿类型的中文名称
   const getTypeText = (type: string) => {
     switch(type) {
-      case 'required': return '必修';
-      case 'limited': return '限选';
-      case 'optional': return '任选';
-      case 'sports': return '体育';
+      case 'b': return '必修';
+      case 'x': return '限选';
+      case 'r': return '任选';
+      case 't': return '体育';
       default: return '';
     }
   };
 
-  // 获取显示的志愿文本
-  const getVolunteerText = () => {
-    if (volunteers && volunteers.length > 0) {
-      const firstVolunteer = volunteers[0];
-      return `${getTypeText(firstVolunteer.type)}${firstVolunteer.priority}志愿`;
+  // 获取显示的志愿文本和颜色
+  const getVolunteerInfo = () => {
+    const selection = course.selection;
+    if (!selection) {
+      return {
+        text: `${getTypeText(course.type)}`,
+        colorScheme: useColorModeValue(
+          volunteerBgColors[course.type][0], 
+          volunteerDarkBgColors[course.type][0]
+        )
+      };
     }
-    return `${getTypeText(course.type)}3志愿`;
+
+    // 根据selection中的数据确定显示内容
+    let maxPriority = 0;
+    let maxCount = 0;
+    let selectedType = course.type;
+
+    Object.entries(selection).forEach(([type, priorities]) => {
+      Object.entries(priorities).forEach(([priority, count]) => {
+        if (Number(count) > maxCount) {
+          maxCount = Number(count);
+          maxPriority = parseInt(priority);
+          selectedType = type;
+        }
+      });
+    });
+
+    return {
+      text: `${getTypeText(selectedType)}${maxPriority}志愿`,
+      colorScheme: useColorModeValue(
+        volunteerBgColors[selectedType][maxPriority], 
+        volunteerDarkBgColors[selectedType][maxPriority]
+      )
+    };
   };
+
+  const { text: volunteerText, colorScheme: volunteerColor } = getVolunteerInfo();
 
   return (
     <Box
@@ -101,7 +141,7 @@ export default function CourseBlock({
       {/* 顶部志愿区域 */}
       <Box
         width="100%"
-        bg={useColorModeValue(`${color}.50`, `${color}.900`)}
+        bg={volunteerColor}
         borderBottom="1px solid"
         borderColor={borderColor}
         py={1}
@@ -110,7 +150,7 @@ export default function CourseBlock({
         justifyContent="center"
       >
         <Text fontSize="xs" lineHeight="1">
-          {getVolunteerText()}
+          {volunteerText}
         </Text>
       </Box>
 
@@ -131,7 +171,7 @@ export default function CourseBlock({
           {course.name}
         </Text>
         <Text fontSize="xs">{course.teacher}</Text>
-        {/* <Text fontSize="xs">{course.classroom}</Text> */}
+        <Text fontSize="xs">{course.classroom}</Text>
       </Box>
 
       {/* 底部课程编号区域 */}

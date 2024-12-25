@@ -26,7 +26,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import CustomDragLayer from "../components/main/CustomDragLayer";
 
 // 引入统一的 Course 接口
-import { Course } from "../types/course";
+import { Course, reverseCourseTypeMapping } from "../types/course";
 
 import { useToast } from "@chakra-ui/react";
 
@@ -125,8 +125,10 @@ export default function MainPage({favoriteCourses}) {
 
   const handleVolunteerDrop = (courseId: string, volunteer: VolunteerWithCount) => {
     const course = selectedCourses.find(c => c.id === courseId);
-    if (!course || course.type !== volunteer.type) return;
-  
+    if (!course) return;
+    // 添加类型转换
+    const courseType = reverseCourseTypeMapping[course.type];
+    if (courseType !== volunteer.type) return;
     // 获取当前状态的快照
     const currentVolunteers = courseVolunteers[courseId] || [];
     const existingVolunteer = currentVolunteers[0];
@@ -250,18 +252,14 @@ export default function MainPage({favoriteCourses}) {
 
   
   // 颜色数组，确保颜色名称与 Chakra UI 的颜色方案一致
-  const colors = [
-    "blue",
-    "green",
-    "red",
-    "yellow",
-    "purple",
-    "teal",
-    "orange",
-    "pink",
-    "cyan",
-    "gray",
-  ];
+const colors = [
+  "purple",
+  "pink",
+  "cyan",
+  "teal",
+  "orange",
+  "gray",
+];
 
   // 根据课程ID获取颜色
   const getCourseColor = (courseId: string): string => {
@@ -277,6 +275,10 @@ export default function MainPage({favoriteCourses}) {
   // 添加课程到课程表的方法
   const addCourseToTable = (course: Course) => {
     setSelectedCourses((prevSelectedCourses) => {
+      const newCourse = {
+        ...course,
+        type: course.type // 确保这里的 type 保持原值
+      };
       // 检查课程是否已添加，避免重复添加
       if (!prevSelectedCourses.some((c) => c.id === course.id)) {
         // 如果未添加过，将课程添加到已选课程列表
