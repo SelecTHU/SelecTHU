@@ -23,10 +23,10 @@ interface CourseBlockProps {
 }
 
 const volunteerBgColors = {
-  b: ['red.50', 'red.100', 'red.200'],
-  x: ['yellow.50', 'yellow.100', 'yellow.200'],
-  r: ['green.50', 'green.100', 'green.200', 'green.300'],
-  t: ['blue.50', 'blue.100', 'blue.200'],
+  b: ['', 'red.300', 'red.200', 'red.100'],
+  x: ['', 'yellow.300', 'yellow.200', 'yellow.100'],
+  r: ['green.1000', 'green.300', 'green.200', 'green.100'],
+  t: ['', 'blue.300', 'blue.200', 'blue.100'],
 };
 
 const volunteerDarkBgColors = {
