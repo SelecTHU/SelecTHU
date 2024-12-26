@@ -16,12 +16,12 @@ import {
   interface CourseListViewProps {
     selectedCourses: Course[];
     getCourseColor: (courseId: string) => string;
-    courseVolunteers: {
-      [courseId: string]: any[];
+    courseVolunteer: {
+      [courseId: string]: any;
     };
   }
   
-  const CourseListView = ({ selectedCourses, getCourseColor, courseVolunteers }: CourseListViewProps) => {
+  const CourseListView = ({ selectedCourses, getCourseColor, courseVolunteer }: CourseListViewProps) => {
     const getTimeString = (timeSlots: { day: number; start: number; duration: number }[]) => {
       const dayMap = ['', '周一', '周二', '周三', '周四', '周五'];
       return timeSlots.map(slot => 
@@ -75,8 +75,8 @@ import {
                 <Td>{getTimeString(course.timeSlots)}</Td>
                 <Td>{course.credits}</Td>
                 <Td>
-                  {courseVolunteers[course.id]?.[0]?.priority 
-                    ? `第${courseVolunteers[course.id][0].priority}志愿` 
+                  {courseVolunteer[course.id]?.priority 
+                    ? `第${courseVolunteer[course.id].priority}志愿` 
                     : '未设置'}
                 </Td>
               </Tr>

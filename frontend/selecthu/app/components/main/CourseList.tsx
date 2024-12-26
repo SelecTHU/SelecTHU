@@ -38,8 +38,6 @@ export default function CourseList({
   const borderColor = useColorModeValue("gray.200", "gray.700");
   const tableBgColor = useColorModeValue("white", "gray.800");
 
-  console.log("availableCourses", availableCourses)
-
   // 使用 useRef 创建一个引用
   const boxRef = useRef<HTMLDivElement>(null);
 
@@ -76,7 +74,7 @@ export default function CourseList({
       overflow="auto" // 允许滚动，以适应内容变化
       maxHeight="400px" // 根据需要调整最大高度
     >
-      <chakra.h2 fontSize="lg" mb={2}>
+      <chakra.h2 fontSize="lg" fontWeight="bold" mb={2}>
         备选清单
       </chakra.h2>
       <Table size="sm" variant="simple">

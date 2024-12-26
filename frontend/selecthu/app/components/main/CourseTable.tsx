@@ -24,8 +24,8 @@ interface CourseTableProps {
   selectedCourses: Course[];
   addCourseToTable: (course: Course) => void;
   getCourseColor?: (courseId: string) => string;  // 改为可选
-  courseVolunteers?: {
-    [courseId: string]: Volunteer[];
+  courseVolunteer?: {
+    [courseId: string]: Volunteer;
   };
   onVolunteerDrop?: (courseId: string, volunteer: Volunteer) => void;
   onVolunteerRemove?: (courseId: string, volunteerId: string) => void;
@@ -34,30 +34,32 @@ interface CourseTableProps {
 export default function CourseTable({
   selectedCourses,
   addCourseToTable,
-  getCourseColor = (courseId: string) => "gray.200",  // 提供默认值
-  courseVolunteers = {},  // 提供默认值
-  onVolunteerDrop = () => {},  // 提供默认值
-  onVolunteerRemove = () => {},  // 提供默认值
+  getCourseColor = (courseId: string) => "gray.200",
+  courseVolunteer = {},
+  onVolunteerDrop = () => {},
+  onVolunteerRemove = () => {},
 }: CourseTableProps) {
+
+      console.log("Rendering CourseTable with", courseVolunteer)
   const borderColor = useColorModeValue("gray.200", "gray.700");
   const bgColor = useColorModeValue("white", "gray.800");
 
-    const timeSlots = [
-      "第一节 (8:00-8:45)",
-      "第二节 (8:50-9:35)",
-      "第三节 (9:50-10:35)",
-      "第四节 (10:40-11:25)",
-      "第五节 (11:30-12:15)",
-      "第六节 (13:30-14:15)",
-      "第七节 (14:20-15:05)",
-      "第八节 (15:20-16:05)",
-      "第九节 (16:10-16:55)",
-      "第十节 (17:05-17:50)",
-      "第十一节 (17:55-18:40)",
-      "第十二节 (19:20-20:05)",
-      "第十三节 (20:10-20:55)",
-      "第十四节 (21:00-21:45)",
-      "第十五节 (21:50-22:35)"
+  const timeSlots = [
+    { name: "第一节", time: "8:00-8:45" },
+    { name: "第二节", time: "8:50-9:35" },
+    { name: "第三节", time: "9:50-10:35" },
+    { name: "第四节", time: "10:40-11:25" },
+    { name: "第五节", time: "11:30-12:15" },
+    { name: "第六节", time: "13:30-14:15" },
+    { name: "第七节", time: "14:20-15:05" },
+    { name: "第八节", time: "15:20-16:05" },
+    { name: "第九节", time: "16:10-16:55" },
+    { name: "第十节", time: "17:05-17:50" },
+    { name: "第十一节", time: "17:55-18:40" },
+    { name: "第十二节", time: "19:20-20:05" },
+    { name: "第十三节", time: "20:10-20:55" },
+    { name: "第十四节", time: "21:00-21:45" },
+    { name: "第十五节", time: "21:50-22:35" }
   ];
 
   const weekDays = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
@@ -72,7 +74,6 @@ export default function CourseTable({
       )
     );
   };
-
 
   const shouldShowCourse = (day: number, slot: number): boolean => {
     const course = getCourse(day, slot);
@@ -113,7 +114,7 @@ export default function CourseTable({
     return getCourseColor(courseId);
   };
 
-  const slotHeight = 60;
+  const slotHeight = 49;
 
   return (
     <chakra.div
@@ -129,7 +130,7 @@ export default function CourseTable({
     >
       <Table size="sm" variant="simple" width="100%">
         <Thead>
-          <Tr>
+          <Tr height={`${slotHeight}px`}>
             <Th
               width="100px"
               border="1px solid"
@@ -139,6 +140,8 @@ export default function CourseTable({
               bg="white"
               _dark={{ bg: "gray.800" }}
               zIndex={1}
+              height={`${slotHeight}px`}
+              p={1}
             >
               节次
             </Th>
@@ -153,6 +156,8 @@ export default function CourseTable({
                 bg="white"
                 _dark={{ bg: "gray.800" }}
                 zIndex={1}
+                height={`${slotHeight}px`}
+                p={1}
               >
                 {day}
               </Th>
@@ -160,10 +165,9 @@ export default function CourseTable({
           </Tr>
         </Thead>
         <Tbody>
-          {timeSlots.map((time, slotIndex) => (
+          {timeSlots.map((slot, slotIndex) => (
             <Tr key={`slot-${slotIndex}`} height={`${slotHeight}px`}>
               <Td
-                fontSize="xs"
                 border="1px solid"
                 borderColor={borderColor}
                 textAlign="center"
@@ -173,8 +177,12 @@ export default function CourseTable({
                 bg="white"
                 _dark={{ bg: "gray.800" }}
                 zIndex={1}
+                p={1}
               >
-                {time}
+                <Box fontSize="xs" lineHeight="1">
+                  <Text>{slot.name}</Text>
+                  <Text>{slot.time}</Text>
+                </Box>
               </Td>
               {weekDays.map((_, dayIndex) => {
                 if (!shouldRenderCell(dayIndex + 1, slotIndex + 1)) {
@@ -188,14 +196,14 @@ export default function CourseTable({
                 return (
                   <Td
                     key={`cell-${dayIndex}-${slotIndex}`}
-                    p={0}  // 确保设置为 0
+                    p={0}
                     rowSpan={rowSpan}
                     textAlign="center"
                     border="1px solid"
                     borderColor={borderColor}
                     verticalAlign="top"
                     height={`${slotHeight * rowSpan}px`}
-                    position="relative"  // 添加相对定位
+                    position="relative"
                   >
                     {course && shouldShowCourse(dayIndex + 1, slotIndex + 1) ? (
                       <Box position="absolute" top={0} left={0} right={0} bottom={0}>  
@@ -204,7 +212,7 @@ export default function CourseTable({
                           color={color}
                           duration={rowSpan}
                           slotHeight={slotHeight}
-                          volunteers={courseVolunteers[course.id] || []}
+                          volunteer={courseVolunteer[course.id]}
                           onVolunteerDrop={onVolunteerDrop}
                           onVolunteerRemove={onVolunteerRemove}
                         />

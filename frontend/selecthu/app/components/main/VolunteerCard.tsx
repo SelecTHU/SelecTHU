@@ -21,8 +21,6 @@ interface VolunteerCardProps {
   onVolunteerRemove: (courseId: string, volunteerId: string) => void;
 }
 
-
-
 export default function VolunteerCard({
   height,
   onVolunteerDrag,

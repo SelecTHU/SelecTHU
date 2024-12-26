@@ -2,6 +2,7 @@
 
 // import { cookies } from "next/headers"
 import { auth } from "@/auth"
+import { revalidatePath } from "next/cache"
 
 function convertSelection(data) {
     return {
@@ -14,7 +15,7 @@ function convertSelection(data) {
 }
 
 function convertCourse(data, curriculum) {
-    return {
+    const ret = {
         id: data.course_id,
         courseNumber: data.code,
         sequenceNumber: data.number,
@@ -50,7 +51,11 @@ function convertCourse(data, curriculum) {
             }
             else return "optional"
         })(lookupCurriculum(data.code, curriculum)),
+        volNum: data.selection_type && data.selection_type[1] || 0
     }
+
+    ret.type = ret.volType
+    return ret
 }
 
 function convertCourseList(listData, curriculum) {
@@ -159,6 +164,7 @@ export async function getSelectedCourses() {
     const curriculum = await getCurriculum()
 
     const courses = convertCourseList(listData, curriculum)
+    console.log("decided courses:", listData, courses)
     return courses
 }
 
@@ -181,6 +187,48 @@ export async function setCourseStatus(courseId, status) {
     })
 
     console.log(res)
+
+    revalidatePath("/main")
+}
+
+export async function setCourseWish(courseId, volType, wish) {
+    console.log("SET WISH", courseId, volType, wish)
+    const url = process.env.BACKEND_URL + "/modify-course-selection-type/"
+    const session = await auth()
+    const jwt = session.user.backend_jwt
+
+    var wishMsg = ""
+    if (volType == "required") {
+        wishMsg = "b"
+    }
+    else if (volType == "limited") {
+        wishMsg = "x"
+    }
+    else if (volType == "optional") {
+        wishMsg = "r"
+    }
+    else if (volType == "sports") {
+        wishMsg = "t"
+    }
+    wishMsg = wishMsg + wish
+
+    console.log(wishMsg)
+
+    const res = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + jwt,
+        },
+        body: JSON.stringify({
+            "course_id": courseId,
+            "selection_type": wishMsg,
+        }),
+    })
+
+    console.log("RES", res)
+
+    revalidatePath("/main")
 }
 
 export async function addCourse(courseId) {

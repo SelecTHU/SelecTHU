@@ -2,7 +2,7 @@
 
 Using Chakra UI in Next.js (App)
 
-## 文件结构介绍（未完成）
+## 文件结构介绍
 
 ```
 frontend/
