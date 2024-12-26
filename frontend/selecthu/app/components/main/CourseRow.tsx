@@ -6,12 +6,14 @@ import {
   Badge,
   IconButton,
   chakra,
+  HStack,
+  useColorModeValue,
+  Box,
 } from "@chakra-ui/react";
 import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
 import { Course, TimeSlot } from "@/app/types/course";
-
 import { useDrag, DragSourceMonitor } from "react-dnd";
-import { ItemTypes } from "./constants"; // 引入常量
+import { ItemTypes } from "./constants";
 import { getEmptyImage } from "react-dnd-html5-backend";
 
 interface CourseRowProps {
@@ -22,6 +24,22 @@ interface CourseRowProps {
   handleDelete: (courseId: string) => void;
 }
 
+// 获取课程类型的中文显示
+const getTypeText = (type: string) => {
+  switch(type) {
+    case 'b': return '必修';
+    case 'x': return '限选';
+    case 'r': return '任选';
+    case 't': return '体育';
+    case 'required': return '必修';
+    case 'elective': return '限选';
+    case 'limited': return '限选';
+    case 'optional': return '任选';
+    case 'sports': return '体育';
+    default: return type;
+  }
+};
+
 export default function CourseRow({
   course,
   courseColor,
@@ -29,7 +47,6 @@ export default function CourseRow({
   handleAdd,
   handleDelete,
 }: CourseRowProps) {
-  // 使用 useDrag 钩子
   const [{ isDragging }, drag, preview] = useDrag({
     type: ItemTypes.COURSE,
     item: { course },
@@ -38,7 +55,6 @@ export default function CourseRow({
     }),
   });
 
-  // 抑制默认的拖拽预览
   useEffect(() => {
     preview(getEmptyImage(), { captureDraggingState: true });
   }, [preview]);
@@ -46,48 +62,58 @@ export default function CourseRow({
   const rowRef = useRef<HTMLTableRowElement>(null);
   drag(rowRef);
 
+  const hoverBgColor = useColorModeValue("gray.50", "gray.700");
+
   return (
     <chakra.tr
-      key={course.id}
       ref={rowRef}
       opacity={isDragging ? 0.5 : 1}
       cursor="grab"
-      _hover={{ bg: 'gray.100' }} // 可选的悬停样式
+      _hover={{ bg: hoverBgColor }}
+      transition="background-color 0.2s"
     >
-      <Td>
-        <Badge
-          colorScheme={courseColor} // 确保 courseColor 是有效的 Chakra 颜色方案
-          px={2}
-          py={1}
-          borderRadius="md"
-          // 移除了 color="white" 以避免与 colorScheme 冲突
+      <Td maxWidth="180px">  {/* 对应 Th 的宽度 */}
+        <Box
+          textOverflow="ellipsis"
+          overflow="hidden"
+          whiteSpace="nowrap"
+          title={course.name}  // 鼠标悬停时显示完整课程名
         >
-          {course.name}
-        </Badge>
+          <Badge
+            colorScheme={courseColor}
+            px={2}
+            py={1}
+            borderRadius="md"
+            display="inline-block"  // 改为 inline-block
+            whiteSpace="nowrap"
+          >
+            {course.name}
+          </Badge>
+        </Box>
       </Td>
-      <Td>{course.teacher}</Td>
-      <Td>{course.type}</Td>
+      <Td whiteSpace="nowrap">{course.teacher}</Td>
+      <Td>{getTypeText(course.type)}</Td>
       <Td isNumeric>{course.credits}</Td>
       <Td>{formatTimeSlots(course.timeSlots)}</Td>
       <Td>
-        {/* 添加和删除按钮 */}
-        <IconButton
-          aria-label="添加课程"
-          icon={<AddIcon />}
-          size="sm"
-          variant="ghost"
-          colorScheme="green"
-          onClick={() => handleAdd(course)}
-          mr={2}
-        />
-        <IconButton
-          aria-label="删除课程"
-          icon={<DeleteIcon />}
-          size="sm"
-          variant="ghost"
-          colorScheme="red"
-          onClick={() => handleDelete(course.id)}
-        />
+        <HStack spacing={2} justify="flex-start">
+          <IconButton
+            aria-label="添加课程"
+            icon={<AddIcon />}
+            size="sm"
+            variant="ghost"
+            colorScheme="green"
+            onClick={() => handleAdd(course)}
+          />
+          <IconButton
+            aria-label="删除课程"
+            icon={<DeleteIcon />}
+            size="sm"
+            variant="ghost"
+            colorScheme="red"
+            onClick={() => handleDelete(course.id)}
+          />
+        </HStack>
       </Td>
     </chakra.tr>
   );

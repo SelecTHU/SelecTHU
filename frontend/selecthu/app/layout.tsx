@@ -1,6 +1,7 @@
 // app/layout.tsx
 
 import Providers from "./components/Providers";
+import { SessionProvider } from "next-auth/react"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

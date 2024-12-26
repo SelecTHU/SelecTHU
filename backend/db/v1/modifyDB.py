@@ -6,6 +6,8 @@
 from db.v1.dbBasic import *
 from django.core.files.images import ImageFile
 
+import os
+
 """添加类操作"""
 
 
@@ -20,7 +22,7 @@ def add_user(user_id: str, curriculum: dict = None) -> dict:
 
     :return: 执行结果
     """
-    const.logger.info("add_user: calling", extra=const.LOGGING_TYPE.INFO)
+    const.logger.info("add_user: calling")
     # 检查输入合法性
     if isinstance(user_id, str) is False:
         return const.RESPONSE_400
@@ -58,7 +60,7 @@ def add_user(user_id: str, curriculum: dict = None) -> dict:
         # 返回结果
         return {"status": 200, "msg": "add user successfully"}
     except Exception as e:
-        const.logger.info("add_user: %s", e, extra=const.LOGGING_TYPE.ERROR)
+        const.logger.info("add_user: %s", e)
         return const.RESPONSE_500
 
 
@@ -70,7 +72,7 @@ def add_course(course: dict):
     :param course: 课程信息（包含课程简要信息和课程详细信息，为二者，具体结构见models定义）
     :return: 执行结果
     """
-    const.logger.info("add_course: calling", extra=const.LOGGING_TYPE.INFO)
+    const.logger.info("add_course: calling")
     if isinstance(course, dict) is False:
         return const.RESPONSE_400
 
@@ -89,7 +91,7 @@ def add_course(course: dict):
         # 添加到数据库
         # MainCourses：课程简要信息
         credit = int(course.get("credit", 0))
-        time = course.get("time", list())
+        time = course.get("time", [deepcopy(const.TIME_BLANK_DICT)])
         department = course.get("department", "")
         course_type = course.get("course_type", "")
         capacity = int(course.get("capacity", 0))
@@ -98,7 +100,7 @@ def add_course(course: dict):
         sec_choice = course.get("sec_choice", False)
         grade = course.get("grade", "")
         experiment = course.get("experiment", "")
-        selection = course.get("selection", const.SELECTION_BLANK.copy())
+        selection = course.get("selection", deepcopy(const.SELECTION_BLANK))
 
         # CoursesDetails：课程详细信息
         info = course.get("info", dict())
@@ -131,7 +133,7 @@ def add_course(course: dict):
         # 返回结果
         return {"status": 200, "msg": "add course successfully"}
     except Exception as e:
-        const.logger.info("add_course: %s", e, extra=const.LOGGING_TYPE.ERROR)
+        const.logger.info("add_course: %s", e)
         return const.RESPONSE_500
 
 
@@ -143,27 +145,30 @@ def add_curriculum(curriculum: dict) -> dict:
     :param curriculum: 培养方案
     :return: 执行结果
     """
-    const.logger.info("add_curriculum: calling", extra=const.LOGGING_TYPE.INFO)
+    const.logger.info("add_curriculum: calling")
     # 检查输入合法性
     if isinstance(curriculum, dict) is False:
         return const.RESPONSE_400
 
     try:
+        for key in const.CURRICULUM_KEYS:
+            if key not in curriculum:
+                return const.RESPONSE_400
         # 计算id
-        course_id = cal_curriculum_id(curriculum)
+        curriculum_id = cal_curriculum_id(curriculum)
         # 检查是否已存在
-        if models.Curriculum.objects.filter(course_id=course_id).exists():
+        if models.Curriculum.objects.filter(curriculum_id=curriculum_id).exists():
             # 返回结果：资源冲突（培养方案已存在）
             return const.RESPONSE_409
 
         # 添加到数据库
-        curriculum = models.Curriculum(course_id=course_id, courses=curriculum)
+        curriculum = models.Curriculum(curriculum_id=curriculum_id, courses=curriculum)
         curriculum.save()
 
         # 返回结果：添加成功
         return {"status": 200, "msg": "add curriculum successfully"}
     except Exception as e:
-        const.logger.info("add_curriculum: %s", e, extra=const.LOGGING_TYPE.ERROR)
+        const.logger.info("add_curriculum: %s", e)
         return const.RESPONSE_500
 
 
@@ -177,7 +182,7 @@ def add_course_to_decided(user_id: str, course_id: str, selection_type: str = ""
     :param selection_type: 选课类型
     :return: 执行结果
     """
-    const.logger.info("add_course_to_decided: calling", extra=const.LOGGING_TYPE.INFO)
+    const.logger.info("add_course_to_decided: calling")
     # 检查输入合法性
     if isinstance(user_id, str) is False or isinstance(course_id, str) is False:
         return const.RESPONSE_400
@@ -206,7 +211,7 @@ def add_course_to_decided(user_id: str, course_id: str, selection_type: str = ""
         return {"status": 200, "msg": "add course to decided successfully"}
     except Exception as e:
         const.logger.info(
-            "add_course_to_decided: %s", e, extra=const.LOGGING_TYPE.ERROR
+            "add_course_to_decided: %s", e
         )
         return const.RESPONSE_500
 
@@ -220,7 +225,7 @@ def add_course_to_favorite(user_id: str, course_id: str):
     :param course_id: 课程识别码
     :return: 执行结果
     """
-    const.logger.info("add_course_to_favorite: calling", extra=const.LOGGING_TYPE.INFO)
+    const.logger.info("add_course_to_favorite: calling")
     # 检查输入合法性
     if isinstance(user_id, str) is False or isinstance(course_id, str) is False:
         return const.RESPONSE_400
@@ -228,6 +233,10 @@ def add_course_to_favorite(user_id: str, course_id: str):
     try:
         # 检查用户是否存在
         if not models.User.objects.filter(user_id=user_id).exists():
+            return const.RESPONSE_404
+        
+        # 检查课程是否存在
+        if not models.MainCourses.objects.filter(course_id=course_id).exists():
             return const.RESPONSE_404
 
         # 添加课程
@@ -243,7 +252,7 @@ def add_course_to_favorite(user_id: str, course_id: str):
             return const.RESPONSE_409
     except Exception as e:
         const.logger.info(
-            "add_course_to_favorite: %s", e, extra=const.LOGGING_TYPE.ERROR
+            "add_course_to_favorite: %s", e
         )
         return const.RESPONSE_500
 
@@ -266,7 +275,7 @@ def add_course_comment(course_id: str, comment: dict):
 
     :return: 执行结果
     """
-    const.logger.info("add_course_comment: calling", extra=const.LOGGING_TYPE.INFO)
+    const.logger.info("add_course_comment: calling")
     if isinstance(course_id, str) is False or isinstance(comment, dict) is False:
         return const.RESPONSE_400
 
@@ -311,7 +320,7 @@ def add_course_comment(course_id: str, comment: dict):
 
         return {"status": 200, "msg": "add course comment successfully"}
     except Exception as e:
-        const.logger.info("add_course_comment: %s", e, extra=const.LOGGING_TYPE.ERROR)
+        const.logger.info("add_course_comment: %s", e)
         return const.RESPONSE_500
 
 
@@ -330,7 +339,7 @@ def change_course_level(user_id: str, course_id: str, selection_type: str):
     :param selection_type: 选课志愿类型
     :return: 执行结果
     """
-    const.logger.info("change_course_level: calling", extra=const.LOGGING_TYPE.INFO)
+    const.logger.info("change_course_level: calling")
     if (
         isinstance(user_id, str) is False
         or isinstance(course_id, str) is False
@@ -362,7 +371,7 @@ def change_course_level(user_id: str, course_id: str, selection_type: str):
         user.save()
         return {"status": 200, "msg": "change course level successfully"}
     except Exception as e:
-        const.logger.info("change_course_level: %s", e, extra=const.LOGGING_TYPE.ERROR)
+        const.logger.info("change_course_level: %s", e)
         return const.RESPONSE_500
 
 
@@ -375,11 +384,12 @@ def change_user_info(user_id: str, nickname: str = None, avatar: ImageFile = Non
     :param avatar: 用户头像
     :return: 执行结果
     """
-    const.logger.info("change_user_info: calling", extra=const.LOGGING_TYPE.INFO)
+    const.logger.info("change_user_info: calling")
 
     # 检查输入合法性
-    if isinstance(user_id, str) is False or (
-        (isinstance(nickname, str) and nickname) or avatar is False
+    if (isinstance(user_id, str) is False or 
+        ((not (isinstance(nickname, str) and nickname != ""))
+        and (avatar is None))
     ):
         return const.RESPONSE_400
 
@@ -402,7 +412,7 @@ def change_user_info(user_id: str, nickname: str = None, avatar: ImageFile = Non
         # 返回结果
         return {"status": 200, "msg": "change user info successfully"}
     except Exception as e:
-        const.logger.info("change_user_info: %s", e, extra=const.LOGGING_TYPE.ERROR)
+        const.logger.info("change_user_info: %s", e)
         return const.RESPONSE_500
 
 
@@ -415,7 +425,7 @@ def change_user_curriculum(user_id: str, curriculum: dict):
     :param curriculum: 培养方案
     :return: 执行结果
     """
-    const.logger.info("change_user_curriculum: calling", extra=const.LOGGING_TYPE.INFO)
+    const.logger.info("change_user_curriculum: calling")
     # 检查输入合法性
     if isinstance(user_id, str) is False or isinstance(curriculum, dict) is False:
         return const.RESPONSE_400
@@ -446,7 +456,7 @@ def change_user_curriculum(user_id: str, curriculum: dict):
         return {"status": 200, "msg": "change user curriculum successfully"}
     except Exception as e:
         const.logger.info(
-            "change_user_curriculum: %s", e, extra=const.LOGGING_TYPE.ERROR
+            "change_user_curriculum: %s", e
         )
         return const.RESPONSE_500
 
@@ -458,7 +468,58 @@ def change_course_main():
 
     经考虑，该接口暂不实现
     """
+    const.logger.info("change_course_main: calling")
     return const.RESPONSE_501
+
+
+# 更新课程志愿信息
+def change_course_selection(course_id: str, selection: dict):
+    """
+    更新课程志愿信息
+
+    该接口是在放弃实现 `change_course_main` 后的替代方案
+
+    :param course_id: 课程识别码
+    :param selection: 课程志愿信息
+    :return: 执行结果
+    """
+    const.logger.info("change_course_selection: calling")
+
+    # 检查输入合法性
+    if isinstance(course_id, str) is False or isinstance(selection, dict) is False:
+        return const.RESPONSE_400
+
+    # selection格式检查
+    if not all([key in selection for key in const.SELECTION_BLANK.keys()]):
+        return const.RESPONSE_400
+    
+    # 数据检查
+    total = selection["total"]
+    for key in const.SELECTION_BLANK.keys():
+        if not isinstance(selection[key], int) or selection[key] < 0 or selection[key] > total:
+            return const.RESPONSE_400
+        if key != "total":
+            total -= selection[key]
+    if total != 0:
+        return const.RESPONSE_400
+    
+    try:
+        # 检查课程是否存在
+        if not models.MainCourses.objects.filter(course_id=course_id).exists():
+            return const.RESPONSE_404
+        
+        course = models.MainCourses.objects.get(course_id=course_id)
+
+        # 更新志愿信息
+        course.selection = deepcopy(selection)
+        course.save()
+
+        # 返回结果
+        return {"status": 200, "msg": "change course selection successfully"}
+
+    except Exception as e:
+        const.logger.info("change_course_selection: %s", e)
+        return const.RESPONSE_500
 
 
 # 修改课程详细信息
@@ -468,6 +529,7 @@ def change_course_detail():
 
     经考虑，该接口暂不实现
     """
+    const.logger.info("change_course_detail: calling")
     return const.RESPONSE_501
 
 
@@ -482,7 +544,7 @@ def remove_user(user_id: str):
     :param user_id: 用户id
     :return: 执行结果
     """
-    const.logger.info("remove_user: calling", extra=const.LOGGING_TYPE.INFO)
+    const.logger.info("remove_user: calling")
     if isinstance(user_id, str) is False:
         return const.RESPONSE_400
 
@@ -493,12 +555,16 @@ def remove_user(user_id: str):
 
         # 删除
         user = models.User.objects.get(user_id=user_id)
+        # 获取头像路径
+        avatar_path = user.user_avatar.path
+        if os.path.exists(avatar_path):
+            os.remove(avatar_path)
         user.delete()
 
         # 返回结果
         return {"status": 200, "msg": "remove user successfully"}
     except Exception as e:
-        const.logger.info("remove_user: %s", e, extra=const.LOGGING_TYPE.ERROR)
+        const.logger.info("remove_user: %s", e)
         return const.RESPONSE_500
 
 
@@ -512,7 +578,7 @@ def remove_course_from_decided(user_id: str, course_id: str):
     :return: 执行结果
     """
     const.logger.info(
-        "remove_course_from_decided: calling", extra=const.LOGGING_TYPE.INFO
+        "remove_course_from_decided: calling"
     )
 
     # 检查输入合法性
@@ -536,7 +602,7 @@ def remove_course_from_decided(user_id: str, course_id: str):
         return const.RESPONSE_404
     except Exception as e:
         const.logger.info(
-            "remove_course_from_decided: %s", e, extra=const.LOGGING_TYPE.ERROR
+            "remove_course_from_decided: %s", e
         )
         return const.RESPONSE_500
 
@@ -551,7 +617,7 @@ def remove_course_from_favorite(user_id: str, course_id: str):
     :return: 执行结果
     """
     const.logger.info(
-        "remove_course_from_favorite: calling", extra=const.LOGGING_TYPE.INFO
+        "remove_course_from_favorite: calling"
     )
     # 检查输入合法性
     if isinstance(user_id, str) is False or isinstance(course_id, str) is False:
@@ -575,7 +641,7 @@ def remove_course_from_favorite(user_id: str, course_id: str):
             return const.RESPONSE_404
     except Exception as e:
         const.logger.info(
-            "remove_course_from_favorite: %s", e, extra=const.LOGGING_TYPE.ERROR
+            "remove_course_from_favorite: %s", e
         )
         return const.RESPONSE_500
 
@@ -588,22 +654,23 @@ def remove_course(course_id: str):
     :param course_id: 课程识别码
     :return: 执行结果
     """
-    const.logger.info("remove_course: calling", extra=const.LOGGING_TYPE.INFO)
+    const.logger.info("remove_course: calling")
     if isinstance(course_id, str) is False:
         return const.RESPONSE_400
 
     try:
         # 检查是否存在
-        if not models.MainCourses.objects.filter(course_id=course_id).exists():
+        if not models.CoursesDetails.objects.filter(course_id=course_id).exists():
             return const.RESPONSE_404
 
         # 删除
-        models.MainCourses.objects.filter(course_id=course_id).delete()
+        course = models.CoursesDetails.objects.get(course_id=course_id)
+        course.delete()
 
         # 返回结果
         return {"status": 200, "msg": "remove course successfully"}
     except Exception as e:
-        const.logger.info("remove_course: %s", e, extra=const.LOGGING_TYPE.ERROR)
+        const.logger.info("remove_course: %s", e)
         return const.RESPONSE_500
 
 
@@ -615,7 +682,7 @@ def remove_curriculum_by_id(curriculum_id: str):
     :param curriculum_id: 培养方案id
     :return: 执行结果
     """
-    const.logger.info("remove_curriculum_by_id: calling", extra=const.LOGGING_TYPE.INFO)
+    const.logger.info("remove_curriculum_by_id: calling")
     # 检查输入合法性
     if isinstance(curriculum_id, str) is False:
         return const.RESPONSE_400
@@ -632,7 +699,7 @@ def remove_curriculum_by_id(curriculum_id: str):
         return {"status": 200, "msg": "remove curriculum successfully"}
     except Exception as e:
         const.logger.info(
-            "remove_curriculum_by_id: %s", e, extra=const.LOGGING_TYPE.ERROR
+            "remove_curriculum_by_id: %s", e
         )
         return const.RESPONSE_500
 
@@ -646,7 +713,7 @@ def remove_curriculum_by_curriculum(curriculum: dict):
     :return: 执行结果
     """
     const.logger.info(
-        "remove_curriculum_by_curriculum: calling", extra=const.LOGGING_TYPE.INFO
+        "remove_curriculum_by_curriculum: calling"
     )
     # 检查输入合法性
     if isinstance(curriculum, dict) is False:
@@ -666,7 +733,7 @@ def remove_curriculum_by_curriculum(curriculum: dict):
         return {"status": 200, "msg": "remove curriculum successfully"}
     except Exception as e:
         const.logger.info(
-            "remove_curriculum_by_curriculum: %s", e, extra=const.LOGGING_TYPE.ERROR
+            "remove_curriculum_by_curriculum: %s", e
         )
         return const.RESPONSE_500
 
@@ -676,15 +743,15 @@ def remove_all_course():
     """
     删除所有课程信息
     """
-    const.logger.info("remove_all_course: calling", extra=const.LOGGING_TYPE.INFO)
+    const.logger.info("remove_all_course: calling")
     try:
         # 删除
-        models.MainCourses.objects.all().delete()
+        models.CoursesDetails.objects.all().delete()
 
         # 返回结果
         return {"status": 200, "msg": "remove all course successfully"}
     except Exception as e:
-        const.logger.info("remove_all_course: %s", e, extra=const.LOGGING_TYPE.ERROR)
+        const.logger.info("remove_all_course: %s", e)
         return const.RESPONSE_500
 
 
@@ -697,7 +764,7 @@ def remove_all_course_comment(course_id: str):
     :return: 执行结果
     """
     const.logger.info(
-        "remove_all_course_comment: calling", extra=const.LOGGING_TYPE.INFO
+        "remove_all_course_comment: calling"
     )
     # 检查输入合法性
     if isinstance(course_id, str) is False:
@@ -710,7 +777,7 @@ def remove_all_course_comment(course_id: str):
 
         # 删除
         details = models.CoursesDetails.objects.get(course_id=course_id)
-        details.score = -1
+        details.score = 0
         details.comments = []
         details.save()
 
@@ -718,7 +785,7 @@ def remove_all_course_comment(course_id: str):
         return {"status": 200, "msg": "remove all course comment successfully"}
     except Exception as e:
         const.logger.info(
-            "remove_all_course_comment: %s", e, extra=const.LOGGING_TYPE.ERROR
+            "remove_all_course_comment: %s", e
         )
         return const.RESPONSE_500
 
@@ -728,7 +795,7 @@ def remove_all_curriculum():
     """
     删除所有培养方案信息
     """
-    const.logger.info("remove_all_curriculum: calling", extra=const.LOGGING_TYPE.INFO)
+    const.logger.info("remove_all_curriculum: calling")
     try:
         # 删除
         models.Curriculum.objects.all().delete()
@@ -737,6 +804,6 @@ def remove_all_curriculum():
         return {"status": 200, "msg": "remove all curriculum successfully"}
     except Exception as e:
         const.logger.info(
-            "remove_all_curriculum: %s", e, extra=const.LOGGING_TYPE.ERROR
+            "remove_all_curriculum: %s", e
         )
         return const.RESPONSE_500

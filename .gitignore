@@ -79,3 +79,9 @@ package-lock.json
 pnpm-lock.yaml
 *.sql
 /tools/*.json
+
+.coverage
+
+!default_avatar.png
+!test_avatar.png
+backend/media/avatar/*.png

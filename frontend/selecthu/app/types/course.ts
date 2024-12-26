@@ -6,6 +6,14 @@ export interface TimeSlot {
   duration: number; // 持续节次数
 }
 
+export interface Selection {
+    b: number[],
+    x: number[],
+    r: number[],
+    t: number[],
+    total: number,
+}
+
 export interface Course {
   id: string;
   name: string;
@@ -14,6 +22,7 @@ export interface Course {
   type: string;             // 原有属性
   credits: number;          // 原有属性
   timeSlots: TimeSlot[];    // 原有属性
+  capacity: number;         // 新增属性
 
   // 新增属性
   department: string;
@@ -23,4 +32,22 @@ export interface Course {
   comments: string[];
   courseNumber: string;
   sequenceNumber: string;
+
+  selection: Selection;
+  volType: "required" | "limited" | "optional" | "sports";
+  volNum?: number;
 }
+
+export const courseTypeMapping = {
+  'required': 'b',
+  'limited': 'x',
+  'optional': 'r',
+  'sports': 't'
+};
+
+export const reverseCourseTypeMapping = {
+  'b': 'required',
+  'x': 'limited',
+  'r': 'optional',
+  't': 'sports'
+};

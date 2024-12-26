@@ -24,7 +24,7 @@ export interface Filter {
 interface FilterSectionProps {
   selectedFilters: Filter[];
   addFilter: (filter: Filter) => void;
-  searchCoursesAction: () => Promise<any>;
+  searchCoursesAction: (filters: Filter[]) => Promise<any>;
 }
 
 const filterOptions = [
@@ -54,11 +54,20 @@ const FilterSection: React.FC<FilterSectionProps> = ({ selectedFilters, addFilte
   // 处理添加筛选条件
   const handleAddFilter = () => {
     if (activeFilter && inputValue.trim() !== "") {
-      addFilter({ type: activeFilter, value: inputValue.trim() });
+      const filter = { type: activeFilter, value: inputValue.trim() };
+      addFilter(filter);
+      return [...selectedFilters, filter];
       setActiveFilter(""); // 添加后重置筛选类型
       setInputValue("");
     }
+    return selectedFilters;
   };
+
+  const handleSearch = async () => {
+        const filters = handleAddFilter()
+        console.log(filters)
+        await searchCoursesAction(filters)
+  }
 
   // 根据选择的筛选类型渲染对应的输入控件
   const renderFilterInput = () => {
@@ -76,7 +85,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ selectedFilters, addFilte
               />
               <Button
                 colorScheme="blue"
-                onClick={searchCoursesAction}
+                onClick={handleSearch}
                 isDisabled={inputValue.trim() === ""}
               >
                 添加
@@ -102,7 +111,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ selectedFilters, addFilte
               </Select>
               <Button
                 colorScheme="blue"
-                onClick={handleAddFilter}
+                onClick={handleSearch}
                 isDisabled={inputValue.trim() === ""}
               >
                 添加
@@ -127,7 +136,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ selectedFilters, addFilte
               </Select>
               <Button
                 colorScheme="blue"
-                onClick={handleAddFilter}
+                onClick={handleSearch}
                 isDisabled={inputValue.trim() === ""}
               >
                 添加
@@ -148,7 +157,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ selectedFilters, addFilte
               />
               <Button
                 colorScheme="blue"
-                onClick={handleAddFilter}
+                onClick={handleSearch}
                 isDisabled={inputValue.trim() === ""}
               >
                 添加
@@ -169,7 +178,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ selectedFilters, addFilte
               />
               <Button
                 colorScheme="blue"
-                onClick={handleAddFilter}
+                onClick={handleSearch}
                 isDisabled={inputValue.trim() === ""}
               >
                 添加

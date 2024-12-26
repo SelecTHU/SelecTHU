@@ -1,36 +1,44 @@
 // components/main/StatusCard.tsx
-import { Box, Text, useColorModeValue } from "@chakra-ui/react";
+import { Box, Text, Flex, useColorModeValue } from "@chakra-ui/react";
 
 interface StatusCardProps {
   title: string;
   content: string;
-  height?: string; // 添加 height 属性，可选
+  height?: string | number; // 添加 height 属性
 }
 
-export default function StatusCard({ title, content }: StatusCardProps) {
+export default function StatusCard({ title, content, height }: StatusCardProps) {
   return (
     <Box
-      p={5}
       bg={useColorModeValue("white", "gray.800")}
       borderRadius="lg"
       shadow="sm"
       border="1px"
       borderColor={useColorModeValue("gray.200", "gray.700")}
+      height={height} // 使用传入的height属性
+      overflow="hidden"
     >
-      <Text
-        fontSize="lg"
-        fontWeight="bold"
-        mb={2}
-        color={useColorModeValue("gray.700", "white")}
+      <Flex
+        direction="column"
+        justify="center"
+        height="100%"
+        p={5}
       >
-        {title}
-      </Text>
-      <Text
-        fontSize="md"
-        color={useColorModeValue("gray.600", "gray.300")}
-      >
-        {content}
-      </Text>
+        <Text
+          fontSize="lg"
+          fontWeight="bold"
+          mb={2}
+          color={useColorModeValue("gray.700", "white")}
+        >
+          {title}
+        </Text>
+        <Text
+          fontSize="md"
+          color={useColorModeValue("gray.600", "gray.300")}
+        >
+          {content}
+        </Text>
+      </Flex>
     </Box>
   );
 }

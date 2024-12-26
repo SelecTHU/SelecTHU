@@ -2,4 +2,5 @@
 
 export const ItemTypes = {
     COURSE: "course",
+    VOLUNTEER: 'volunteer'
   };

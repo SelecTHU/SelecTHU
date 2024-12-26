@@ -20,7 +20,9 @@ urlpatterns = [
     path('courses/', views.filter_courses, name='filter_courses'),  # 筛选获取课程
     path('course-detail/<str:course_id>/', views.get_course_detail, name='get_course_detail'),  # 获取课程详细信息
     path('modify-course-condition/', views.modify_course_condition, name='modify_course_condition'),  # 选中/备选/不选状态切换
-    path('courses-decided/', views.get_courses_decided, name='get_course_decided'),  # 获取已选课程
-    path('courses-favorite/', views.get_courses_favorite, name='get_course_favorite'),  # 获取收藏课程
+    path('courses-decided/', views.get_courses_decided, name='get_courses_decided'),  # 获取已选课程
+    path('courses-favorite/', views.get_courses_favorite, name='get_courses_favorite'),  # 获取收藏课程
     path('modify-course-selection-type/', views.modify_course_selection_type, name='modify_course_selection_type'),  # 修改课程志愿
+
+    path('chatbot-reply/', views.chatbot_reply, name='chatbot_reply'),  # 聊天机器人回复
 ]

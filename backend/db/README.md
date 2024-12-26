@@ -7,7 +7,9 @@
 db
 ├── v1
 |    ├── migrations
-|    |    └── __init__.py
+|    |    ├── __init__.py
+|    |    ├── 0001_initial.py
+|    |    └── ...
 │    ├── __init__.py
 │    ├── apps.py
 │    ├── const.py
@@ -26,14 +28,14 @@ db
 
 1. `User` 用户表
     - `user_id <CharField>` : 用户ID（学号）
-    - `nickname <CharField>` : 用户昵称
-    - `avatar <ImageField>` : 用户头像
-    - `favorite <JSONField>` : 用户备选课程
-    - `decided <JSONField>` : 用户已选课程
-    - `curriculum <CharField>` : 用户培养方案（对应培养方案ID）
+    - `user_nickname <CharField>` : 用户昵称
+    - `user_avatar <ImageField>` : 用户头像
+    - `user_favorite <JSONField>` : 用户备选课程
+    - `user_decided <JSONField>` : 用户已选课程
+    - `user_curriculum <CharField>` : 用户培养方案（对应培养方案ID）
 2. `Curriculum` 培养方案表
     - `curriculum_id <CharField>` : 培养方案ID
-    - `curriculum <JSONField>` : 培养方案内容
+    - `courses <JSONField>` : 培养方案内容
 3. `MainCourses` 课程表
     - `course_id <CharField>` : 课程识别码
     - `code <CharField>` : 课程号
@@ -56,7 +58,7 @@ db
     - `course_id <CharField>` : 课程识别码
     - `info <JSONField>` : 课程详细信息
     - `score <JSONField>` : 课程评分
-    - `comment <JSONField>` : 课程评价
+    - `comments <JSONField>` : 课程评价
 
 ### 接口列表
 - 使用方法：导入包 `import db.v1.utils as db_utils`
@@ -366,6 +368,18 @@ db
         - `500` : 内部错误
     - 说明: 修改用户的培养方案。如果指定的培养方案不存在，将自动添加该培养方案。
 
+19. **更新课程志愿信息**<span id="change_course_selection"></span>
+    - 对应函数: `db_utils.change_course_selection`
+    - 请求参数:
+        - `course_id<str>` : 课程识别码
+        - `selection<dict>` : 课程志愿信息（包含志愿类型和志愿等级）
+    - 返回值: `{ "status": <int>, "msg": <str> }`
+    - 错误码：
+        - `400` : 参数错误
+        - `404` : 课程不存在
+        - `500` : 内部错误
+    - 说明: 更新课程的志愿信息，该操作会覆盖原有志愿信息。该接口实际上是 `change_course_main` 的部分替代方案。
+
 #### 其他信息
 1. 更多常量定义见 [`const.py`](./v1/const.py)
 2. `avatar` 字段详细说明：<span id="avatar-explain"></span>
@@ -379,7 +393,6 @@ db
         "w1": <int>,
         "d": <int>,
         "t0": <int>,
-        "t1": <int>,
     },
     {
         ...
@@ -399,16 +412,15 @@ db
 1. `selection_type` 字段（原 `level` 字段）说明：<span id="selection-explain"></span>
 `selection_type` 字段表示课程的选课志愿分配，由两位字符组成，第一位表示志愿类型（包括必选、限选、任选、体育必选），第二位表示志愿等级（从 `0` 到 `3` ，数字越小，志愿等级越高，其中 `0` 志愿表示特殊优先级）。例如： `b2` 表示必选二志愿， `t1` 表示体育一志愿。具体定义见 [`const.py`](./v1/const.py) 。
 
-### 单元测试报告
-- 最后更新时间：2024-12-5
-- 报告说明：
-    1. 仅统计 `modifyDB.py` 和 `queryDB.py` 两份源代码的测试覆盖率，使用 `coverage` 工具生成（通过 `pip install coverage` 安装）。
-    2. 进行单元测试时，使用 `coverage run manage.py test --keepdb` 以保护数据库结构（如不需要可以不使用 `--keepdb` 参数）；使用 `coverage report` 生成测试报告（为整个 `db` 部分的测试覆盖率，使用  `coverage report --include="db/v1/modifyDB.py,db/v1/queryDB.py"` 以生成两份接口代码的测试报告）。
-```
+### 单元测试
+使用Django 的内置测试工具TestCase测试，使用coverage获取覆盖率报告。
+对 `dbBasic`, `queryDB` 和 `modifyDB` 进行测试，测试报告如下：
+```bash
 Name                Stmts   Miss  Cover
 ---------------------------------------
-db/v1/modifyDB.py     303    235    22%
-db/v1/queryDB.py      185     79    57%
+db/v1/dbBasic.py       39      6    85%
+db/v1/modifyDB.py     345     60    83%
+db/v1/queryDB.py      188     37    80%
 ---------------------------------------
-TOTAL                 488    314    36%
+TOTAL                 572    103    82%
 ```
