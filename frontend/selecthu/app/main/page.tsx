@@ -11,6 +11,8 @@ export default async function MainPage() {
 
     const selCourses = await getSelectedCourses()
 
+    console.log("Re-rendering server component")
+
     return (
         <ClientPage favoriteCourses={courses} selCourses={selCourses} curriculum={curriculum} />
     )

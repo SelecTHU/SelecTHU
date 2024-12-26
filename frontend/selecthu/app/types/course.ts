@@ -35,6 +35,7 @@ export interface Course {
 
   selection: Selection;
   volType: "required" | "limited" | "optional" | "sports";
+  volNum?: number;
 }
 
 export const courseTypeMapping = {

@@ -32,6 +32,8 @@ import { useToast } from "@chakra-ui/react";
 
 import { Volunteer, VolunteerWithCount } from '@/app/types/volunteer';
 
+import { revalidatePath } from "next/cache"
+
 import {
   Modal,
   ModalOverlay,
@@ -45,7 +47,7 @@ import {
 import * as XLSX from 'xlsx';
 import html2canvas from 'html2canvas';
 import CourseListView from "../components/main/CourseListView";
-import { removeCourse, selectCourse, disSelectCourse } from "@/app/search/actions"
+import { removeCourse, selectCourse, disSelectCourse, setCourseStatus, setCourseWish } from "@/app/search/actions"
 
 export default function MainPage({favoriteCourses, selCourses, curriculum}) {
   // 管理可用课程列表（备选清单）
@@ -89,45 +91,123 @@ export default function MainPage({favoriteCourses, selCourses, curriculum}) {
         id: `${type}-3`,
         type: type,
         priority: 3,
-        remaining: 999
+        remaining: 99999
       });
     });
     
     return volunteers;
   };
 
+  const getAvailableVolunteers = (selCourses) => {
+    const initial = generateInitialVolunteers()
+    return initial.map((volunteer) => {
+        var rem = volunteer.remaining
+        for (var course of selCourses) {
+            if (volunteer.type == course.volType && volunteer.priority == +course.volNum) {
+                rem = rem - 1
+            }
+        }
+        return {
+            ...volunteer,
+            remaining: rem,
+        }
+    })
+  }
 
     // 更新志愿相关状态
-    const [availableVolunteers, setAvailableVolunteers] = useState<VolunteerWithCount[]>(
-      generateInitialVolunteers()
-    );
-    
+  const [availableVolunteers, setAvailableVolunteers] = useState<VolunteerWithCount[]>(
+    generateInitialVolunteers()
+  );
 
-    const [courseVolunteers, setCourseVolunteers] = useState<{
-      [courseId: string]: VolunteerWithCount[];
-    }>({});
+  const [courseVolunteer, setCourseVolunteer] = useState<{
+    [courseId: string]: VolunteerWithCount;
+  }>({});
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const [isExporting, setIsExporting] = useState(false);
 
+  console.log("Render MainPage with", availableVolunteers, courseVolunteer)
+
   const toast = useToast();
 
+  const addVolunteer = (courseId: string, volNum: number) => {
+      console.log("addVolunteer", courseId, volNum)
+      const course = selectedCourses.find(c => c.id == courseId) || availableCourses.find(c => c.id == courseId)
+      if (!course) {
+          console.log("course not found!")
+          return
+      }
+      const courseType = course.volType
+      console.log(`set ${course.name} to ${courseType} ${volNum}`)
+      console.log("active:", availableVolunteers)
+      console.log("current:", courseVolunteer)
+      if (courseId in courseVolunteer && courseVolunteer[courseId].priority == volNum) {
+          console.log("no change")
+          return
+      }
 
+      /* if (courseId in courseVolunteer) {
+          console.log("volunteer exists!")
+          return
+      } */
+      if (courseId in courseVolunteer) {
+          console.log("old", courseVolunteer[courseId])
+      }
+      const volunteer = availableVolunteers.find(v => v.type == courseType && v.priority == volNum)
+      if (volunteer.remaining == 0) {
+          console.log("no available volunteer remaining!")
+          return
+      }
 
-  const handleVolunteerDrop = (courseId: string, volunteer: VolunteerWithCount) => {
-    console.log("CALL")
+      console.log("courseVolunteer set to", ((prev) => ({
+          ...prev,
+          [courseId]: volunteer,
+      }))({}))
+      setCourseVolunteer((prev) => ({
+          ...prev,
+          [courseId]: volunteer,
+      }))
+      setAvailableVolunteers((prev) => prev.map((item) => {
+          if (item.id == volunteer.id) {
+              return {
+                  ...item,
+                  remaining: item.remaining - 1
+              }
+          }
+          else if (courseId in courseVolunteer && courseVolunteer[courseId].priority == item.priority) {
+              return {
+                  ...item,
+                  remaining: item.remaining + 1
+              }
+          }
+          else {
+              return item
+          }
+      }))
+  }
+
+  // 给某门课分配某个志愿
+  const handleVolunteerDrop = async (courseId: string, volunteer: VolunteerWithCount) => {
     const course = selectedCourses.find(c => c.id === courseId);
     if (!course) return;
     // 添加类型转换
     const courseType = course.volType;
     if (courseType !== volunteer.type) return;
+
+    await setCourseWish(courseId, course.volType, volunteer.priority)
+    return
     // 获取当前状态的快照
-    const currentVolunteers = courseVolunteers[courseId] || [];
-    console.log("courseVOlunteers", currentVolunteers)
-    const existingVolunteer = currentVolunteers[0];
+    console.log("courseVolunteer", courseVolunteer)
+    console.log("availableVolunteers", availableVolunteers)
+    const currentVolunteer = courseVolunteer[courseId] || [];
+    const existingVolunteer = currentVolunteer;
+
+    // handleVolunteerRemove(courseId, volunteer)
+    addVolunteer(courseId, volunteer.priority)
+
   
-    Promise.resolve().then(() => {
+    /* Promise.resolve().then(() => {
       // 1. 处理现有志愿的返回
       if (existingVolunteer) {
         setAvailableVolunteers(prev => {
@@ -172,19 +252,31 @@ export default function MainPage({favoriteCourses, selCourses, curriculum}) {
           return v;
         }).filter(v => v.remaining > 0 || v.priority === 3); // 保留有剩余数量的志愿和三志愿
       });
-    });
+    }); */
   };
   
   const handleVolunteerRemove = (courseId: string, volunteerId: string) => {
-    const volunteer = courseVolunteers[courseId]?.find(v => v.id === volunteerId);
-    if (!volunteer) return;
+      /* if (!(courseId in courseVolunteer)) {
+          return
+      }
+      if (courseVolunteer[courseId].id != volunteerId) {
+          return
+      }
+      return
+      console.log("call: handleVolunteerRemove", courseId, volunteerId, courseVolunteer)
+      setCourseVolunteer(prev => (prev.filter(item => item.key != courseId)))
 
-    setCourseVolunteers(prev => ({
-      ...prev,
-      [courseId]: prev[courseId].filter(v => v.id !== volunteerId)
-    }));
-
-    setAvailableVolunteers(prev => [...prev, volunteer]);
+      setAvailableVolunteers(prev => prev.map(item => {
+          if (item.id == volunteerId) {
+              return {
+                  ...item,
+                  remaining: item.remaining + 1
+              }
+          }
+          else {
+              return item
+          }
+      })) */
   };
 
   const handleVolunteerDrag = (volunteer: VolunteerWithCount) => {
@@ -196,15 +288,15 @@ export default function MainPage({favoriteCourses, selCourses, curriculum}) {
     
     // 只有在有匹配的课程类型时才处理志愿
     if (targetCourse && targetCourse.type === volunteer.type) {
-      handleVolunteerDrop(targetCourseId, volunteer);
+      // handleVolunteerDrop(targetCourseId, volunteer);
     }
   };
 
 
   const handleVolunteerReturn = (volunteer: VolunteerWithCount) => {
     // 找到包含此志愿的课程
-    const courseEntry = Object.entries(courseVolunteers).find(
-      ([_, volunteers]) => volunteers.some(v => 
+    const courseEntry = Object.entries(courseVolunteer).find(
+      ([_, v]) => (
         v.type === volunteer.type && 
         v.priority === volunteer.priority
       )
@@ -214,10 +306,11 @@ export default function MainPage({favoriteCourses, selCourses, curriculum}) {
       const [courseId] = courseEntry;
       
       // 从课程中移除志愿
-      setCourseVolunteers(prev => ({
+      /* setCourseVolunteers(prev => ({
         ...prev,
         [courseId]: []
-      }));
+      })); */
+     console.log("ERRORRR")
   
       // 返回志愿到志愿池
       setAvailableVolunteers(prev => {
@@ -268,9 +361,20 @@ const colors = [
 
   // 添加课程到课程表的方法
   const addCourseToTable = async (course: Course) => {
-
+    // 检查时间冲突
+    if (checkTimeConflict(course, selectedCourses)) {
+      toast({
+        title: "时间冲突",
+        description: "选课失败：该课程与已选课程时间冲突",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
     await selectCourse(course.id)
-    setSelectedCourses((prevSelectedCourses) => {
+    await setCourseWish(course.id, course.volType, 3)
+    /* setSelectedCourses((prevSelectedCourses) => {
       const newCourse = {
         ...course,
         type: course.type // 确保这里的 type 保持原值
@@ -287,7 +391,9 @@ const colors = [
     // 从备选清单中删除该课程
     setAvailableCourses((prevAvailableCourses) => 
       prevAvailableCourses.filter((c) => c.id !== course.id)
-    );
+    ); */
+
+    // addVolunteer(course.id, 3)
   };
 
   // 从备选清单中删除课程的方法（用于删除按钮）
@@ -295,16 +401,20 @@ const colors = [
     setAvailableCourses((prevAvailableCourses) =>
       prevAvailableCourses.filter((c) => c.id !== courseId)
     )
-    removeCourse(courseId)
+    await removeCourse(courseId)
   };
 
   // 将课程从已选课程移动到备选清单
   const moveCourseToAvailable = async (course: Course) => {
-    const volunteers = courseVolunteers[course.id] || [];
+    // const volunteer = courseVolunteer[course.id] || [];
     
+    await setCourseWish(course.id, course.volType, 3)
     await disSelectCourse(course.id)
+    // setAvailableCourses((c) => c)
+
+    // handleVolunteerRemove(course.id, volunteer.id)
     
-    setAvailableVolunteers(prev => {
+    /* setAvailableVolunteers(prev => {
       const newVolunteers = volunteers.map(v => ({
         ...v,
         remaining: 1, // 或者其他适当的值
@@ -316,9 +426,9 @@ const colors = [
       const newState = { ...prev };
       delete newState[course.id];
       return newState;
-    });
+    }); */
   
-    setSelectedCourses(prev =>
+    /* setSelectedCourses(prev =>
       prev.filter(c => c.id !== course.id)
     );
   
@@ -327,7 +437,7 @@ const colors = [
         return [...prev, course];
       }
       return prev;
-    });
+    }); */
   };
 
   // 导出为Excel文件
@@ -484,6 +594,31 @@ const exportToPNG = async () => {
   }
 };
 
+// 检查时间冲突的辅助函数
+const checkTimeConflict = (course: Course, selectedCourses: Course[]): boolean => {
+  for (const selectedCourse of selectedCourses) {
+    for (const newSlot of course.timeSlots) {
+      for (const existingSlot of selectedCourse.timeSlots) {
+        if (newSlot.day === existingSlot.day) {
+          const newStart = newSlot.start;
+          const newEnd = newSlot.start + newSlot.duration;
+          const existingStart = existingSlot.start;
+          const existingEnd = existingSlot.start + existingSlot.duration;
+
+          // 检查时间段是否重叠
+          if (
+            (newStart >= existingStart && newStart < existingEnd) ||
+            (existingStart >= newStart && existingStart < newEnd)
+          ) {
+            return true; // 存在冲突
+          }
+        }
+      }
+    }
+  }
+  return false; // 无冲突
+};
+
   // 定义统一的高度
   const cardHeight = "150px"; // 调整高度以匹配按钮区域的高度
 
@@ -499,7 +634,7 @@ const exportToPNG = async () => {
             <GridItem colSpan={3}>
               <VolunteerCard
                 height={cardHeight}
-                availableVolunteers={availableVolunteers}
+                availableVolunteers={getAvailableVolunteers(selCourses)}
                 onVolunteerDrag={handleVolunteerDrag}
                 onVolunteerRemove={handleVolunteerRemove}
                 onVolunteerReturn={handleVolunteerReturn}
@@ -556,8 +691,25 @@ const exportToPNG = async () => {
               </Box>
             </GridItem>
 
-            {/* 右侧区域占位 */}
-            <GridItem colSpan={4} />
+            {/* 使用教程卡片 */}
+            <GridItem colSpan={4}>
+              <Box
+                bg={useColorModeValue("white", "gray.700")}
+                rounded="md"
+                p={4}
+                shadow="sm"
+                height={cardHeight}
+              >
+                <Box>
+                  <Box fontWeight="bold" mb={2}>使用教程：</Box>
+                  <Box fontSize="sm">
+                    <Box mb={1}>1. 在搜索课程界面进行选课，添加的课程会进入备选清单</Box>
+                    <Box mb={1}>2. 点击加号或拖拽课程从备选清单进入课表，或拖拽课程从课表回到备选清单</Box>
+                    <Box>3. 拖动志愿将志愿分配给对应的课程</Box>
+                  </Box>
+                </Box>
+              </Box>
+            </GridItem>
 
             {/* 课程表区域 */}
             <GridItem colSpan={8}>
@@ -565,33 +717,42 @@ const exportToPNG = async () => {
                 <CourseListView
                   selectedCourses={selectedCourses}
                   getCourseColor={getCourseColor}
-                  courseVolunteers={courseVolunteers}
+                  courseVolunteer={courseVolunteer}
                 />
               ) : (
                 <CourseTable
-                  selectedCourses={selectedCourses}
+                  selectedCourses={selCourses}
                   addCourseToTable={addCourseToTable}
                   getCourseColor={getCourseColor}
-                  courseVolunteers={courseVolunteers}
+                  courseVolunteer={courseVolunteer}
                   onVolunteerDrop={handleVolunteerDrop}
                   onVolunteerRemove={handleVolunteerRemove}
+
                 />
               )}
             </GridItem>
 
-            {/* 右侧面板 */}
-            <GridItem colSpan={4}>
-              <Grid gap={4}>
-                <TeachingPlan curriculum={curriculum} />
+          {/* 右侧面板 */}
+          <GridItem colSpan={4}>
+            <Grid gap={4} templateRows="auto 1fr">  {/* 添加 templateRows */}
+              <GridItem>
+                <TeachingPlan 
+                  curriculum={curriculum} 
+                  maxH="300px"  // 添加固定高度
+                  overflow="auto"  // 添加滚动条
+                />
+              </GridItem>
+              <GridItem>
                 <CourseList
-                  availableCourses={availableCourses}
+                  availableCourses={favoriteCourses}
                   addCourseToTable={addCourseToTable}
                   deleteCourse={deleteCourse}
                   moveCourseToAvailable={moveCourseToAvailable}
-                  getCourseColor={getCourseColor} // 传递 getCourseColor 函数
+                  getCourseColor={getCourseColor}
                 />
-              </Grid>
-            </GridItem>
+              </GridItem>
+            </Grid>
+          </GridItem>
           </Grid>
         </Box>
       </Box>

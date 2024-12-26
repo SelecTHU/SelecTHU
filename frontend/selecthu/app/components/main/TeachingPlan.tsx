@@ -43,7 +43,7 @@ interface PlanCourse {
     name?: string,
 }
 
-export default function TeachingPlan({ curriculum }) {
+export default function TeachingPlan({ curriculum,maxH, overflow, ...props }) {
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.700");
 
@@ -67,6 +67,9 @@ export default function TeachingPlan({ curriculum }) {
       shadow="sm"
       border="1px"
       borderColor={borderColor}
+      maxH={maxH}
+      overflow={overflow}
+      {...props}
     >
       <Flex justifyContent="space-between" alignItems="center" mb={4}>
         <Text fontSize="lg" fontWeight="bold">

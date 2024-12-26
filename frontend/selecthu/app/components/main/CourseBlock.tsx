@@ -17,7 +17,7 @@ interface CourseBlockProps {
   color: string;
   duration: number;
   slotHeight: number;
-  volunteers: Volunteer[];
+  volunteer: Volunteer;
   onVolunteerDrop?: (courseId: string, volunteer: Volunteer) => void;
   onVolunteerRemove?: (courseId: string, volunteerId: string) => void;
 }
@@ -51,6 +51,14 @@ const ProgressBar: React.FC<{ course: Course }> = ({ course }) => {
     return baseColors[type][priority - 1] || baseColors[type][0];
   };
 
+  const getVolunteerOrder = (volType) => {
+      switch (volType) {
+          case "required": return 1
+          case "limited": return 2
+          case "optional": return 3
+      }
+  }
+
   const renderSelectionBars = () => {
     const { selection, capacity } = course;
     if (!selection || !capacity) return null;
@@ -58,20 +66,15 @@ const ProgressBar: React.FC<{ course: Course }> = ({ course }) => {
     const getCurrentVolunteerTotal = () => {
       let total = 0;
       const currentType = course.volType;
-      // TODO:有报错
-      const maxPriority = course.currentVolunteer || 0;
+      const maxPriority = 3;
 
-      ['b', 'x', 't'].forEach(type => {
-        for (let priority = 1; priority <= maxPriority; priority++) {
-          total += selection[type][priority] || 0;
-        }
+      (['b', 'x', 't']).forEach(type => {
+          if (getVolunteerOrder(type) <= getVolunteerOrder(currentType)) {
+              for (let priority = 0; priority <= maxPriority; priority++) {
+                  total += selection[type][priority] || 0;
+              }
+          }
       });
-
-      if (currentType === 'optional') {
-        for (let priority = 0; priority <= maxPriority; priority++) {
-          total += selection.r[priority] || 0;
-        }
-      }
 
       return total;
     };
@@ -150,10 +153,12 @@ export default function CourseBlock({
   color,
   duration,
   slotHeight,
-  volunteers,
+  volunteer,
   onVolunteerDrop,
   onVolunteerRemove,
 }: CourseBlockProps) {
+
+    console.log(`Rendering course ${course.name} with volunteer ${volunteer}, course`, course)
   const courseRef = useRef<HTMLDivElement>(null);
   const borderColor = useColorModeValue("gray.200", "gray.600");
 
@@ -196,7 +201,7 @@ export default function CourseBlock({
   };
 
   const getVolunteerInfo = () => {
-    console.log("VOLUNTEERS", volunteers)
+    // console.log("VOLUNTEER", volunteer)
     const selection = course.selection;
     const type = courseTypeMapping[course.volType];
 
@@ -211,7 +216,7 @@ export default function CourseBlock({
     }
 
     let priorities = selection[type];
-    console.log("priorities", priorities)
+    // console.log("priorities", priorities)
     let maxVol = Math.max(...priorities);
     let maxPriority = priorities.indexOf(maxVol);
 
@@ -219,7 +224,7 @@ export default function CourseBlock({
       maxPriority = 3;
     }
 
-    maxPriority = volunteers[0]["priority"]
+    maxPriority = +course.volNum
 
     return {
       text: `${getTypeText(type)}${maxPriority > 0 ? maxPriority + '志愿' : ''}`,
