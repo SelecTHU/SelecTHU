@@ -352,23 +352,31 @@ def modify_course_selection_type(request, user_id):
     """
     修改课程志愿
     """
+    print("CALL:MODIFY TYPE")
     course_id = request.data.get("course_id")
     selection_type = request.data.get("selection_type")
     user = db_utils.get_user(user_id)
     if not user:
+        print("user not found")
         return Response({"status": 404, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
     if selection_type[0] not in ['b', 'x', 'r', 't'] or selection_type[1] not in ['0', '1', '2', '3']:
         return Response({"status": 400, "message": "Invalid selection type"}, status=status.HTTP_400_BAD_REQUEST)
     success = db_utils.change_course_level(user_id, course_id, selection_type)
     if not success:
         return Response({"status": 404, "message": "Course not found or error in selection type change"}, status=status.HTTP_404_NOT_FOUND)
+    print("success", success)
+    return Response(success, status=status.HTTP_200_OK)
 
 @api_view(["POST"])
 @login_required
-def chatbot_reply(request):
+def chatbot_reply(request, user_id):
     """
     聊天机器人回复
     """
     input = request.data.get("user-input")
+    print("get input", input)
     response = run(input)
-    return response
+    if response["status"] == 200:
+        return Response(response, status = status.HTTP_200_OK)
+    else:
+        return Response(response, status = status.HTTP_500_INTERAL_SERVER_ERROR)

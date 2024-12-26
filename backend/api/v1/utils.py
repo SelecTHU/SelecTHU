@@ -89,6 +89,7 @@ def login_required(func):
         request = args[0]
 
         res = jwt_authentication(request)
+        print("request =", request)
         if not res:
             return Response(
                 {"message": "User must be authorized."}, status=status.HTTP_401_UNAUTHORIZED

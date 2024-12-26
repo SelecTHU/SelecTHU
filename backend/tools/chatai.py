@@ -115,7 +115,9 @@ def run(question: str):
         stream = resp["resp"]
         events = stream.text.split("\n\n")
         response = ""
+        print("events", events)
         for event in events:
+            print("event", event)
             if event:
                 data_regex = re.compile(r"data: ?(.+)")
                 data = data_regex.search(event)
@@ -125,8 +127,10 @@ def run(question: str):
                 if "msg" in data.keys():
                     response += data["msg"]
         
+        print("RESPONSE", response)
         return {"status": 200, "response": response}
     except Exception as e:
+        print("Exception", e)
         return {"status": 500, "msg": str(e)}
     
         
