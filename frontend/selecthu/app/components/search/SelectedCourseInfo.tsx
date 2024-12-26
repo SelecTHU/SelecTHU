@@ -78,14 +78,14 @@ const SelectedCourseInfo: React.FC<SelectedCourseInfoProps> = ({
           <strong>授课教师：</strong>
           {course.teacher} {/* 使用 teacher */}
         </Text>
-        <Text>
+        {/* <Text>
           <strong>授课信息：</strong>
           {course.teachingInfo}
         </Text>
         <Text>
           <strong>教师信息：</strong>
           {course.teacherInfo}
-        </Text>
+        </Text> */}
       </VStack>
 
       <Divider />
