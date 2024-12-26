@@ -51,7 +51,15 @@ function convertCourse(data, curriculum) {
                 else if (attr == "限选") {
                     return "limited"
                 }
-                else return "optional"
+                else if (data.department == "体育部") {
+                    return "sports"
+                }
+                else {
+                    return "optional"
+                }
+            }
+            else if (data.department == "体育部") {
+                return "sports"
             }
             else return "optional"
         })(lookupCurriculum(data.code, curriculum)),
@@ -112,7 +120,9 @@ export async function searchCourses(filters) {
 
         const curriculum = await getCurriculum()
 
-        return convertCourseList(json["courses-main"], curriculum)
+        const ret = convertCourseList(json["courses-main"], curriculum)
+        console.log(ret)
+        return ret
     } catch (error) {
         console.log(error.message)
         return error.message
