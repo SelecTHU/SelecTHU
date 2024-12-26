@@ -24,8 +24,8 @@ interface CourseTableProps {
   selectedCourses: Course[];
   addCourseToTable: (course: Course) => void;
   getCourseColor?: (courseId: string) => string;  // 改为可选
-  courseVolunteers?: {
-    [courseId: string]: Volunteer[];
+  courseVolunteer?: {
+    [courseId: string]: Volunteer;
   };
   onVolunteerDrop?: (courseId: string, volunteer: Volunteer) => void;
   onVolunteerRemove?: (courseId: string, volunteerId: string) => void;
@@ -35,10 +35,12 @@ export default function CourseTable({
   selectedCourses,
   addCourseToTable,
   getCourseColor = (courseId: string) => "gray.200",  // 提供默认值
-  courseVolunteers = {},  // 提供默认值
+  courseVolunteer = {},  // 提供默认值
   onVolunteerDrop = () => {},  // 提供默认值
   onVolunteerRemove = () => {},  // 提供默认值
 }: CourseTableProps) {
+
+      console.log("Rendering CourseTable with", courseVolunteer)
   const borderColor = useColorModeValue("gray.200", "gray.700");
   const bgColor = useColorModeValue("white", "gray.800");
 
@@ -204,7 +206,7 @@ export default function CourseTable({
                           color={color}
                           duration={rowSpan}
                           slotHeight={slotHeight}
-                          volunteers={courseVolunteers[course.id] || []}
+                          volunteer={courseVolunteer[course.id] || []}
                           onVolunteerDrop={onVolunteerDrop}
                           onVolunteerRemove={onVolunteerRemove}
                         />
