@@ -24,7 +24,11 @@ function convertCourse(data, curriculum) {
         credits: data.credit,
         department: data.department,
         capacity: data.capacity,
-        time: "tbd",
+        time: data.time.filter((time) => {
+            return time.d != 0
+        }).map((time) => {
+            return time.d + "-" + time.t0
+        }).join(","),
         classroom: "not known",
         type: "not known",
         timeSlots: data.time.map((time) => {

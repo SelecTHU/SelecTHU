@@ -150,6 +150,21 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
     onAddCourse(courseId);
   };
 
+  const renderWishType = (wish: string) => {
+      if (wish == "required") {
+          return "必修"
+      }
+      else if (wish == "limited") {
+          return "限选"
+      }
+      else if (wish == "optional") {
+          return "任选"
+      }
+      else if (wish == "sports") {
+          return "体育"
+      }
+  }
+
   const renderVolunteers = (course: Course) => {
     const selection = course.selection
     return JSON.stringify(selection)
@@ -220,7 +235,7 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
                 {course.time}
               </Td>
               <Td borderRight="1px solid" borderColor={borderCol}>
-                {course.volType}
+                {renderWishType(course.volType)}
               </Td>
               <Td>
                 <ProgressBar course={course} />
