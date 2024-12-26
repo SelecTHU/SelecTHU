@@ -6,7 +6,8 @@ import { JWT } from "next-auth/jwt"
 
 declare module "next-auth" {
     interface User {
-        backend_jwt: string
+        realName: string,
+        backend_jwt: string,
     }
     interface Session {
         user: User
@@ -18,7 +19,8 @@ declare module "next-auth" {
 
 declare module "next-auth/jwt" {
     interface JWT {
-        backend_jwt: string
+        realName: string,
+        backend_jwt: string,
     }
 }
 
@@ -61,7 +63,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth ({
                             httpOnly: true,
                         })
                         console.log("resData", resData.jwt) */
-                        user = {"backend_jwt": resData.jwt}
+                        user = {realName: resData.name, backend_jwt: resData.jwt}
                         console.log("USER", user)
                         return user
                     }
@@ -92,6 +94,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth ({
         jwt({ token, user }) {
             if (user) {
                 token.backend_jwt = user.backend_jwt
+                token.realName = user.realName
             }
             return token
         },
@@ -102,6 +105,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth ({
                 user: {
                     ...session.user,
                     backend_jwt: token.backend_jwt,
+                    realName: token.realName,
                 },
             }
         },

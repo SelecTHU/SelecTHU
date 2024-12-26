@@ -17,6 +17,7 @@ import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation"; // 引入 usePathname
+import { useSession } from "next-auth/react";
 
 const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => {
   const hoverBg = useColorModeValue("brand.50", "brand.700");
@@ -49,6 +50,7 @@ export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
   const pathname = usePathname(); // 获取当前路径
+  const { data: session } = useSession()
 
   useEffect(() => {
     // 从localStorage中获取用户信息
@@ -66,7 +68,8 @@ export default function Navbar() {
   };
 
   // 如果用户信息不存在，设置默认昵称为 "User"
-  const nickname = user?.nickname || "User";
+  // const nickname = user?.nickname || "User";
+  const nickname = session?.user?.realName || "User"
   const avatarSrc = user?.avatar || "/default-avatar.png"; // 设置默认头像路径
 
   // 定义路由路径与页面名称的映射关系

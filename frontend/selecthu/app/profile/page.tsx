@@ -194,7 +194,7 @@ export default function ProfilePage() {
             </Button>
             <Button
               colorScheme="red"
-              onClick={() => { signOut(); router.push("/main") } }
+              onClick={() => { signOut(); router.push("/login") } }
               width="full"
               size="lg"
               borderRadius="md"
