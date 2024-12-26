@@ -224,14 +224,6 @@ export default function CourseBlock({
       maxPriority = 3;
     }
 
-    /* if (volunteers.length != 0) {
-        maxPriority = volunteers[0]["priority"]
-    }
-    else {
-        maxPriority = 3
-    } */
-    // maxPriority = volunteer["priority"]
-
     maxPriority = +course.volNum
 
     return {

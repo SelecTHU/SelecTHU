@@ -1,4 +1,5 @@
 // components/main/CourseList.tsx
+
 import React, { useRef } from "react";
 import {
   Box,
@@ -12,7 +13,11 @@ import {
 } from "@chakra-ui/react";
 import { Course, TimeSlot } from "@/app/types/course";
 import CourseRow from "./CourseRow";
+
+// 引入 React DnD 所需的模块
 import { useDrop } from "react-dnd";
+
+// 定义拖拽类型
 import { ItemTypes } from "./constants";
 
 interface CourseListProps {
@@ -20,7 +25,7 @@ interface CourseListProps {
   addCourseToTable: (course: Course) => void;
   deleteCourse: (courseId: string) => void;
   moveCourseToAvailable: (course: Course) => void;
-  getCourseColor: (courseId: string) => string;
+  getCourseColor: (courseId: string) => string; // 添加 getCourseColor 函数的类型
 }
 
 export default function CourseList({
@@ -28,13 +33,15 @@ export default function CourseList({
   addCourseToTable,
   deleteCourse,
   moveCourseToAvailable,
-  getCourseColor,
+  getCourseColor, // 接收 getCourseColor 函数
 }: CourseListProps) {
   const borderColor = useColorModeValue("gray.200", "gray.700");
   const tableBgColor = useColorModeValue("white", "gray.800");
 
+  // 使用 useRef 创建一个引用
   const boxRef = useRef<HTMLDivElement>(null);
 
+  // 使用 useDrop，使备选清单成为拖拽放置目标
   const [{ isOver }, drop] = useDrop({
     accept: ItemTypes.COURSE,
     drop: (item: { course: Course }) => {
@@ -45,28 +52,27 @@ export default function CourseList({
     }),
   });
 
+  // 将 drop 连接到 DOM 引用上
   drop(boxRef);
 
+  // 格式化时间段
   const formatTimeSlots = (timeSlots: TimeSlot[]) => {
     return timeSlots
-      .map((ts) => `周${ts.day}\n ${ts.start}-${ts.start + ts.duration - 1}节`)
-      .join(",\n ");
+      .map((ts) => `周${ts.day} ${ts.start}-${ts.start + ts.duration - 1}节`)
+      .join(", ");
   };
 
   return (
     <Box
-      ref={boxRef}
+      ref={boxRef} // 使用 boxRef
       bg={isOver ? "blue.100" : tableBgColor}
       p={2}
       borderRadius="lg"
       shadow="sm"
       border="1px"
       borderColor={borderColor}
-      overflow="auto"
-      minHeight="200px"
-      maxHeight="600px"
-      mt="0vh"
-      mb={8}
+      overflow="auto" // 允许滚动，以适应内容变化
+      maxHeight="400px" // 根据需要调整最大高度
     >
       <chakra.h2 fontSize="lg" fontWeight="bold" mb={2}>
         备选清单
@@ -74,12 +80,12 @@ export default function CourseList({
       <Table size="sm" variant="simple">
         <Thead>
           <Tr>
-            <Th width="180px">课程名</Th>  {/* 固定宽度 */}
-            <Th width="50px">教师</Th>    {/* 固定宽度 */}
-            <Th width="60px">类型</Th>     {/* 固定宽度 */}
-            <Th width="40px" isNumeric>学分</Th>
-            <Th>时间段</Th>                {/* 自适应剩余空间 */}
-            <Th width="40px">操作</Th>    {/* 固定宽度 */}
+            <Th>课程名</Th>
+            <Th>教师</Th>
+            <Th>类型</Th>
+            <Th isNumeric>学分</Th>
+            <Th>时间段</Th>
+            <Th>操作</Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -87,7 +93,7 @@ export default function CourseList({
             <CourseRow
               key={course.id}
               course={course}
-              courseColor={getCourseColor(course.id)}
+              courseColor={getCourseColor(course.id)} // 使用 getCourseColor 函数
               formatTimeSlots={formatTimeSlots}
               handleAdd={addCourseToTable}
               handleDelete={deleteCourse}
