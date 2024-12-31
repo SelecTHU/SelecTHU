@@ -88,11 +88,15 @@ class Login:
                         
                         soup = bs4.BeautifulSoup(resp.text, "html.parser")
                         
-                        name = soup.find(id="filtericon2").get_text().strip()
+                        name: str = soup.find(id="filtericon2").get_text().strip()
 
-                        if name:
+                        div = soup.find("div", class_="fl up-img-info")
+                        if div:
+                            name: str = div.find_all("p")[0].find_all("label")[0].get_text().strip()
+                            department: str = div.find_all("p")[1].find_all("label")[0].get_text().strip()
+                        if name and department:
                             self.logger.info("登录成功")
-                            return True, name
+                            return True, name, department
                         else:
                             raise Exception("名称获取失败")
                         
@@ -107,4 +111,4 @@ class Login:
                 time.sleep(0.3)
 
         self.logger.error("登录失败")
-        return False, None
+        return False, None, None
