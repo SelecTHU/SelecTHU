@@ -15,6 +15,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { useState } from "react";
+import { useSession } from "next-auth/react"
 
 export interface Filter {
   type: string;
@@ -45,10 +46,18 @@ const FilterSection: React.FC<FilterSectionProps> = ({ selectedFilters, addFilte
   const boxBg = useColorModeValue("white", "gray.800");
   const filterBg = useColorModeValue("gray.100", "gray.700");
 
+  const { data: session } = useSession()
+  const department = session?.user?.department
+
   // 处理筛选类型选择
   const handleFilterSelect = (type: string) => {
     setActiveFilter(type);
-    setInputValue(""); // 切换类型时重置输入值
+    if (type != "department") {
+        setInputValue(""); // 切换类型时重置输入值
+    }
+    else {
+        setInputValue(department);
+    }
   };
 
   // 处理添加筛选条件
