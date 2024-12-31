@@ -126,7 +126,12 @@ class Curriculum:
             belong_to = curriculum_map.get(course["所属课组"], None)
 
             if not belong_to:
-                raise Exception("课程类型错误")
+                if "必修" in course["所属课组"] or "主修" in course["所属课组"]:
+                    belong_to = curriculum_map["专业主修"]
+                elif "选修" in course["所属课组"]:
+                    belong_to = curriculum_map["专业选修"]
+                else:
+                    raise Exception("未解析的课程组别")
 
             db_curriculum[belong_to].append(formatted_course)
 

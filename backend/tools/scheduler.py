@@ -41,16 +41,16 @@ class Scheduler:
         """
         try:
             wlxt_login_obj = wlxtLogin.Login(username, password, self.logger)
-            status, name = wlxt_login_obj.login()
+            status, name, department = wlxt_login_obj.login()
 
             if status == False:
                 raise Exception("登录失败")
 
             self.logger.info(f"登录成功")
-            return True, name
+            return True, name, department
         except Exception as e:
             self.logger.error(f"出现异常: {e}")
-            return False, None
+            return False, None, None
 
     def login(self, username: str, password: str):
         """
