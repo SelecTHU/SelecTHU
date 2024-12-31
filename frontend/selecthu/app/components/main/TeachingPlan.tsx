@@ -15,6 +15,7 @@ import {
 } from "@chakra-ui/react";
 import { Course, TimeSlot } from "@/app/types/course";
 import { useMemo } from "react";
+import { useSession } from "next-auth/react"
 
 // 颜色数组
 const colors = [
@@ -50,6 +51,9 @@ export default function TeachingPlan({ curriculum,maxH, overflow, ...props }) {
   console.log(curriculum)
   const curriculumCourses: PlanCourse[] = Object.values(curriculum).flat()
 
+  const { data: session } = useSession()
+  const department = session?.user?.department
+
   // 创建颜色映射
   const courseColorMap = useMemo(() => {
     const map: { [courseId: string]: string } = {};
@@ -81,7 +85,7 @@ export default function TeachingPlan({ curriculum,maxH, overflow, ...props }) {
       </Flex>
 
       <Text fontSize="sm" mb={4}>
-        软件工程 2022级 三年级 第二学期
+        {department}
       </Text>
 
       <Table size="sm" variant="simple">
