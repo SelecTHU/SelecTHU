@@ -49,7 +49,7 @@ def login(request):
     #if not verify_password(user_id, password):
     #    return Response({"status": 401, "message": "Invalid user_id or password"}, status=status.HTTP_401_UNAUTHORIZED)
     scheduler = Scheduler()
-    status_, name = scheduler.verify(user_id, password)
+    status_, name, department = scheduler.verify(user_id, password)
     test = scheduler.login(user_id, password)
     if not status_ or not test:
         return Response({"status": 401, "message": "Invalid user_id or password"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -74,13 +74,16 @@ def login(request):
         db_utils.add_user(user_id, curriculum)
     else:
         curr_curriculum = response["curriculum"]
+        # DEBUG
+        # curriculum = scheduler.get_curriculum()
         if not curr_curriculum:
             curriculum = scheduler.get_curriculum()
             db_utils.change_user_curriculum(user_id, curriculum)
 
     payload = {"user_id": user_id}
     token = generate_jwt(payload)
-    return Response({"status": 200, "jwt": token, "name": name}, status=status.HTTP_200_OK)
+    return Response({"status": 200, "jwt": token, "name": name, "department": department}, status=status.HTTP_200_OK)
+
 
 @api_view(["POST"])
 @login_required
