@@ -104,6 +104,10 @@ export default function SearchPage() {
             <SelectedFilters
               selectedFilters={selectedFilters}
               removeFilter={removeFilter}
+              searchCoursesAction={async (filters) => {
+                  const res = await searchCourses(filters)
+                  setCourses(res)
+              }}
             />
 
             {/* 课程表展示部分 */}
