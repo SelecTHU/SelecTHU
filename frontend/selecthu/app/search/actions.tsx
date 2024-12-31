@@ -94,9 +94,9 @@ export async function searchCourses(filters) {
             else if (filter.type == "department") {
                 url = url + "&department=" + filter.value
             }
-            else if (filter.type == "courseAttribute") {
+            /* else if (filter.type == "courseAttribute") {
                 // url = url + "&department=" + filter.value
-            }
+            } */
             else if (filter.type == "instructor") {
                 url = url + "&teacher=" + filter.value
             }

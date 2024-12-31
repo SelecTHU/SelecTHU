@@ -11,12 +11,15 @@ import {
 import { CloseIcon } from "@chakra-ui/icons";
 import { Filter } from "./FilterSection";
 
+import { searchCourses } from "@/app/search/actions"
+
 interface SelectedFiltersProps {
   selectedFilters: Filter[];
   removeFilter: (type: string) => void;
+  searchCoursesAction: (filters: Filter[]) => Promise<any>;
 }
 
-const SelectedFilters: React.FC<SelectedFiltersProps> = ({ selectedFilters, removeFilter }) => {
+const SelectedFilters: React.FC<SelectedFiltersProps> = ({ selectedFilters, removeFilter, searchCoursesAction }) => {
   // Call hooks at the top level
   const containerBg = useColorModeValue("white", "gray.800");
   const filterBg = useColorModeValue("gray.100", "gray.700");
@@ -64,7 +67,10 @@ const SelectedFilters: React.FC<SelectedFiltersProps> = ({ selectedFilters, remo
               size="sm"
               icon={<CloseIcon />}
               aria-label={`删除${getFilterLabel(filter.type)}`}
-              onClick={() => removeFilter(filter.type)}
+              onClick={async () => {
+                  removeFilter(filter.type)
+                  await searchCoursesAction(selectedFilters.filter((f) => f.type !== filter.type))
+              }}
               variant="ghost"
             />
           </Box>

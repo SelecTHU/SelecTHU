@@ -63,6 +63,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth ({
                             httpOnly: true,
                         })
                         console.log("resData", resData.jwt) */
+                        console.log("resData", resData)
                         user = {realName: resData.name, backend_jwt: resData.jwt}
                         console.log("USER", user)
                         return user
