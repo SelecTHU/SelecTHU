@@ -36,7 +36,7 @@ class Curriculum:
         # 创建httpx客户端
         self.client = httpx.Client(
             cookies=self.cookies, headers=self.headers, base_url=self.base_url,
-            proxy="http://host.docker.internal:7890"
+            proxy="socks5://host.docker.internal:7777"
         )
 
         self.logger = logger
@@ -131,7 +131,8 @@ class Curriculum:
                 elif "选修" in course["所属课组"]:
                     belong_to = curriculum_map["专业选修"]
                 else:
-                    raise Exception("未解析的课程组别")
+                    belong_to = CURRICULUM_KEYS[0]
+                    # raise Exception("未解析的课程组别")
 
             db_curriculum[belong_to].append(formatted_course)
 
