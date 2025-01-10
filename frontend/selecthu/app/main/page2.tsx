@@ -127,65 +127,7 @@ export default function MainPage({favoriteCourses, selCourses, curriculum}) {
 
   const [isExporting, setIsExporting] = useState(false);
 
-  console.log("Render MainPage with", availableVolunteers, courseVolunteer)
-
   const toast = useToast();
-
-  const addVolunteer = (courseId: string, volNum: number) => {
-      console.log("addVolunteer", courseId, volNum)
-      const course = selectedCourses.find(c => c.id == courseId) || availableCourses.find(c => c.id == courseId)
-      if (!course) {
-          console.log("course not found!")
-          return
-      }
-      const courseType = course.volType
-      console.log(`set ${course.name} to ${courseType} ${volNum}`)
-      console.log("active:", availableVolunteers)
-      console.log("current:", courseVolunteer)
-      if (courseId in courseVolunteer && courseVolunteer[courseId].priority == volNum) {
-          console.log("no change")
-          return
-      }
-
-      /* if (courseId in courseVolunteer) {
-          console.log("volunteer exists!")
-          return
-      } */
-      if (courseId in courseVolunteer) {
-          console.log("old", courseVolunteer[courseId])
-      }
-      const volunteer = availableVolunteers.find(v => v.type == courseType && v.priority == volNum)
-      if (volunteer.remaining == 0) {
-          console.log("no available volunteer remaining!")
-          return
-      }
-
-      console.log("courseVolunteer set to", ((prev) => ({
-          ...prev,
-          [courseId]: volunteer,
-      }))({}))
-      setCourseVolunteer((prev) => ({
-          ...prev,
-          [courseId]: volunteer,
-      }))
-      setAvailableVolunteers((prev) => prev.map((item) => {
-          if (item.id == volunteer.id) {
-              return {
-                  ...item,
-                  remaining: item.remaining - 1
-              }
-          }
-          else if (courseId in courseVolunteer && courseVolunteer[courseId].priority == item.priority) {
-              return {
-                  ...item,
-                  remaining: item.remaining + 1
-              }
-          }
-          else {
-              return item
-          }
-      }))
-  }
 
   // 给某门课分配某个志愿
   const handleVolunteerDrop = async (courseId: string, volunteer: VolunteerWithCount) => {
@@ -195,92 +137,19 @@ export default function MainPage({favoriteCourses, selCourses, curriculum}) {
     const courseType = course.volType;
     if (courseType !== volunteer.type) return;
 
+    setSelectedCourses((prev) => 
+        prev.map((c) => {
+            return c.id !== courseId ? c : { ...c, volNum: volunteer.priority };
+        })
+    )
     await setCourseWish(courseId, course.volType, volunteer.priority)
-    return
-    // 获取当前状态的快照
-    console.log("courseVolunteer", courseVolunteer)
-    console.log("availableVolunteers", availableVolunteers)
-    const currentVolunteer = courseVolunteer[courseId] || [];
-    const existingVolunteer = currentVolunteer;
 
-    // handleVolunteerRemove(courseId, volunteer)
-    addVolunteer(courseId, volunteer.priority)
-
-  
-    /* Promise.resolve().then(() => {
-      // 1. 处理现有志愿的返回
-      if (existingVolunteer) {
-        setAvailableVolunteers(prev => {
-          // 查找相同类型和优先级的志愿
-          const existingIndex = prev.findIndex(v => 
-            v.type === existingVolunteer.type && 
-            v.priority === existingVolunteer.priority
-          );
-  
-          if (existingIndex >= 0) {
-            // 更新现有志愿的数量
-            const updatedVolunteers = [...prev];
-            updatedVolunteers[existingIndex] = {
-              ...prev[existingIndex],
-              remaining: prev[existingIndex].remaining + 1
-            };
-            return updatedVolunteers;
-          } else if (existingVolunteer.priority !== 3) {
-            // 如果不存在且不是三志愿，添加新的志愿
-            return [...prev, { ...existingVolunteer, remaining: 1 }];
-          }
-          return prev;
-        });
-      }
-  
-      // 2. 更新课程志愿
-      setCourseVolunteers(prev => ({
-        ...prev,
-        [courseId]: [{ ...volunteer, remaining: 1 }]
-      }));
-  
-      // 3. 更新可用志愿池
-      setAvailableVolunteers(prev => {
-        // 创建新数组并更新目标志愿的数量
-        return prev.map(v => {
-          if (v.type === volunteer.type && v.priority === volunteer.priority) {
-            return {
-              ...v,
-              remaining: Math.max(0, v.priority === 3 ? 999 : v.remaining - 1)
-            };
-          }
-          return v;
-        }).filter(v => v.remaining > 0 || v.priority === 3); // 保留有剩余数量的志愿和三志愿
-      });
-    }); */
   };
   
-  const handleVolunteerRemove = (courseId: string, volunteerId: string) => {
-      /* if (!(courseId in courseVolunteer)) {
-          return
-      }
-      if (courseVolunteer[courseId].id != volunteerId) {
-          return
-      }
-      return
-      console.log("call: handleVolunteerRemove", courseId, volunteerId, courseVolunteer)
-      setCourseVolunteer(prev => (prev.filter(item => item.key != courseId)))
-
-      setAvailableVolunteers(prev => prev.map(item => {
-          if (item.id == volunteerId) {
-              return {
-                  ...item,
-                  remaining: item.remaining + 1
-              }
-          }
-          else {
-              return item
-          }
-      })) */
-  };
+  const handleVolunteerRemove = (courseId: string, volunteerId: string) => {};
 
   const handleVolunteerDrag = (volunteer: VolunteerWithCount) => {
-    if (!selectedCourses || selectedCourses.length === 0) return;
+    /* if (!selectedCourses || selectedCourses.length === 0) return;
     
     // 检查是否存在可以赋予的目标课程
     const targetCourseId = selectedCourses[selectedCourses.length - 1].id;
@@ -289,7 +158,7 @@ export default function MainPage({favoriteCourses, selCourses, curriculum}) {
     // 只有在有匹配的课程类型时才处理志愿
     if (targetCourse && targetCourse.type === volunteer.type) {
       // handleVolunteerDrop(targetCourseId, volunteer);
-    }
+    } */
   };
 
 
@@ -372,28 +241,20 @@ const colors = [
       });
       return;
     }
+    console.log("addCourseToTable: course", course)
+    setSelectedCourses((prevSelectedCourses) => {
+        const newCourse = {
+            ...course,
+            volNum: "3",
+        }
+        return [...prevSelectedCourses, newCourse]
+    })
+    setAvailableCourses((prevAvailableCourses) =>
+        prevAvailableCourses.filter((c) => c.id !== course.id)
+    );
     await selectCourse(course.id)
     await setCourseWish(course.id, course.volType, 3)
-    /* setSelectedCourses((prevSelectedCourses) => {
-      const newCourse = {
-        ...course,
-        type: course.type // 确保这里的 type 保持原值
-      };
-      // 检查课程是否已添加，避免重复添加
-      if (!prevSelectedCourses.some((c) => c.id === course.id)) {
-        // 如果未添加过，将课程添加到已选课程列表
-        return [...prevSelectedCourses, course];
-      }
-      // 如果已存在，返回原列表
-      return prevSelectedCourses;
-    });
 
-    // 从备选清单中删除该课程
-    setAvailableCourses((prevAvailableCourses) => 
-      prevAvailableCourses.filter((c) => c.id !== course.id)
-    ); */
-
-    // addVolunteer(course.id, 3)
   };
 
   // 从备选清单中删除课程的方法（用于删除按钮）
@@ -406,38 +267,13 @@ const colors = [
 
   // 将课程从已选课程移动到备选清单
   const moveCourseToAvailable = async (course: Course) => {
-    // const volunteer = courseVolunteer[course.id] || [];
-    
-    await setCourseWish(course.id, course.volType, 3)
-    await disSelectCourse(course.id)
-    // setAvailableCourses((c) => c)
-
-    // handleVolunteerRemove(course.id, volunteer.id)
-    
-    /* setAvailableVolunteers(prev => {
-      const newVolunteers = volunteers.map(v => ({
-        ...v,
-        remaining: 1, // 或者其他适当的值
-      }));
-      return [...prev, ...newVolunteers];
-    });
-    
-    setCourseVolunteers(prev => {
-      const newState = { ...prev };
-      delete newState[course.id];
-      return newState;
-    }); */
-  
-    /* setSelectedCourses(prev =>
-      prev.filter(c => c.id !== course.id)
+    setSelectedCourses((prev) =>
+        prev.filter(c => c.id !== course.id)
     );
-  
-    setAvailableCourses(prev => {
-      if (!prev.some(c => c.id === course.id)) {
-        return [...prev, course];
-      }
-      return prev;
-    }); */
+    setAvailableCourses((prev) =>
+        [...prev, course]
+    );
+    await disSelectCourse(course.id)
   };
 
   // 导出为Excel文件
@@ -634,7 +470,7 @@ const checkTimeConflict = (course: Course, selectedCourses: Course[]): boolean =
             <GridItem colSpan={3}>
               <VolunteerCard
                 height={cardHeight}
-                availableVolunteers={getAvailableVolunteers(selCourses)}
+                availableVolunteers={getAvailableVolunteers(selectedCourses)}
                 onVolunteerDrag={handleVolunteerDrag}
                 onVolunteerRemove={handleVolunteerRemove}
                 onVolunteerReturn={handleVolunteerReturn}
@@ -721,7 +557,7 @@ const checkTimeConflict = (course: Course, selectedCourses: Course[]): boolean =
                 />
               ) : (
                 <CourseTable
-                  selectedCourses={selCourses}
+                  selectedCourses={selectedCourses}
                   addCourseToTable={addCourseToTable}
                   getCourseColor={getCourseColor}
                   courseVolunteer={courseVolunteer}
@@ -744,7 +580,7 @@ const checkTimeConflict = (course: Course, selectedCourses: Course[]): boolean =
               </GridItem>
               <GridItem>
                 <CourseList
-                  availableCourses={favoriteCourses}
+                  availableCourses={availableCourses}
                   addCourseToTable={addCourseToTable}
                   deleteCourse={deleteCourse}
                   moveCourseToAvailable={moveCourseToAvailable}
