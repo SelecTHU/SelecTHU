@@ -245,7 +245,7 @@ const colors = [
     setSelectedCourses((prevSelectedCourses) => {
         const newCourse = {
             ...course,
-            volNum: "3",
+            volNum: 3,
         }
         return [...prevSelectedCourses, newCourse]
     })
